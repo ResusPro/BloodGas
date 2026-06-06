@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1565c0" />
+  <title>ResusPro SIM LAB</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #eef2f7;
+      color: #111827;
+    }
+
+    body {
+      padding: 10px;
+      padding-top: max(10px, env(safe-area-inset-top));
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1280px, 100%);
+      margin: 0 auto;
+    }
+
+    .top-bar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      background: #1565c0;
+      color: #fff;
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+      margin-bottom: 12px;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: clamp(1.25rem, 3.6vw, 2rem);
+      letter-spacing: 0.04em;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .brand-subtitle {
+      margin: 4px 0 0;
+      font-size: clamp(0.82rem, 2.4vw, 1rem);
+      opacity: 0.92;
+      line-height: 1.25;
+    }
+
+    .top-pill {
+      white-space: nowrap;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(330px, 430px);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #d7dde8;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .card-body {
+      padding: 12px 14px 14px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .field label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      border-radius: 10px;
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: #1565c0;
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.14);
+    }
+
+    .switch-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid #d7dde8;
+      border-radius: 12px;
+      background: #fff;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #263244;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch input {
+      width: 18px;
+      height: 18px;
+      accent-color: #1565c0;
+      flex: 0 0 auto;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 800;
+      cursor: pointer;
+      background: #1565c0;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(21, 101, 192, 0.22);
+    }
+
+    .btn.secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+      box-shadow: none;
+    }
+
+    .btn.danger {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #eef2f7;
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: middle;
+      font-size: 0.88rem;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f8fafc;
+      z-index: 1;
+      color: #334155;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    td.param-name {
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .param-group {
+      display: inline-block;
+      margin-left: 4px;
+      color: #64748b;
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    .tiny-input {
+      width: 84px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 8px;
+    }
+
+    .wide-input {
+      width: 130px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 8px;
+    }
+
+    .checkbox-cell {
+      text-align: center;
+    }
+
+    .checkbox-cell input {
+      width: 18px;
+      height: 18px;
+      accent-color: #1565c0;
+    }
+
+    .arrow-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 24px;
+      font-weight: 900;
+      font-size: 1rem;
+    }
+
+    .arrow-high {
+      color: #dc2626;
+    }
+
+    .arrow-low {
+      color: #2563eb;
+    }
+
+    .receipt-panel {
+      position: sticky;
+      top: 10px;
+    }
+
+    .receipt-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .receipt-shell {
+      background: #dbe3ef;
+      padding: 14px;
+      min-height: 400px;
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+
+    .receipt {
+      width: 315px;
+      min-height: 560px;
+      background: #fffdf4;
+      color: #111;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.22);
+      padding: 12px 11px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 12px;
+      line-height: 1.23;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .note {
+      font-size: 0.84rem;
+      color: #475569;
+      line-height: 1.35;
+      margin: 8px 0 0;
+    }
+
+    .spacer {
+      height: 12px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .receipt-panel {
+        position: static;
+      }
+
+      .controls-grid,
+      .switch-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      body {
+        padding: 8px;
+      }
+
+      .top-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .top-pill {
+        width: fit-content;
+      }
+
+      .controls-grid,
+      .switch-row {
+        grid-template-columns: 1fr;
+      }
+
+      .card-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .receipt-toolbar {
+        justify-content: flex-start;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .top-bar,
+      .editor-panel,
+      .card-header,
+      .note {
+        display: none !important;
+      }
+
+      .app,
+      .layout,
+      .receipt-panel,
+      .card,
+      .receipt-shell {
+        display: block;
+        width: auto;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        background: #fff;
+      }
+
+      .receipt {
+        width: 58mm;
+        min-height: auto;
+        box-shadow: none;
+        background: #fff;
+        font-size: 10.5px;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top-bar">
+      <div>
+        <h1 class="brand-title">RESUSPRO SIM LAB</h1>
+        <p class="brand-subtitle">Simulation blood gas / point-of-care result generator</p>
+      </div>
+      <div class="top-pill">Thermal receipt preview</div>
+    </header>
+
+    <section class="layout">
+      <div class="editor-panel">
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Case details</h2>
+            <div class="button-row">
+              <button class="btn secondary" type="button" id="demoAbgBtn">Example ABG</button>
+              <button class="btn secondary" type="button" id="demoChestPainBtn">Chest pain panel</button>
+              <button class="btn secondary" type="button" id="clearValuesBtn">Clear values</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="controls-grid">
+              <div class="field">
+                <label for="patientId">Patient / scenario ID</label>
+                <input id="patientId" type="text" value="SIM-001" />
+              </div>
+              <div class="field">
+                <label for="sampleType">Sample type</label>
+                <select id="sampleType">
+                  <option>Arterial</option>
+                  <option>Venous</option>
+                  <option>Capillary</option>
+                  <option>Mixed venous</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="operator">Operator</label>
+                <input id="operator" type="text" value="Instructor" />
+              </div>
+              <div class="field">
+                <label for="location">Location</label>
+                <input id="location" type="text" value="Resus" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="spacer"></div>
+
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Print controls</h2>
+          </div>
+          <div class="card-body">
+            <div class="switch-row">
+              <label class="switch"><input id="showArrows" type="checkbox" checked /> Show ↑/↓ flags</label>
+              <label class="switch"><input id="showRanges" type="checkbox" /> Show reference ranges</label>
+              <label class="switch"><input id="showUnits" type="checkbox" checked /> Show units</label>
+              <label class="switch"><input id="showBranding" type="checkbox" checked /> Show ResusPro branding</label>
+            </div>
+            <div class="spacer"></div>
+            <div class="button-row">
+              <button class="btn" type="button" id="fillNormalBtn">Add normal values to blank fields</button>
+              <button class="btn secondary" type="button" id="allOnBtn">All parameters on</button>
+              <button class="btn secondary" type="button" id="gasOnlyBtn">Gas only</button>
+              <button class="btn secondary" type="button" id="fullPanelBtn">Full panel</button>
+            </div>
+            <p class="note">All parameters start switched on. Untick any parameter to hide it from the simulated printout.</p>
+          </div>
+        </section>
+
+        <div class="spacer"></div>
+
+        <section class="card">
+          <div class="card-header">
+            <h2 class="card-title">Parameters</h2>
+          </div>
+          <div class="card-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Print</th>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                    <th>Units</th>
+                    <th>Low ref</th>
+                    <th>High ref</th>
+                    <th>Flag</th>
+                  </tr>
+                </thead>
+                <tbody id="paramTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="receipt-panel card">
+        <div class="card-header">
+          <h2 class="card-title">Print preview</h2>
+          <div class="receipt-toolbar">
+            <button class="btn" type="button" id="printBtn">Print</button>
+            <button class="btn secondary" type="button" id="copyBtn">Copy</button>
+          </div>
+        </div>
+        <div class="receipt-shell">
+          <pre class="receipt" id="receiptPreview"></pre>
+        </div>
+        <div class="card-body">
+          <p class="note">Browser printing works now. Bluetooth thermal printing usually depends on the phone/printer pairing or the printer app. A proper ESC/POS Bluetooth mode can be added later.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const parameters = [
+      { key: "ph", group: "Gas", label: "pH", value: "", unit: "", low: 7.35, high: 7.45, normal: 7.40, decimals: 2 },
+      { key: "pco2", group: "Gas", label: "pCO2", value: "", unit: "kPa", low: 4.7, high: 6.0, normal: 5.3, decimals: 1 },
+      { key: "po2", group: "Gas", label: "pO2", value: "", unit: "kPa", low: 10.0, high: 13.3, normal: 12.0, decimals: 1 },
+      { key: "hco3", group: "Gas", label: "HCO3-", value: "", unit: "mmol/L", low: 22, high: 26, normal: 24, decimals: 0 },
+      { key: "be", group: "Gas", label: "BE", value: "", unit: "mmol/L", low: -2, high: 2, normal: 0, decimals: 0 },
+      { key: "so2", group: "Gas", label: "sO2", value: "", unit: "%", low: 94, high: 100, normal: 98, decimals: 0 },
+      { key: "lactate", group: "Gas", label: "Lactate", value: "", unit: "mmol/L", low: 0.5, high: 2.2, normal: 1.1, decimals: 1 },
+      { key: "glucose", group: "Gas", label: "Glucose", value: "", unit: "mmol/L", low: 4.0, high: 7.8, normal: 5.6, decimals: 1 },
+      { key: "hb", group: "Gas", label: "Hb", value: "", unit: "g/L", low: 120, high: 170, normal: 140, decimals: 0 },
+      { key: "cohb", group: "Gas", label: "COHb", value: "", unit: "%", low: 0, high: 3, normal: 1, decimals: 0 },
+      { key: "methb", group: "Gas", label: "MetHb", value: "", unit: "%", low: 0, high: 1.5, normal: 0.5, decimals: 1 },
+
+      { key: "na", group: "U&E", label: "Na+", value: "", unit: "mmol/L", low: 135, high: 145, normal: 140, decimals: 0 },
+      { key: "k", group: "U&E", label: "K+", value: "", unit: "mmol/L", low: 3.5, high: 5.0, normal: 4.2, decimals: 1 },
+      { key: "cl", group: "U&E", label: "Cl-", value: "", unit: "mmol/L", low: 98, high: 107, normal: 103, decimals: 0 },
+      { key: "ca", group: "U&E", label: "iCa2+", value: "", unit: "mmol/L", low: 1.12, high: 1.32, normal: 1.20, decimals: 2 },
+      { key: "urea", group: "U&E", label: "Urea", value: "", unit: "mmol/L", low: 2.5, high: 7.8, normal: 5.0, decimals: 1 },
+      { key: "creatinine", group: "U&E", label: "Creatinine", value: "", unit: "umol/L", low: 60, high: 110, normal: 80, decimals: 0 },
+      { key: "egfr", group: "U&E", label: "eGFR", value: "", unit: "mL/min", low: 60, high: 999, normal: 90, decimals: 0 },
+
+      { key: "crp", group: "POC", label: "CRP", value: "", unit: "mg/L", low: 0, high: 5, normal: 2, decimals: 0 },
+      { key: "troponin", group: "POC", label: "Troponin", value: "", unit: "ng/L", low: 0, high: 14, normal: 6, decimals: 0 },
+      { key: "bnp", group: "POC", label: "BNP", value: "", unit: "ng/L", low: 0, high: 100, normal: 35, decimals: 0 },
+      { key: "ntprobnp", group: "POC", label: "NT-proBNP", value: "", unit: "ng/L", low: 0, high: 400, normal: 80, decimals: 0 },
+      { key: "dimer", group: "POC", label: "D-dimer", value: "", unit: "ng/mL", low: 0, high: 500, normal: 220, decimals: 0 },
+      { key: "ketones", group: "POC", label: "Ketones", value: "", unit: "mmol/L", low: 0, high: 0.6, normal: 0.2, decimals: 1 }
+    ];
+
+    const gasKeys = new Set(["ph", "pco2", "po2", "hco3", "be", "so2", "lactate", "glucose", "hb", "cohb", "methb", "na", "k", "cl", "ca"]);
+    const quickGasKeys = new Set(["ph", "pco2", "po2", "hco3", "be", "lactate"]);
+
+    const state = parameters.map((param) => ({ ...param, print: true }));
+
+    const els = {
+      paramTable: document.getElementById("paramTable"),
+      receiptPreview: document.getElementById("receiptPreview"),
+      patientId: document.getElementById("patientId"),
+      sampleType: document.getElementById("sampleType"),
+      operator: document.getElementById("operator"),
+      location: document.getElementById("location"),
+      showArrows: document.getElementById("showArrows"),
+      showRanges: document.getElementById("showRanges"),
+      showUnits: document.getElementById("showUnits"),
+      showBranding: document.getElementById("showBranding")
+    };
+
+    function formatNumber(value, decimals) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return String(value || "");
+      return n.toFixed(decimals).replace(/\.0+$/, "").replace(/(\.\d*[1-9])0+$/, "$1");
+    }
+
+    function padRight(text, length) {
+      const s = String(text ?? "");
+      if (s.length >= length) return s.slice(0, length);
+      return s + " ".repeat(length - s.length);
+    }
+
+    function padLeft(text, length) {
+      const s = String(text ?? "");
+      if (s.length >= length) return s.slice(0, length);
+      return " ".repeat(length - s.length) + s;
+    }
+
+    function centre(text, width = 32) {
+      const s = String(text ?? "");
+      if (s.length >= width) return s.slice(0, width);
+      const left = Math.floor((width - s.length) / 2);
+      const right = width - s.length - left;
+      return " ".repeat(left) + s + " ".repeat(right);
+    }
+
+    function line(char = "-", width = 32) {
+      return char.repeat(width);
+    }
+
+    function getFlag(param) {
+      const value = Number(param.value);
+      const low = Number(param.low);
+      const high = Number(param.high);
+      if (!Number.isFinite(value) || !Number.isFinite(low) || !Number.isFinite(high)) return "";
+      if (value < low) return "↓";
+      if (value > high) return "↑";
+      return "";
+    }
+
+    function refRange(param) {
+      return `${formatNumber(param.low, param.decimals)}-${formatNumber(param.high, param.decimals)}`;
+    }
+
+    function nowString() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      return `${pad(d.getDate())}-${pad(d.getMonth() + 1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function renderTable() {
+      els.paramTable.innerHTML = "";
+
+      state.forEach((param, index) => {
+        const tr = document.createElement("tr");
+        const flag = getFlag(param);
+        const flagClass = flag === "↑" ? "arrow-high" : flag === "↓" ? "arrow-low" : "";
+
+        tr.innerHTML = `
+          <td class="checkbox-cell"><input type="checkbox" data-field="print" data-index="${index}" ${param.print ? "checked" : ""}></td>
+          <td class="param-name">${param.label}<span class="param-group">${param.group}</span></td>
+          <td><input class="tiny-input" type="text" inputmode="decimal" data-field="value" data-index="${index}" value="${param.value}"></td>
+          <td><input class="wide-input" type="text" data-field="unit" data-index="${index}" value="${param.unit}"></td>
+          <td><input class="tiny-input" type="text" inputmode="decimal" data-field="low" data-index="${index}" value="${param.low}"></td>
+          <td><input class="tiny-input" type="text" inputmode="decimal" data-field="high" data-index="${index}" value="${param.high}"></td>
+          <td><span class="arrow-badge ${flagClass}">${flag}</span></td>
+        `;
+
+        els.paramTable.appendChild(tr);
+      });
+    }
+
+    function renderReceipt() {
+      const showArrows = els.showArrows.checked;
+      const showRanges = els.showRanges.checked;
+      const showUnits = els.showUnits.checked;
+      const showBranding = els.showBranding.checked;
+      const rows = [];
+
+      rows.push(line("="));
+      if (showBranding) {
+        rows.push(centre("RESUSPRO SIM LAB"));
+        rows.push(centre("Point-of-care result"));
+      } else {
+        rows.push(centre("POINT-OF-CARE RESULT"));
+      }
+      rows.push(line("="));
+      rows.push(`Patient: ${els.patientId.value || "SIM"}`);
+      rows.push(`Sample : ${els.sampleType.value}`);
+      rows.push(`Time   : ${nowString()}`);
+      rows.push(`Oper.  : ${els.operator.value || "-"}`);
+      rows.push(`Loc.   : ${els.location.value || "-"}`);
+      rows.push(line("-"));
+
+      let previousGroup = "";
+      state.filter((param) => param.print).forEach((param) => {
+        if (param.group !== previousGroup) {
+          if (previousGroup !== "") rows.push("");
+          rows.push(`[${param.group}]`);
+          previousGroup = param.group;
+        }
+
+        const valueText = param.value === "" ? "--" : formatNumber(param.value, param.decimals);
+        const flag = showArrows ? getFlag(param) : "";
+        let resultLine = `${padRight(param.label, 11)} ${padLeft(valueText, 7)}`;
+
+        if (showArrows) resultLine += ` ${padRight(flag, 1)}`;
+        if (showUnits) resultLine += ` ${padRight(param.unit, 7)}`;
+        if (showRanges) resultLine += ` (${refRange(param)})`;
+
+        rows.push(resultLine.trimEnd());
+      });
+
+      rows.push(line("-"));
+      rows.push("For simulation use only");
+      if (showBranding) rows.push("Generated by ResusPro");
+      rows.push(line("="));
+
+      els.receiptPreview.textContent = rows.join("\n");
+    }
+
+    function renderAll() {
+      renderTable();
+      renderReceipt();
+    }
+
+    function updateFromInput(event) {
+      const target = event.target;
+      const index = target.dataset.index;
+      const field = target.dataset.field;
+
+      if (index !== undefined && field) {
+        const param = state[Number(index)];
+        if (field === "print") {
+          param.print = target.checked;
+        } else {
+          param[field] = target.value;
+        }
+        renderReceipt();
+        renderTable();
+      }
+    }
+
+    function addNormalsToBlanks() {
+      state.forEach((param) => {
+        if (String(param.value).trim() === "") {
+          param.value = formatNumber(param.normal, param.decimals);
+        }
+      });
+      renderAll();
+    }
+
+    function setPrintProfile(profile) {
+      state.forEach((param) => {
+        if (profile === "all") param.print = true;
+        if (profile === "gasOnly") param.print = quickGasKeys.has(param.key);
+        if (profile === "fullPanel") param.print = gasKeys.has(param.key) || ["urea", "creatinine", "egfr", "crp", "troponin", "bnp", "ntprobnp", "dimer", "ketones"].includes(param.key);
+      });
+      renderAll();
+    }
+
+    function clearValues() {
+      state.forEach((param) => {
+        param.value = "";
+      });
+      renderAll();
+    }
+
+    function setExampleAbg() {
+      clearValues();
+      const values = {
+        ph: "7.21",
+        pco2: "8.4",
+        po2: "9.2",
+        hco3: "24",
+        be: "-2",
+        so2: "91",
+        lactate: "4.8",
+        glucose: "6.4",
+        hb: "138",
+        na: "139",
+        k: "5.8",
+        cl: "101",
+        ca: "1.12",
+        urea: "8.5",
+        creatinine: "143"
+      };
+      state.forEach((param) => {
+        if (values[param.key] !== undefined) param.value = values[param.key];
+        param.print = gasKeys.has(param.key) || ["urea", "creatinine"].includes(param.key);
+      });
+      els.sampleType.value = "Arterial";
+      renderAll();
+    }
+
+    function setChestPainPanel() {
+      clearValues();
+      const values = {
+        ph: "7.40",
+        pco2: "5.1",
+        po2: "11.8",
+        hco3: "24",
+        be: "0",
+        lactate: "1.4",
+        glucose: "6.1",
+        na: "140",
+        k: "4.3",
+        urea: "5.9",
+        creatinine: "88",
+        egfr: "82",
+        troponin: "58",
+        bnp: "90",
+        crp: "4"
+      };
+      state.forEach((param) => {
+        if (values[param.key] !== undefined) param.value = values[param.key];
+        param.print = quickGasKeys.has(param.key) || ["glucose", "na", "k", "urea", "creatinine", "egfr", "troponin", "bnp", "crp"].includes(param.key);
+      });
+      els.sampleType.value = "Venous";
+      renderAll();
+    }
+
+    document.getElementById("fillNormalBtn").addEventListener("click", addNormalsToBlanks);
+    document.getElementById("allOnBtn").addEventListener("click", () => setPrintProfile("all"));
+    document.getElementById("gasOnlyBtn").addEventListener("click", () => setPrintProfile("gasOnly"));
+    document.getElementById("fullPanelBtn").addEventListener("click", () => setPrintProfile("fullPanel"));
+    document.getElementById("clearValuesBtn").addEventListener("click", clearValues);
+    document.getElementById("demoAbgBtn").addEventListener("click", setExampleAbg);
+    document.getElementById("demoChestPainBtn").addEventListener("click", setChestPainPanel);
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(els.receiptPreview.textContent);
+        document.getElementById("copyBtn").textContent = "Copied";
+        setTimeout(() => document.getElementById("copyBtn").textContent = "Copy", 1200);
+      } catch (err) {
+        alert("Could not copy. You can select the receipt text manually.");
+      }
+    });
+
+    els.paramTable.addEventListener("input", updateFromInput);
+    els.paramTable.addEventListener("change", updateFromInput);
+
+    [els.patientId, els.sampleType, els.operator, els.location, els.showArrows, els.showRanges, els.showUnits, els.showBranding].forEach((el) => {
+      el.addEventListener("input", renderReceipt);
+      el.addEventListener("change", renderReceipt);
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
