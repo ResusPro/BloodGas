@@ -145,10 +145,10 @@ const groups=[
 const params=groups.flatMap(g=>g.items.map(i=>({id:i[0],name:i[1],unit:i[2],low:i[3],high:i[4],normal:i[5],group:g.name,on:true,value:'',ref:`${i[3]}-${i[4]}`})));
 const presets={
  'Example ABG':{stages:{'T0':{pH:'7.21',pCO2:'8.4',pO2:'9.2',HCO3:'24',BE:'-2',SaO2:'91',Lactate:'4.8',Na:'139',K:'5.8',Glucose:'6.4'}}},
- 'Chest pain panel':{stages:{'T0':{pH:'7.39',pCO2:'5.0',pO2:'12.4',HCO3:'24',BE:'0',Lactate:'1.4',K:'4.1',Creatinine:'78',Troponin:'8',BNP:'40',D-dimer:'220',INR:'1.0'}}},
+ 'Chest pain panel':{stages:{'T0':{pH:'7.39',pCO2:'5.0',pO2:'12.4',HCO3:'24',BE:'0',Lactate:'1.4',K:'4.1',Creatinine:'78',Troponin:'8',BNP:'40','D-dimer':'220',INR:'1.0'}}},
  'DKA progression':{stages:{'T0':{pH:'7.08',pCO2:'2.9',HCO3:'7',BE:'-20',Lactate:'2.8',Glucose:'31',Ketones:'6.8',Na:'132',K:'5.9',Creatinine:'142'},'T60':{pH:'7.18',pCO2:'3.2',HCO3:'11',BE:'-15',Lactate:'2.0',Glucose:'23',Ketones:'4.9',Na:'136',K:'4.8',Creatinine:'118'},'T180':{pH:'7.29',pCO2:'3.8',HCO3:'17',BE:'-8',Lactate:'1.4',Glucose:'14',Ketones:'2.1',Na:'139',K:'4.0',Creatinine:'94'}}},
  'Sepsis progression':{stages:{'T0':{pH:'7.31',pCO2:'4.2',pO2:'8.8',HCO3:'20',BE:'-5',Lactate:'5.6',CRP:'188',Creatinine:'156',K:'5.4',Hb:'112'},'T60':{pH:'7.36',pCO2:'4.4',pO2:'10.8',HCO3:'22',BE:'-2',Lactate:'3.2',CRP:'188',Creatinine:'138',K:'4.8',Hb:'110'},'T180':{pH:'7.39',pCO2:'4.7',pO2:'12.1',HCO3:'24',BE:'0',Lactate:'1.9',CRP:'188',Creatinine:'112',K:'4.3',Hb:'108'}}},
- 'Pulmonary embolism':{stages:{'T0':{pH:'7.48',pCO2:'3.4',pO2:'7.9',HCO3:'22',BE:'-1',SaO2:'88',Lactate:'2.4',D-dimer:'4200',Troponin:'32',BNP:'310'}}},
+ 'Pulmonary embolism':{stages:{'T0':{pH:'7.48',pCO2:'3.4',pO2:'7.9',HCO3:'22',BE:'-1',SaO2:'88',Lactate:'2.4','D-dimer':'4200',Troponin:'32',BNP:'310'}}},
  'Warfarin bleed':{stages:{'T0':{pH:'7.34',pCO2:'4.8',pO2:'12.0',HCO3:'23',BE:'-2',Lactate:'3.1',Hb:'74',INR:'6.4',Urea:'14.2',Creatinine:'96'}}}
 };
 let sampleType='Arterial'; let currentPreset=''; let currentStage='T0';
