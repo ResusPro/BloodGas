@@ -4,8 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#1565c0" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="pwa-icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="BloodGas" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="application-name" content="BloodGas SimLab" />
+  <meta name="description" content="ResusPro BloodGas point-of-care simulation result generator." />
   <title>ResusPro BloodGas</title>
-  <!-- Build: v1.0 RC1b - instant scenario load + include header cycle -->
+  <!-- Build: v1.0 RC1c PWA - installable/offline capable -->
   <style>
     :root{
       --blue:#1565c0; --blue2:#0d47a1; --bg:#eef2f6; --card:#fff; --line:#d9e1ea;
@@ -72,7 +79,7 @@
     <div class="hero-top">
       <a class="brand-link" href="https://resuspro.com" target="_blank" rel="noopener">
         <span class="logo-pill"><img class="app-logo" src="logo.png" alt="ResusPro" onerror="this.closest('.logo-pill').style.display='none'" /></span>
-        <span class="brand-text"><h1>BloodGas SimLab</h1><span class="subtitle">Point-of-care simulator</span></span>
+        <span class="brand-text"><h1>BloodGas SimLab</h1><span class="subtitle">Point-of-care simulator · v1.0 RC1c</span></span>
       </a>
       <button class="primary" onclick="openOutput()">Print</button>
     </div>
@@ -238,6 +245,14 @@ function loadHistory(i){const arr=JSON.parse(localStorage.getItem('resusproBlood
 function clearHistory(){if(confirm('Clear saved output history on this device?')){localStorage.removeItem('resusproBloodGasHistory');renderHistory();}}
 document.addEventListener('input',e=>{if(e.target.id==='scenarioId')render();});
 init();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+
 </script>
 </body>
 </html>

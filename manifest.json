@@ -1,0 +1,26 @@
+{
+  "name": "ResusPro BloodGas SimLab",
+  "short_name": "BloodGas",
+  "description": "Point-of-care blood gas and chemistry simulator for education and simulation.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef2f6",
+  "theme_color": "#1565c0",
+  "categories": ["education", "medical", "productivity"],
+  "icons": [
+    {
+      "src": "pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
