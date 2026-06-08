@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1565c0" />
+  <title>ResusPro BloodGas</title>
+  <style>
+    :root{
+      --blue:#1565c0;
+      --blue2:#0d47a1;
+      --bg:#eef2f6;
+      --card:#fff;
+      --line:#d9e1ea;
+      --text:#101828;
+      --muted:#526070;
+      --soft:#e8eef5;
+      --soft2:#f8fafc;
+      --danger:#b42318;
+      --shadow:0 2px 12px rgba(16,24,40,.08);
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{
+      margin:0;
+      padding:0;
+      width:100%;
+      min-height:100%;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+    body{padding:10px;padding-bottom:28px}
+    .app{width:100%;max-width:900px;margin:0 auto}
+
+    .hero{
+      background:linear-gradient(135deg,var(--blue),#1976d2);
+      color:#fff;
+      border-radius:16px;
+      padding:8px 10px;
+      margin:0 0 10px;
+      box-shadow:var(--shadow);
+    }
+    .hero-top{display:flex;gap:10px;align-items:center;justify-content:space-between;min-width:0}
+    .brand-link{display:flex;align-items:center;gap:8px;min-width:0;color:#fff;text-decoration:none}
+    .app-logo{width:128px;max-width:44vw;height:auto;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+    .brand-text{min-width:0}
+    h1{font-size:1rem;line-height:1.05;margin:0;font-weight:850;letter-spacing:.2px;white-space:normal}
+    .subtitle{font-size:.76rem;margin-top:2px;opacity:.95;line-height:1.12}
+
+    button,.button-like,select,input{font:inherit}
+    button{
+      border:0;
+      border-radius:14px;
+      padding:11px 13px;
+      font-weight:760;
+      background:var(--soft);
+      color:var(--text);
+      cursor:pointer;
+      min-height:42px;
+    }
+    button.primary{background:#fff;color:var(--blue2)}
+    button.blue{background:var(--blue);color:#fff}
+    button.small{padding:8px 10px;min-height:36px;border-radius:12px;font-size:.9rem}
+    button.danger{background:#fee4e2;color:var(--danger)}
+    button.active{background:var(--blue);color:#fff}
+    .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      margin:12px 0;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{font-size:1.13rem;margin:0;padding:14px 16px 8px}
+    .section{padding:12px 16px;border-top:1px solid var(--line)}
+    label{display:block;font-weight:720;color:#344054;margin:10px 0 6px;font-size:.95rem}
+    input[type="text"],select{
+      width:100%;
+      border:1px solid #cfd8e3;
+      border-radius:14px;
+      background:#fff;
+      padding:12px 13px;
+      min-height:46px;
+      color:var(--text);
+      font-size:1rem;
+    }
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .sample-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .sample-buttons button{background:var(--soft);font-size:.94rem;padding:10px 8px}
+    .sample-buttons button.active{background:var(--blue);color:#fff}
+    .preset-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
+    .stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .muted{color:var(--muted);font-size:.92rem}
+    .hidden{display:none!important}
+
+    .param-table{width:100%;overflow:hidden}
+    .param-header,.param-row{
+      display:grid;
+      grid-template-columns:32px minmax(72px,1.05fr) minmax(66px,.76fr) 34px minmax(54px,.62fr) minmax(68px,.8fr);
+      gap:6px;
+      align-items:center;
+      min-width:0;
+    }
+    .param-header{
+      position:sticky;
+      top:0;
+      z-index:2;
+      background:#fff;
+      border-bottom:2px solid var(--line);
+      padding:8px 0;
+      color:#344054;
+      font-weight:850;
+      font-size:.84rem;
+    }
+    .param-header .toggle-col{
+      user-select:none;
+      cursor:pointer;
+      border-radius:999px;
+      padding:5px 3px;
+      text-align:center;
+    }
+    .param-header .toggle-col.on{color:var(--blue2);background:#eaf3ff}
+    .param-header .toggle-col.off{color:#a9b4c3;background:#f2f4f7}
+    .param-header .include-head{text-align:center;color:#667085}
+    .group-title{
+      font-weight:850;
+      color:#1d2939;
+      margin:14px 0 5px;
+      padding-top:8px;
+      border-top:1px solid #eef2f6;
+    }
+    .group-title:first-of-type{margin-top:0;border-top:0;padding-top:0}
+    .param-row{
+      padding:7px 0;
+      border-bottom:1px solid #eef2f6;
+    }
+    .param-row input[type="checkbox"]{width:23px;height:23px;accent-color:var(--blue);justify-self:center}
+    .pname{font-weight:780;color:#263445;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .value-input{
+      min-height:38px!important;
+      padding:8px 8px!important;
+      border-radius:11px!important;
+      text-align:center;
+      font-weight:760;
+      background:#fff;
+    }
+    .flag-cell{text-align:center;font-weight:900;min-height:1em;color:#111;font-size:1.05rem}
+    .unit-cell,.range-cell{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      color:var(--muted);
+      font-size:.86rem;
+      cursor:pointer;
+      border-radius:8px;
+      padding:5px 3px;
+    }
+    .unit-cell:active,.range-cell:active{background:#eef4fb}
+    .column-disabled{opacity:.25}
+    .param-row.off-row .pname,.param-row.off-row .unit-cell,.param-row.off-row .range-cell,.param-row.off-row .flag-cell{opacity:.52}
+
+    .edit-panel{
+      display:none;
+      grid-column:2/7;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      padding:4px 0 5px;
+    }
+    .edit-panel.open{display:grid}
+    .edit-panel input{min-height:38px;padding:8px 10px;font-size:.92rem;border-radius:10px}
+
+    .preview-wrap{padding:12px 16px;background:#f7f9fc;border-top:1px solid var(--line)}
+    .receipt{
+      width:100%;
+      max-width:360px;
+      margin:0 auto;
+      background:#fff;
+      color:#111;
+      border:1px dashed #98a2b3;
+      padding:12px;
+      font-family:"Courier New",Courier,monospace;
+      font-size:13px;
+      line-height:1.25;
+      overflow-wrap:anywhere;
+    }
+    .receipt-brand{text-align:center;margin:0 0 4px}
+    .receipt-brand img{max-width:130px;max-height:42px;height:auto;width:auto;display:inline-block}
+    .receipt pre{font:inherit;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;padding:10px;z-index:50}
+    .modal{width:100%;max-width:620px;max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+    .modal h2{margin:0 0 8px;font-size:1.2rem}.modal p{color:var(--muted);margin:0 0 10px}
+    .history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}
+
+    @media(max-width:560px){
+      body{padding:8px}
+      .hero{border-radius:14px;padding:7px 9px}
+      .app-logo{width:106px;max-width:40vw}
+      h1{font-size:.9rem}.subtitle{font-size:.7rem}
+      .grid2,.preset-row{grid-template-columns:1fr}
+      .sample-buttons{grid-template-columns:1fr 1fr 1fr}
+      .card{border-radius:16px}
+      .card h2{font-size:1.05rem;padding:12px 14px 7px}
+      .section{padding:10px 12px}
+      .param-header,.param-row{grid-template-columns:28px minmax(58px,1fr) minmax(58px,.72fr) 28px minmax(46px,.58fr) minmax(54px,.64fr);gap:4px}
+      .param-header{font-size:.72rem}
+      .pname{font-size:.9rem}
+      .value-input{font-size:.94rem;min-height:36px!important;padding:7px 5px!important}
+      .unit-cell,.range-cell{font-size:.73rem;padding:4px 1px}
+      .flag-cell{font-size:.96rem}
+      .receipt{font-size:12px;max-width:100%}
+      button{padding:10px 11px}.hero button{min-height:38px;padding:8px 11px}
+    }
+
+    @media print{
+      body{background:#fff;padding:0}
+      .app>*:not(#printOnly){display:none!important}
+      #printOnly{display:block!important}
+      .receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}
+      .receipt-brand img{max-width:42mm;max-height:13mm}
+      .no-print{display:none!important}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="hero">
+    <div class="hero-top">
+      <a class="brand-link" href="https://resuspro.com" target="_blank" rel="noopener">
+        <img class="app-logo" src="logo.png" alt="ResusPro" onerror="this.style.display='none'" />
+        <div class="brand-text"><h1>BloodGas SimLab</h1><div class="subtitle">Point-of-care simulator</div></div>
+      </a>
+      <button class="primary" onclick="openOutput()">Print</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Case details</h2>
+    <div class="section">
+      <div class="grid2">
+        <div>
+          <label for="scenarioId">Scenario ID</label>
+          <input id="scenarioId" type="text" value="SIM-001" />
+        </div>
+        <div>
+          <label>Sample type</label>
+          <div class="sample-buttons">
+            <button id="sample-Arterial" onclick="setSample('Arterial')">Arterial</button>
+            <button id="sample-Venous" onclick="setSample('Venous')">Venous</button>
+            <button id="sample-Capillary" onclick="setSample('Capillary')">Capillary</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="preset-row">
+        <div>
+          <label for="presetSelect">Example scenario</label>
+          <select id="presetSelect"><option value="">Select an example...</option></select>
+        </div>
+        <button class="blue" onclick="loadSelectedPreset()">Load</button>
+      </div>
+      <div class="stage-row" id="stageRow"></div>
+
+      <div class="btn-row" style="margin-top:12px">
+        <button onclick="selectStandardPanel()">Standard panel</button>
+        <button onclick="allParametersOn()">All tests</button>
+        <button onclick="fillBlankNormals()">Add normal values</button>
+        <button onclick="clearValues()">Clear values</button>
+      </div>
+      <p class="muted">Example names are for faculty only and are not printed.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Parameters</h2>
+    <div class="section">
+      <div class="param-table">
+        <div class="param-header">
+          <div class="include-head">✓</div>
+          <div>Parameter</div>
+          <div>Value</div>
+          <div id="head-flag" class="toggle-col on" onclick="toggleColumn('flag')">↑↓</div>
+          <div id="head-unit" class="toggle-col on" onclick="toggleColumn('unit')">Unit</div>
+          <div id="head-range" class="toggle-col off" onclick="toggleColumn('range')">Range</div>
+        </div>
+        <div id="paramList"></div>
+      </div>
+      <p class="muted">Tap Unit or Range to edit. Grey column headers are hidden from the printout.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Live print preview</h2>
+    <div class="preview-wrap"><div id="receiptPreview" class="receipt"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Output history</h2>
+    <div class="section">
+      <div class="btn-row"><button onclick="renderHistory()">Refresh</button><button class="danger" onclick="clearHistory()">Clear history</button></div>
+      <div id="historyList" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div id="printOnly" class="hidden"><div id="printReceipt" class="receipt"></div></div>
+</div>
+
+<div class="modal-backdrop" id="outputModal">
+  <div class="modal">
+    <h2>Output</h2>
+    <p>Choose where to send or save this simulated result.</p>
+    <div class="preview-wrap"><div id="modalReceipt" class="receipt"></div></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="blue" onclick="doPrint('printer')">Local printer</button>
+      <button onclick="doPrint('pdf')">Save as PDF</button>
+      <button onclick="copyReceipt()">Copy</button>
+      <button onclick="closeOutput()">Close</button>
+    </div>
+    <p class="muted" style="margin-top:10px">For PDF, choose “Save as PDF” in your browser print dialog if available.</p>
+  </div>
+</div>
+
+<script>
+const STANDARD_IDS = new Set(['pH','pCO2','pO2','HCO3','BE','SaO2','Lactate','Na','K','Cl','iCa','Glucose','Hb']);
+
+const groups = [
+  {name:'Blood gas',items:[
+    ['pH','pH','',7.35,7.45,'7.40'],
+    ['pCO2','pCO₂','kPa',4.7,6.0,'5.3'],
+    ['pO2','pO₂','kPa',10.0,13.3,'12.0'],
+    ['HCO3','HCO₃⁻','mmol/L',22,28,'24'],
+    ['BE','BE','mmol/L',-2,2,'0'],
+    ['SaO2','SaO₂','%',94,100,'98'],
+    ['Lactate','Lactate','mmol/L',0.5,2.2,'1.0']
+  ]},
+  {name:'Electrolytes / renal',items:[
+    ['Na','Na⁺','mmol/L',135,145,'140'],
+    ['K','K⁺','mmol/L',3.5,5.3,'4.2'],
+    ['Cl','Cl⁻','mmol/L',98,107,'103'],
+    ['iCa','Ca²⁺','mmol/L',1.12,1.32,'1.20'],
+    ['Glucose','Glucose','mmol/L',4.0,7.8,'5.6'],
+    ['Urea','Urea','mmol/L',2.5,7.8,'5.0'],
+    ['Creatinine','Creatinine','µmol/L',60,110,'80'],
+    ['eGFR','eGFR','mL/min',60,999,'90']
+  ]},
+  {name:'Haematology / oxygenation',items:[
+    ['Hb','Hb','g/L',130,170,'145'],
+    ['Hct','Hct','L/L',0.40,0.52,'0.44'],
+    ['COHb','COHb','%',0,2,'1.0'],
+    ['MetHb','MetHb','%',0,1.5,'0.5']
+  ]},
+  {name:'Additional POCT',items:[
+    ['CRP','CRP','mg/L',0,5,'2'],
+    ['Ketones','Ketones','mmol/L',0,0.6,'0.2'],
+    ['Troponin','Troponin','ng/L',0,14,'6'],
+    ['BNP','BNP','ng/L',0,100,'30'],
+    ['D-dimer','D-dimer','ng/mL',0,500,'250'],
+    ['INR','INR','',0.8,1.2,'1.0']
+  ]}
+];
+
+const params = groups.flatMap(g => g.items.map(i => ({
+  id:i[0], name:i[1], unit:i[2], low:i[3], high:i[4], normal:i[5], group:g.name,
+  on:STANDARD_IDS.has(i[0]), value:'', ref:`${i[3]}-${i[4]}`
+})));
+
+const columnState = { flag:true, unit:true, range:false };
+
+const presets = {
+  'DKA': {stages:{
+    'T0': {pH:'7.08',pCO2:'2.9',pO2:'13.1',HCO3:'7',BE:'-20',SaO2:'98',Lactate:'2.8',Glucose:'31',Ketones:'6.8',Na:'132',K:'5.9',Cl:'98',iCa:'1.18',Creatinine:'142'},
+    'T60': {pH:'7.18',pCO2:'3.2',pO2:'12.4',HCO3:'11',BE:'-15',SaO2:'98',Lactate:'2.0',Glucose:'23',Ketones:'4.9',Na:'136',K:'4.8',Cl:'103',iCa:'1.17',Creatinine:'118'},
+    'T180': {pH:'7.29',pCO2:'3.8',pO2:'12.0',HCO3:'17',BE:'-8',SaO2:'98',Lactate:'1.4',Glucose:'14',Ketones:'2.1',Na:'139',K:'4.0',Cl:'107',iCa:'1.16',Creatinine:'94'}
+  }},
+  'Type 1 respiratory failure': {stages:{
+    'T0': {pH:'7.43',pCO2:'4.8',pO2:'7.1',HCO3:'24',BE:'0',SaO2:'86',Lactate:'1.5',Na:'140',K:'4.1',Cl:'103',iCa:'1.19',Glucose:'6.2',Hb:'142'}
+  }},
+  'Type 2 respiratory failure': {stages:{
+    'T0': {pH:'7.24',pCO2:'9.4',pO2:'7.8',HCO3:'30',BE:'4',SaO2:'88',Lactate:'1.8',Na:'139',K:'4.7',Cl:'100',iCa:'1.18',Glucose:'7.2',Hb:'158'},
+    'T60': {pH:'7.31',pCO2:'7.8',pO2:'8.6',HCO3:'30',BE:'4',SaO2:'91',Lactate:'1.4',Na:'140',K:'4.5',Cl:'101',iCa:'1.18',Glucose:'7.0',Hb:'156'}
+  }},
+  'Metabolic acidosis': {stages:{
+    'T0': {pH:'7.18',pCO2:'3.1',pO2:'12.2',HCO3:'10',BE:'-16',SaO2:'97',Lactate:'7.0',Na:'138',K:'5.4',Cl:'105',iCa:'1.12',Glucose:'8.4',Hb:'128'},
+    'T60': {pH:'7.29',pCO2:'3.6',pO2:'12.4',HCO3:'16',BE:'-9',SaO2:'98',Lactate:'3.8',Na:'139',K:'4.8',Cl:'106',iCa:'1.13',Glucose:'7.6',Hb:'126'}
+  }}
+};
+
+let sampleType = 'Arterial';
+let currentPreset = '';
+let currentStage = 'T0';
+
+function $(id){return document.getElementById(id)}
+
+function init(){
+  setSample('Arterial');
+  const sel = $('presetSelect');
+  Object.keys(presets).forEach(k => {
+    const o = document.createElement('option');
+    o.value = k;
+    o.textContent = k;
+    sel.appendChild(o);
+  });
+  buildParams();
+  render();
+  renderHistory();
+}
+
+function buildParams(){
+  const list = $('paramList');
+  list.innerHTML = '';
+  let last = '';
+
+  params.forEach(p => {
+    if(p.group !== last){
+      last = p.group;
+      const d = document.createElement('div');
+      d.className = 'group-title';
+      d.textContent = last;
+      list.appendChild(d);
+    }
+
+    const row = document.createElement('div');
+    row.className = 'param-row';
+    row.id = `row-${p.id}`;
+    row.innerHTML = `
+      <input type="checkbox" id="on-${p.id}" ${p.on ? 'checked' : ''} onchange="updateParam('${p.id}','on',this.checked)">
+      <div class="pname" title="${p.name}">${p.name}</div>
+      <input class="value-input" id="val-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateParam('${p.id}','value',this.value)">
+      <div class="flag-cell" id="flag-${p.id}"></div>
+      <div class="unit-cell" id="unitLabel-${p.id}" onclick="toggleMetaEdit('${p.id}')" title="Tap to edit unit"></div>
+      <div class="range-cell" id="rangeLabel-${p.id}" onclick="toggleMetaEdit('${p.id}')" title="Tap to edit range"></div>
+      <div class="edit-panel" id="metaEdit-${p.id}">
+        <input id="unit-${p.id}" type="text" value="${p.unit}" aria-label="Unit" oninput="updateParam('${p.id}','unit',this.value)" placeholder="Unit">
+        <input id="ref-${p.id}" type="text" value="${p.ref}" aria-label="Reference range" oninput="updateParam('${p.id}','ref',this.value)" placeholder="Reference range">
+      </div>`;
+    list.appendChild(row);
+  });
+
+  refreshParameterRows();
+}
+
+function updateParam(id,key,val){
+  const p = params.find(x => x.id === id);
+  if(!p) return;
+
+  if(key === 'value'){
+    p.value = val;
+    if(String(val).trim() && !p.on){
+      p.on = true;
+      const box = $('on-'+id);
+      if(box) box.checked = true;
+    }
+  } else {
+    p[key] = val;
+  }
+
+  refreshParameterRows();
+  render();
+}
+
+function refreshParameterRows(){
+  params.forEach(p => {
+    const box = $('on-'+p.id);
+    const val = $('val-'+p.id);
+    const flag = $('flag-'+p.id);
+    const unit = $('unitLabel-'+p.id);
+    const range = $('rangeLabel-'+p.id);
+    const row = $('row-'+p.id);
+
+    if(box) box.checked = !!p.on;
+    if(val && val.value !== p.value) val.value = p.value;
+    if(flag){
+      flag.textContent = flagFor(p);
+      flag.classList.toggle('column-disabled', !columnState.flag);
+    }
+    if(unit){
+      unit.textContent = p.unit || '—';
+      unit.classList.toggle('column-disabled', !columnState.unit);
+    }
+    if(range){
+      range.textContent = p.ref || '—';
+      range.classList.toggle('column-disabled', !columnState.range);
+    }
+    if(row) row.classList.toggle('off-row', !p.on);
+  });
+
+  ['flag','unit','range'].forEach(c => {
+    const h = $('head-'+c);
+    if(h){
+      h.classList.toggle('on', columnState[c]);
+      h.classList.toggle('off', !columnState[c]);
+    }
+  });
+}
+
+function toggleColumn(col){
+  columnState[col] = !columnState[col];
+  refreshParameterRows();
+  render();
+}
+
+function toggleMetaEdit(id){
+  const el = $('metaEdit-'+id);
+  if(el) el.classList.toggle('open');
+}
+
+function setSample(t){
+  sampleType = t;
+  ['Arterial','Venous','Capillary'].forEach(x => $('sample-'+x).classList.toggle('active', x === t));
+  render();
+}
+
+function loadSelectedPreset(){
+  const name = $('presetSelect').value;
+  if(!name) return;
+  currentPreset = name;
+  const stages = Object.keys(presets[name].stages);
+  currentStage = stages[0];
+  drawStages();
+  loadStage(currentStage);
+}
+
+function drawStages(){
+  const row = $('stageRow');
+  row.innerHTML = '';
+  if(!currentPreset) return;
+
+  Object.keys(presets[currentPreset].stages).forEach(s => {
+    const b = document.createElement('button');
+    b.textContent = s;
+    b.className = 'small' + (s === currentStage ? ' active' : '');
+    b.onclick = () => { currentStage = s; loadStage(s); drawStages(); };
+    row.appendChild(b);
+  });
+}
+
+function loadStage(stage){
+  clearValues(false);
+  selectStandardPanel(false);
+  const data = presets[currentPreset].stages[stage];
+
+  Object.entries(data).forEach(([id,val]) => {
+    const p = params.find(x => x.id === id);
+    if(p){
+      p.value = val;
+      p.on = true;
+    }
+  });
+
+  refreshParameterRows();
+  render();
+}
+
+function selectStandardPanel(doRender=true){
+  params.forEach(p => p.on = STANDARD_IDS.has(p.id));
+  refreshParameterRows();
+  if(doRender) render();
+}
+
+function allParametersOn(){
+  params.forEach(p => p.on = true);
+  refreshParameterRows();
+  render();
+}
+
+function fillBlankNormals(){
+  params.forEach(p => {
+    if(p.on && !String(p.value).trim()){
+      p.value = p.normal;
+    }
+  });
+  refreshParameterRows();
+  render();
+}
+
+function clearValues(doRender=true){
+  params.forEach(p => p.value = '');
+  refreshParameterRows();
+  if(doRender) render();
+}
+
+function parseRef(p){
+  const m = String(p.ref).replace(/[–—]/g,'-').match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);
+  return m ? [parseFloat(m[1]), parseFloat(m[2])] : [p.low, p.high];
+}
+
+function flagFor(p){
+  const v = parseFloat(String(p.value).replace(',','.'));
+  if(Number.isNaN(v)) return '';
+  const [lo,hi] = parseRef(p);
+  if(v < lo) return '↓';
+  if(v > hi) return '↑';
+  return '';
+}
+
+function pad(s,n){
+  s = String(s);
+  return s.length >= n ? s.slice(0,n) : s + ' '.repeat(n-s.length);
+}
+
+function receiptText(){
+  const lines = [];
+  const sid = $('scenarioId').value || 'SIM';
+  const now = new Date();
+  const stamp = now.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  lines.push('--------------------------------');
+  lines.push('POINT OF CARE TESTING');
+  lines.push('Simulation Mode');
+  lines.push('--------------------------------');
+  lines.push('Scenario: '+sid);
+  lines.push('Sample:   '+sampleType);
+  lines.push('Date:     '+stamp);
+  lines.push('--------------------------------');
+
+  let current = '';
+  params.filter(p => p.on && String(p.value).trim()).forEach(p => {
+    if(p.group !== current){
+      current = p.group;
+      lines.push('');
+      lines.push(p.group.toUpperCase());
+    }
+
+    const f = columnState.flag ? flagFor(p) : '';
+    const unit = columnState.unit && p.unit ? ' ' + p.unit : '';
+    const ref = columnState.range ? ' [' + p.ref + ']' : '';
+    lines.push(pad(p.name,11)+' '+pad(p.value,7)+' '+pad(f,1)+unit+ref);
+  });
+
+  lines.push('');
+  lines.push('--------------------------------');
+  lines.push('Generated by ResusPro');
+  lines.push('resuspro.com');
+  lines.push('For simulation use only');
+  lines.push('--------------------------------');
+  return lines.join('\n');
+}
+
+function esc(s){
+  return String(s).replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+}
+
+function receiptHtml(){
+  return '<div class="receipt-brand"><img src="logo.png" alt="ResusPro" onerror="this.style.display=\'none\'"></div><pre>'+esc(receiptText())+'</pre>';
+}
+
+function render(){
+  refreshParameterRows();
+  const html = receiptHtml();
+  $('receiptPreview').innerHTML = html;
+  $('modalReceipt').innerHTML = html;
+  $('printReceipt').innerHTML = html;
+}
+
+function openOutput(){
+  render();
+  $('outputModal').style.display = 'flex';
+}
+function closeOutput(){ $('outputModal').style.display = 'none'; }
+
+function saveHistory(mode){
+  const item = {
+    time:new Date().toISOString(),
+    mode,
+    scenario:$('scenarioId').value || '',
+    sample:sampleType,
+    text:receiptText()
+  };
+  const arr = JSON.parse(localStorage.getItem('resusproBloodGasHistory') || '[]');
+  arr.unshift(item);
+  localStorage.setItem('resusproBloodGasHistory', JSON.stringify(arr.slice(0,100)));
+  renderHistory();
+}
+
+function doPrint(mode){
+  saveHistory(mode);
+  closeOutput();
+  setTimeout(() => window.print(), 100);
+}
+
+async function copyReceipt(){
+  const txt = receiptText();
+  try{ await navigator.clipboard.writeText(txt); }
+  catch(e){ alert(txt); }
+  saveHistory('copy');
+  closeOutput();
+}
+
+function renderHistory(){
+  const el = $('historyList');
+  const arr = JSON.parse(localStorage.getItem('resusproBloodGasHistory') || '[]');
+  if(!arr.length){
+    el.innerHTML = '<p class="muted">No outputs saved yet. Printing, PDF export, or copy will save automatically on this device.</p>';
+    return;
+  }
+  el.innerHTML = arr.slice(0,20).map((h,i) => `
+    <div class="history-item">
+      <b>${new Date(h.time).toLocaleString('en-GB')} · ${h.mode}</b>
+      <span class="muted">${h.scenario || 'SIM'} · ${h.sample}</span>
+      <div class="btn-row" style="margin-top:6px"><button class="small" onclick="loadHistory(${i})">Load text</button></div>
+    </div>`).join('');
+}
+
+function loadHistory(i){
+  const arr = JSON.parse(localStorage.getItem('resusproBloodGasHistory') || '[]');
+  if(arr[i]){
+    $('receiptPreview').innerHTML = '<pre>'+esc(arr[i].text)+'</pre>';
+    window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+  }
+}
+
+function clearHistory(){
+  if(confirm('Clear saved output history on this device?')){
+    localStorage.removeItem('resusproBloodGasHistory');
+    renderHistory();
+  }
+}
+
+document.addEventListener('input', e => {
+  if(e.target.id === 'scenarioId') render();
+});
+
+init();
+</script>
+</body>
+</html>

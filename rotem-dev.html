@@ -12,7 +12,7 @@
   <meta name="application-name" content="BloodGas SimLab" />
   <meta name="description" content="ResusPro BloodGas and ROTEM/TEG point-of-care simulation result generator." />
   <title>ResusPro BloodGas</title>
-  <!-- Build: v1.1.0-dev1 ROTEM/TEG module -->
+  <!-- Build: v1.1.0-dev2 ROTEM/TEG module -->
   <style>
     :root{
       --blue:#1565c0; --blue2:#0d47a1; --bg:#eef2f6; --card:#fff; --line:#d9e1ea;
@@ -60,7 +60,7 @@
     .param-head,.param{display:grid;grid-template-columns:30px minmax(70px,1fr) minmax(66px,.75fr) 34px minmax(52px,.65fr) minmax(76px,.8fr);gap:6px;align-items:center;min-width:0}
     .param-head{position:sticky;top:0;z-index:2;background:#f8fafc;border:1px solid #e5ebf3;border-radius:12px;padding:8px 6px;margin-bottom:8px;font-size:.8rem;font-weight:850;color:#344054}
     .head-cell{border:0;background:transparent;min-height:0;padding:4px 2px;border-radius:8px;text-align:left;font-size:inherit;font-weight:inherit;color:inherit;cursor:pointer}
-    .head-cell.center{text-align:center}.head-cell.off{color:#a0aab8;text-decoration:line-through;background:#eef2f6}
+    .head-cell.center{text-align:center}.head-cell.off{color:#a0aab8;background:#eef2f6;opacity:.55}
     .param{padding:7px 0;border-bottom:1px solid #eef2f6}
     .param.off-row .pname,.param.off-row .unit-cell,.param.off-row .range-cell,.param.off-row .flag-cell{opacity:.5}
     .param input[type="checkbox"]{width:23px;height:23px;accent-color:var(--blue);margin:0}
@@ -68,7 +68,7 @@
     .value-input{font-weight:760;text-align:center;min-height:39px!important;padding:7px 6px!important;border-radius:11px!important}
     .flag-cell{text-align:center;font-weight:900;font-size:1.05rem;color:#344054;min-height:1.2em}
     .unit-cell,.range-cell{font-size:.86rem;color:#526070;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;border-radius:8px;padding:4px 2px}
-    .unit-cell.off,.range-cell.off,.flag-cell.off{opacity:.25;text-decoration:line-through}
+    .unit-cell.off,.range-cell.off,.flag-cell.off{opacity:.25}
     .edit-panel{display:none;grid-column:2/7;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 8px 36px}
     .edit-panel.open{display:grid}
     .edit-panel input{min-height:38px;padding:8px 10px;font-size:.92rem;border-radius:10px}
@@ -94,7 +94,7 @@
     <div class="hero-top">
       <a class="brand-link" href="https://resuspro.com" target="_blank" rel="noopener">
         <span class="logo-pill"><img class="app-logo" src="logo.png" alt="ResusPro" onerror="this.closest('.logo-pill').style.display='none'" /></span>
-        <div class="brand-text"><h1>BloodGas SimLab</h1><div class="subtitle">Blood gas + ROTEM/TEG simulator</div><div class="version">v1.1-dev ROTEM/TEG</div></div>
+        <div class="brand-text"><h1>BloodGas SimLab</h1><div class="subtitle">Blood gas + ROTEM/TEG simulator</div><div class="version">v1.1-dev2 ROTEM/TEG · <a class="dev-link" href="index.html">live RC2</a></div></div>
       </a>
       <button class="primary" onclick="openOutput()">Print</button>
     </div>
@@ -118,7 +118,7 @@
       </div>
       <div class="stage-row" id="stageRow"></div>
       <div class="btn-row" style="margin-top:12px"><button onclick="fillBlankNormals()">Add normal values</button><button onclick="clearValues()">Clear values</button></div>
-      <p class="muted">Example names are for faculty only and are not printed.</p>
+      <p class="muted">Example names are for faculty only and are not printed.</p><p class="dev-note">Development preview: use <a href="index.html">live BloodGas</a> for the stable public version.</p>
     </div>
   </div>
 
@@ -132,7 +132,7 @@
     <div class="section">
       <div class="grid2">
         <div><label for="assaySelect">Assay</label><select id="assaySelect" onchange="setAssay(this.value)"></select></div>
-        <div><label>Column display</label><div class="btn-row"><button class="small" id="viscoFlagHead" onclick="toggleViscoColumn('flags')">↑↓</button><button class="small active" id="viscoUnitHead" onclick="toggleViscoColumn('units')">Unit</button><button class="small" id="viscoRangeHead" onclick="toggleViscoColumn('ranges')">Range</button></div></div>
+        <div><label>Column display</label><div class="btn-row"><button class="small active" id="viscoFlagHead" onclick="toggleViscoColumn('flags')">↑↓</button><button class="small active" id="viscoUnitHead" onclick="toggleViscoColumn('units')">Unit</button><button class="small" id="viscoRangeHead" onclick="toggleViscoColumn('ranges')">Range</button></div></div>
       </div>
       <div class="trace-wrap"><svg id="viscoTrace" viewBox="0 0 420 150" role="img" aria-label="Simulated viscoelastic trace"></svg></div>
       <div id="viscoParamList" style="margin-top:10px"></div>
@@ -205,14 +205,33 @@ function toggleColumn(which){if(which==='flags')showFlags=!showFlags;if(which===
 function updateColumnHeaders(){if($('flagHead'))$('flagHead').classList.toggle('off',!showFlags); if($('unitHead'))$('unitHead').classList.toggle('off',!showUnits); if($('rangeHead'))$('rangeHead').classList.toggle('off',!showRanges); const h=$('includeHead'); if(h)h.textContent=includeCycleState==='none'?'☐':includeCycleState==='all'?'☑':'✓';}
 function cycleIncludeHeader(){if(includeCycleState==='none'){params.forEach(p=>p.on=STANDARD_IDS.includes(p.id));includeCycleState='standard'} else if(includeCycleState==='standard'){params.forEach(p=>p.on=true);includeCycleState='all'} else {params.forEach(p=>p.on=false);includeCycleState='none'} updateParamDisplay();updateColumnHeaders();render();}
 function setSample(t,doRender=true){sampleType=t;applySampleRanges();['Arterial','Venous','Capillary'].forEach(x=>{const b=$('sample-'+x);if(b)b.classList.toggle('active',x===t)});updateParamDisplay();if(doRender)render();}
-function buildVisco(){const sel=$('assaySelect'); sel.innerHTML=''; assayMap[viscoType].forEach(a=>{let o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o)}); sel.value=assayMap[viscoType].includes(assay)?assay:assayMap[viscoType][0]; assay=sel.value; const list=$('viscoParamList'); list.innerHTML=''; const head=document.createElement('div'); head.className='param-head'; head.innerHTML='<span></span><span>Parameter</span><span>Value</span><span class="head-cell center">↑↓</span><span>Unit</span><span>Range</span>'; list.appendChild(head); viscoParams.forEach(p=>{let row=document.createElement('div'); row.className='param'; row.id='vrow-'+p.id; row.innerHTML=`<input type="checkbox" id="von-${p.id}" checked onchange="updateVisco('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="vval-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateVisco('${p.id}','value',this.value)"><div class="flag-cell" id="vflag-${p.id}"></div><div class="unit-cell" id="vunit-${p.id}">${p.unit}</div><div class="range-cell" id="vrange-${p.id}">${p.ref}</div>`; list.appendChild(row);}); updateViscoDisplay();}
+function buildVisco(){const sel=$('assaySelect'); sel.innerHTML=''; assayMap[viscoType].forEach(a=>{let o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o)}); sel.value=assayMap[viscoType].includes(assay)?assay:assayMap[viscoType][0]; assay=sel.value; const list=$('viscoParamList'); list.innerHTML=''; const head=document.createElement('div'); head.className='param-head'; head.innerHTML='<span></span><span>Parameter</span><span>Value</span><button class="head-cell center" id="vFlagHead2" onclick="toggleViscoColumn(\'flags\')">↑↓</button><button class="head-cell" id="vUnitHead2" onclick="toggleViscoColumn(\'units\')">Unit</button><button class="head-cell off" id="vRangeHead2" onclick="toggleViscoColumn(\'ranges\')">Range</button>'; list.appendChild(head); viscoParams.forEach(p=>{let row=document.createElement('div'); row.className='param'; row.id='vrow-'+p.id; row.innerHTML=`<input type="checkbox" id="von-${p.id}" checked onchange="updateVisco('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="vval-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateVisco('${p.id}','value',this.value)"><div class="flag-cell" id="vflag-${p.id}"></div><div class="unit-cell" id="vunit-${p.id}">${p.unit}</div><div class="range-cell" id="vrange-${p.id}">${p.ref}</div>`; list.appendChild(row);}); updateViscoDisplay();}
 function setViscoType(t){viscoType=t; $('visco-ROTEM').classList.toggle('active',t==='ROTEM'); $('visco-TEG').classList.toggle('active',t==='TEG'); assay=assayMap[t][0]; buildVisco(); render();}
 function setAssay(a){assay=a; render();}
 function updateVisco(id,key,val){let p=viscoParams.find(x=>x.id===id); if(!p)return; if(key==='value'){p.value=val;if(String(val).trim())p.on=true;} else p[key]=val; updateViscoDisplay(); render();}
 function updateViscoDisplay(){viscoParams.forEach(p=>{const on=$('von-'+p.id),val=$('vval-'+p.id),flag=$('vflag-'+p.id),row=$('vrow-'+p.id); if(on)on.checked=p.on; if(val&&val.value!==p.value)val.value=p.value; if(flag){flag.textContent=flagFor(p);flag.classList.toggle('off',!viscoShowFlags)} const u=$('vunit-'+p.id),r=$('vrange-'+p.id); if(u)u.classList.toggle('off',!viscoShowUnits); if(r)r.classList.toggle('off',!viscoShowRanges); if(row)row.classList.toggle('off-row',!p.on);}); drawTrace(); updateViscoButtons();}
 function toggleViscoColumn(which){if(which==='flags')viscoShowFlags=!viscoShowFlags;if(which==='units')viscoShowUnits=!viscoShowUnits;if(which==='ranges')viscoShowRanges=!viscoShowRanges;updateViscoDisplay();render();}
-function updateViscoButtons(){if($('viscoFlagHead'))$('viscoFlagHead').classList.toggle('active',viscoShowFlags);if($('viscoUnitHead'))$('viscoUnitHead').classList.toggle('active',viscoShowUnits);if($('viscoRangeHead'))$('viscoRangeHead').classList.toggle('active',viscoShowRanges);}
-function drawTrace(){const svg=$('viscoTrace'); if(!svg)return; const mcf=parseFloat((viscoParams.find(p=>p.id==='MCF')||{}).value)||62; const ct=parseFloat((viscoParams.find(p=>p.id==='CT')||{}).value)||60; const ml=parseFloat((viscoParams.find(p=>p.id==='ML')||{}).value)||5; const start=Math.min(130,30+ct/3); const peak=Math.max(8,Math.min(70,mcf)); const end=peak*(1-ml/100); const upper=`M 20 75 L ${start} 75 C ${start+40} ${75-peak}, ${start+100} ${75-peak}, 390 ${75-end}`; const lower=`M 20 75 L ${start} 75 C ${start+40} ${75+peak}, ${start+100} ${75+peak}, 390 ${75+end}`; svg.innerHTML=`<path d="${upper}" fill="none" stroke="#1565c0" stroke-width="3"/><path d="${lower}" fill="none" stroke="#1565c0" stroke-width="3"/><line x1="20" y1="75" x2="400" y2="75" stroke="#d0d5dd" stroke-width="1"/><text x="22" y="18" font-size="12" fill="#526070">Simulated trace preview</text>`;}
+function updateViscoButtons(){['viscoFlagHead','vFlagHead2'].forEach(id=>{if($(id)){ $(id).classList.toggle('active',viscoShowFlags); $(id).classList.toggle('off',!viscoShowFlags); }});['viscoUnitHead','vUnitHead2'].forEach(id=>{if($(id)){ $(id).classList.toggle('active',viscoShowUnits); $(id).classList.toggle('off',!viscoShowUnits); }});['viscoRangeHead','vRangeHead2'].forEach(id=>{if($(id)){ $(id).classList.toggle('active',viscoShowRanges); $(id).classList.toggle('off',!viscoShowRanges); }});}
+function drawTrace(){
+ const svg=$('viscoTrace'); if(!svg)return;
+ const get=id=>parseFloat((viscoParams.find(p=>p.id===id)||{}).value)||0;
+ const mcf=get('MCF')||62, ct=get('CT')||60, ml=get('ML')||5, a10=get('A10')||Math.min(mcf,50);
+ const start=Math.min(145,Math.max(38,30+ct/3));
+ const peak=Math.max(5,Math.min(70,mcf));
+ const early=Math.max(5,Math.min(58,a10));
+ const end=Math.max(3,peak*(1-ml/100));
+ const colour = ml>15 ? '#b42318' : peak<45 ? '#b54708' : '#1565c0';
+ const upper=`M 20 75 L ${start} 75 C ${start+28} ${75-early}, ${start+72} ${75-peak}, 260 ${75-peak} C 315 ${75-peak}, 355 ${75-end}, 390 ${75-end}`;
+ const lower=`M 20 75 L ${start} 75 C ${start+28} ${75+early}, ${start+72} ${75+peak}, 260 ${75+peak} C 315 ${75+peak}, 355 ${75+end}, 390 ${75+end}`;
+ svg.innerHTML=`<line x1="20" y1="75" x2="400" y2="75" stroke="#d0d5dd" stroke-width="1"/>
+ <path d="${upper}" fill="none" stroke="${colour}" stroke-width="3"/>
+ <path d="${lower}" fill="none" stroke="${colour}" stroke-width="3"/>
+ <line x1="${start}" y1="24" x2="${start}" y2="126" stroke="#98a2b3" stroke-width="1" stroke-dasharray="4 3"/>
+ <text x="22" y="18" class="trace-label">Simulated ${viscoType} trace preview</text>
+ <text x="${start+4}" y="33" class="trace-metric">CT/R</text>
+ <text x="275" y="${Math.max(18,75-peak-6)}" class="trace-metric">MCF/MA</text>
+ <text x="300" y="145" class="trace-metric">ML ${ml||0}%</text>`;
+}
 function loadSelectedPreset(){const name=$('presetSelect').value; if(!name){currentPreset='';$('stageRow').innerHTML='';return;} currentPreset=name; const p=activePresets()[name]; if(mode==='visco'){setViscoType(p.type||'ROTEM'); if(p.assay)setAssay(p.assay); $('assaySelect').value=assay;} const stages=Object.keys(p.stages); currentStage=stages[0]; drawStages(); loadStage(currentStage);}
 function drawStages(){const row=$('stageRow'); row.innerHTML=''; if(!currentPreset)return; Object.keys(activePresets()[currentPreset].stages).forEach(s=>{let b=document.createElement('button');b.textContent=s;b.className='small'+(s===currentStage?' active':'');b.onclick=()=>{currentStage=s;loadStage(s);drawStages()};row.appendChild(b);});}
 function loadStage(stage){clearValues(false); const data=activePresets()[currentPreset].stages[stage]; Object.entries(data).forEach(([id,val])=>{if(mode==='bloodgas'){let p=params.find(x=>x.id===id);if(p){p.value=val;p.on=true;}} else {let p=viscoParams.find(x=>x.id===id);if(p){p.value=val;p.on=true;}}}); includeCycleState='custom'; updateParamDisplay(); updateViscoDisplay(); updateColumnHeaders(); render();}
@@ -225,7 +244,7 @@ function receiptText(){return mode==='bloodgas'?bloodReceiptText():viscoReceiptT
 function commonHeader(lines,title){const sid=$('scenarioId').value||'SIM';const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});lines.push('--------------------------------');lines.push('POINT OF CARE TESTING');lines.push('Simulation Mode');lines.push('--------------------------------');lines.push(title);lines.push('Scenario: '+sid);lines.push('Date:     '+stamp);lines.push('--------------------------------');}
 function commonFooter(lines){lines.push('');lines.push('--------------------------------');lines.push('Generated by ResusPro');lines.push('resuspro.com');lines.push('For simulation use only');lines.push('--------------------------------');}
 function bloodReceiptText(){const lines=[];commonHeader(lines,'Blood Gas / POCT');lines.push('Sample:   '+sampleType);let current='';params.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{if(p.group!==current){current=p.group;lines.push('');lines.push(p.group.toUpperCase());}const f=showFlags?flagFor(p):'';const unit=showUnits&&p.unit?' '+p.unit:'';const ref=showRanges?' ['+p.ref+']':'';lines.push(pad(p.name,11)+' '+pad(p.value,7)+' '+pad(f,1)+unit+ref);});commonFooter(lines);return lines.join('\n');}
-function viscoReceiptText(){const lines=[];commonHeader(lines,'Viscoelastic Test');lines.push('System:   '+viscoType);lines.push('Assay:    '+assay);lines.push('');viscoParams.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{const f=viscoShowFlags?flagFor(p):'';const unit=viscoShowUnits&&p.unit?' '+p.unit:'';const ref=viscoShowRanges?' ['+p.ref+']':'';lines.push(pad(p.name,14)+' '+pad(p.value,6)+' '+pad(f,1)+unit+ref);});commonFooter(lines);return lines.join('\n');}
+function viscoReceiptText(){const lines=[];commonHeader(lines,viscoType+' VISCOELASTIC RESULT');lines.push('System:   '+viscoType);lines.push('Assay:    '+assay);lines.push('--------------------------------');lines.push('Parameter      Result');viscoParams.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{const f=viscoShowFlags?flagFor(p):'';const unit=viscoShowUnits&&p.unit?' '+p.unit:'';const ref=viscoShowRanges?' ['+p.ref+']':'';lines.push(pad(p.name,14)+' '+pad(p.value,6)+' '+pad(f,1)+unit+ref);});lines.push('');lines.push('Trace: simulated preview only');commonFooter(lines);return lines.join('\n');}
 function esc(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
 function receiptHtml(){return '<div class="receipt-brand"><img src="logo.png" alt="ResusPro" onerror="this.style.display=\'none\'"></div><pre>'+esc(receiptText())+'</pre>';}
 function render(){const html=receiptHtml(); $('receiptPreview').innerHTML=html; $('modalReceipt').innerHTML=html; $('printReceipt').innerHTML=html;}
