@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1565c0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1565c0" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="pwa-icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="BloodGas" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="application-name" content="BloodGas SimLab" />
+  <meta name="description" content="ResusPro BloodGas point-of-care simulation result generator." />
+  <title>ResusPro BloodGas</title>
+  <!-- Build: v1.0 RC1c PWA - installable/offline capable -->
+  <style>
+    :root{
+      --blue:#1565c0; --blue2:#0d47a1; --bg:#eef2f6; --card:#fff; --line:#d9e1ea;
+      --text:#101828; --muted:#526070; --soft:#e8eef5; --danger:#b42318;
+      --shadow:0 2px 12px rgba(16,24,40,.08);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+    body{padding:10px;padding-bottom:28px}
+    .app{width:100%;max-width:900px;margin:0 auto}
+    .hero{background:linear-gradient(135deg,var(--blue),#1976d2);color:#fff;border-radius:16px;padding:8px 10px;margin:0 0 10px;box-shadow:var(--shadow)}
+    .hero-top{display:flex;gap:10px;align-items:center;justify-content:space-between;min-width:0}
+    .brand-link{display:flex;align-items:center;gap:9px;min-width:0;color:#fff;text-decoration:none}
+    .logo-pill{background:rgba(255,255,255,.94);border-radius:13px;padding:5px 8px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(16,24,40,.18);flex:0 0 auto}
+    .app-logo{width:128px;max-width:42vw;height:auto;display:block}
+    .brand-text{min-width:0}
+    h1{font-size:1rem;line-height:1.05;margin:0;font-weight:850;letter-spacing:.2px;white-space:normal}
+    .subtitle{font-size:.76rem;margin-top:2px;opacity:.95;line-height:1.15}
+    .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button,.button-like,select,input{font:inherit}
+    button{border:0;border-radius:14px;padding:12px 14px;font-weight:760;background:var(--soft);color:var(--text);cursor:pointer;min-height:44px}
+    button.primary{background:#fff;color:var(--blue2)}
+    button.blue{background:var(--blue);color:#fff}
+    button.small{padding:9px 11px;min-height:38px;border-radius:12px;font-size:.92rem}
+    button.danger{background:#fee4e2;color:var(--danger)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:12px 0;box-shadow:var(--shadow);overflow:hidden}
+    .card h2{font-size:1.12rem;margin:0;padding:14px 16px 8px}
+    .section{padding:12px 16px;border-top:1px solid var(--line)}
+    label{display:block;font-weight:720;color:#344054;margin:10px 0 6px;font-size:.95rem}
+    input[type="text"],input[type="number"],select{width:100%;border:1px solid #cfd8e3;border-radius:14px;background:#fff;padding:12px 13px;min-height:46px;color:var(--text);font-size:1rem}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .sample-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .sample-buttons button{background:var(--soft);font-size:.94rem;padding:10px 8px}
+    .sample-buttons button.active{background:var(--blue);color:#fff}
+    .preset-row{display:grid;grid-template-columns:1fr;gap:8px;align-items:end}
+    .stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .stage-row button.active{background:var(--blue);color:#fff}
+    .group-title{font-weight:850;color:#1d2939;margin:16px 0 7px;padding-top:6px;border-top:1px solid #eef2f6}
+    .param-head,.param{display:grid;grid-template-columns:34px minmax(78px,1.2fr) minmax(76px,.9fr) 30px minmax(54px,.65fr) minmax(74px,.9fr);gap:6px;align-items:center;min-width:0}
+    .param-head{position:sticky;top:0;background:#fff;z-index:2;border-bottom:2px solid var(--line);padding:8px 0 7px;font-size:.78rem;font-weight:850;color:#344054}
+    .param{padding:7px 0;border-bottom:1px solid #eef2f6}
+    .param input[type="checkbox"]{width:23px;height:23px;accent-color:var(--blue);justify-self:center}
+    .head-cell{border:0;background:transparent;color:#344054;border-radius:9px;min-height:30px;padding:4px;font-size:.78rem;font-weight:850;text-align:left;cursor:pointer}
+    .head-cell.center{text-align:center}.head-cell.off{color:#b8c0cc;text-decoration:line-through}.head-cell.include{font-size:1rem;text-align:center;color:var(--blue)}
+    .pname{font-weight:780;color:#263445;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.95rem}
+    .value-input{font-weight:760;text-align:center;padding:9px 8px!important;min-height:38px!important;border-radius:11px!important}
+    .flag-cell{text-align:center;font-weight:900;color:#344054;min-height:1.2em}.unit-cell,.range-cell{font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.unit-cell.off,.range-cell.off,.flag-cell.off{color:#c0c7d2}.range-cell.off,.unit-cell.off{visibility:hidden}.flag-cell.off{visibility:hidden}
+    .edit-panel{display:none;grid-column:2/7;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px;margin-top:4px}.edit-panel.open{display:grid}.edit-panel input{min-height:38px;padding:8px 10px;font-size:.92rem;border-radius:10px}
+    .preview-wrap{padding:12px 16px;background:#f7f9fc;border-top:1px solid var(--line)}
+    .receipt{width:100%;max-width:360px;margin:0 auto;background:#fff;color:#111;border:1px dashed #98a2b3;padding:12px 12px;font-family:"Courier New",Courier,monospace;font-size:13px;line-height:1.25;overflow-wrap:anywhere}
+    .receipt-brand{text-align:center;margin:0 0 4px}.receipt-brand img{max-width:120px;max-height:40px;height:auto;width:auto;display:inline-block}.receipt pre{font:inherit;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;padding:10px;z-index:50}
+    .modal{width:100%;max-width:620px;max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+    .modal h2{margin:0 0 8px;font-size:1.2rem}.modal p{color:var(--muted);margin:0 0 10px}
+    .history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}
+    .muted{color:var(--muted);font-size:.92rem}.hidden{display:none!important}
+    @media(max-width:560px){body{padding:8px}.hero{border-radius:14px;padding:8px 9px}.hero-top{align-items:center}.app-logo{width:116px;max-width:40vw}.brand-link{gap:8px}h1{font-size:.94rem}.subtitle{font-size:.72rem}.grid2,.preset-row{grid-template-columns:1fr}.sample-buttons{grid-template-columns:1fr 1fr 1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:30px minmax(58px,1fr) minmax(58px,.8fr) 22px minmax(42px,.55fr) minmax(58px,.7fr);gap:4px}.pname{font-size:.86rem}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:2px}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}.hero button{min-height:40px;padding:9px 12px}}
+    @media print{body{background:#fff;padding:0}.app>*:not(#printOnly){display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:42mm;max-height:13mm}.no-print{display:none!important}}
+  </style>
+</head>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js');
+  });
+}
+</script>
+<body>
+<div class="app">
+  <div class="hero">
+    <div class="hero-top">
+      <a class="brand-link" href="https://resuspro.com" target="_blank" rel="noopener">
+        <span class="logo-pill"><img class="app-logo" src="logo.png" alt="ResusPro" onerror="this.closest('.logo-pill').style.display='none'" /></span>
+        <span class="brand-text"><h1>BloodGas SimLab</h1><span class="subtitle">v1.1.0-dev-rot001 · <a href="index.html" style="color:#90caf9;text-decoration:underline;font-weight:700;">BloodGas →</a></span></span>
+      </a>
+      <button class="primary" onclick="openOutput()">Print</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Case details</h2>
+    <div class="section">
+      <div class="grid2">
+        <div><label for="scenarioId">Scenario ID</label><input id="scenarioId" type="text" value="SIM-001" /></div>
+        <div><label>Sample type</label><div class="sample-buttons"><button id="sample-Arterial" onclick="setSample('Arterial')">Arterial</button><button id="sample-Venous" onclick="setSample('Venous')">Venous</button><button id="sample-Capillary" onclick="setSample('Capillary')">Capillary</button></div></div>
+      </div>
+      <div class="preset-row">
+        <div><label for="presetSelect">Example scenario</label><select id="presetSelect" onchange="loadSelectedPreset()"><option value="">Select an example...</option></select></div>
+      </div>
+      <div class="stage-row" id="stageRow"></div>
+      <div class="btn-row" style="margin-top:12px"><button onclick="fillBlankNormals()">Add normal values</button><button onclick="clearValues()">Clear values</button></div>
+      <p class="muted">Example names are for faculty only and are not printed. The ✓ column header cycles: none → standard → all.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Parameters</h2>
+    <div class="section" id="paramList"></div>
+  </div>
+
+  <div class="card">
+    <h2>Live print preview</h2>
+    <div class="preview-wrap"><div id="receiptPreview" class="receipt"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Output history</h2>
+    <div class="section"><div class="btn-row"><button onclick="renderHistory()">Refresh</button><button class="danger" onclick="clearHistory()">Clear history</button></div><div id="historyList" style="margin-top:10px"></div></div>
+  </div>
+
+  <div id="printOnly" class="hidden"><div id="printReceipt" class="receipt"></div></div>
+</div>
+
+<div class="modal-backdrop" id="outputModal">
+  <div class="modal">
+    <h2>Output</h2>
+    <p>Choose where to send or save this simulated result.</p>
+    <div class="preview-wrap"><div id="modalReceipt" class="receipt"></div></div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="blue" onclick="doPrint('printer')">Local printer</button>
+      <button onclick="doPrint('pdf')">Save as PDF</button>
+      <button onclick="copyReceipt()">Copy</button>
+      <button onclick="closeOutput()">Close</button>
+    </div>
+    <p class="muted" style="margin-top:10px">For PDF, choose “Save as PDF” in your browser print dialog if available.</p>
+  </div>
+</div>
+
+<script>
+const STANDARD_IDS=['pH','pCO2','pO2','HCO3','BE','SaO2','Lactate','Na','K','Cl','iCa','Glucose','Hb'];
+const sampleRanges={
+  Arterial:{
+    pH:[7.35,7.45,'7.40'],pCO2:[4.7,6.0,'5.3'],pO2:[10.0,13.3,'12.0'],HCO3:[22,28,'24'],BE:[-2,2,'0'],SaO2:[94,100,'98'],Lactate:[0.5,2.2,'1.0']
+  },
+  Venous:{
+    pH:[7.31,7.41,'7.36'],pCO2:[5.0,6.8,'5.8'],pO2:[4.0,6.0,'5.0'],HCO3:[23,29,'25'],BE:[-2,2,'0'],SaO2:[60,85,'75'],Lactate:[0.5,2.2,'1.0']
+  },
+  Capillary:{
+    pH:[7.35,7.45,'7.40'],pCO2:[4.7,6.5,'5.5'],pO2:[8.0,12.0,'10.0'],HCO3:[22,28,'24'],BE:[-2,2,'0'],SaO2:[92,100,'97'],Lactate:[0.5,2.2,'1.0']
+  }
+};
+const groups=[
+ {name:'Blood gas',items:[
+  ['pH','pH','',7.35,7.45,'7.40'],['pCO2','pCO₂','kPa',4.7,6.0,'5.3'],['pO2','pO₂','kPa',10.0,13.3,'12.0'],['HCO3','HCO₃⁻','mmol/L',22,28,'24'],['BE','BE','mmol/L',-2,2,'0'],['SaO2','SaO₂','%',94,100,'98'],['Lactate','Lactate','mmol/L',0.5,2.2,'1.0']
+ ]},
+ {name:'Electrolytes / renal',items:[
+  ['Na','Na⁺','mmol/L',135,145,'140'],['K','K⁺','mmol/L',3.5,5.3,'4.2'],['Cl','Cl⁻','mmol/L',98,107,'103'],['iCa','Ca²⁺','mmol/L',1.12,1.32,'1.20'],['Glucose','Glucose','mmol/L',4.0,7.8,'5.6'],['Urea','Urea','mmol/L',2.5,7.8,'5.0'],['Creatinine','Creatinine','µmol/L',60,110,'80'],['eGFR','eGFR','mL/min',60,999,'90']
+ ]},
+ {name:'Haematology / oxygenation',items:[
+  ['Hb','Hb','g/L',130,170,'145'],['Hct','Hct','L/L',0.40,0.52,'0.44'],['COHb','COHb','%',0,2,'1.0'],['MetHb','MetHb','%',0,1.5,'0.5']
+ ]},
+ {name:'POCT chemistry',items:[
+  ['CRP','CRP','mg/L',0,5,'2'],['Ketones','Ketones','mmol/L',0,0.6,'0.2'],['Troponin','Troponin','ng/L',0,14,'6'],['BNP','BNP','ng/L',0,100,'30'],['D-dimer','D-dimer','ng/mL',0,500,'250'],['INR','INR','',0.8,1.2,'1.0']
+ ]}
+];
+const params=groups.flatMap(g=>g.items.map(i=>({id:i[0],name:i[1],unit:i[2],baseLow:i[3],baseHigh:i[4],baseNormal:i[5],low:i[3],high:i[4],normal:i[5],group:g.name,on:STANDARD_IDS.includes(i[0]),value:'',ref:`${i[3]}-${i[4]}`,customRef:false,customUnit:false})));
+const presets={
+ 'DKA':{stages:{'T0':{pH:'7.08',pCO2:'2.9',HCO3:'7',BE:'-20',Lactate:'2.8',Glucose:'31',Ketones:'6.8',Na:'132',K:'5.9',Creatinine:'142'},'T60':{pH:'7.18',pCO2:'3.2',HCO3:'11',BE:'-15',Lactate:'2.0',Glucose:'23',Ketones:'4.9',Na:'136',K:'4.8',Creatinine:'118'},'T180':{pH:'7.29',pCO2:'3.8',HCO3:'17',BE:'-8',Lactate:'1.4',Glucose:'14',Ketones:'2.1',Na:'139',K:'4.0',Creatinine:'94'}}},
+ 'Type 1 respiratory failure':{stages:{'T0':{pH:'7.43',pCO2:'4.8',pO2:'7.1',SaO2:'86',HCO3:'24',BE:'0',Lactate:'1.4',Na:'139',K:'4.0',Glucose:'6.0'}}},
+ 'Type 2 respiratory failure':{stages:{'T0':{pH:'7.24',pCO2:'9.4',pO2:'7.8',SaO2:'88',HCO3:'30',BE:'4',Lactate:'1.6',Na:'140',K:'4.6',Glucose:'7.2'}}},
+ 'Metabolic acidosis':{stages:{'T0':{pH:'7.18',pCO2:'3.1',pO2:'12.0',HCO3:'10',BE:'-16',Lactate:'7.0',Na:'138',K:'5.1',Glucose:'8.0',Creatinine:'132'}}}
+};
+let sampleType='Arterial'; let currentPreset=''; let currentStage='T0'; let includeCycleState='standard';
+let showFlags=true, showUnits=true, showRanges=false;
+function $(id){return document.getElementById(id)}
+function fmtRange(lo,hi){return `${lo}-${hi}`}
+function applySampleRanges(){
+  params.forEach(p=>{
+    const r=sampleRanges[sampleType] && sampleRanges[sampleType][p.id];
+    if(r){p.low=r[0];p.high=r[1];p.normal=r[2]; if(!p.customRef)p.ref=fmtRange(r[0],r[1]);}
+    else {p.low=p.baseLow;p.high=p.baseHigh;p.normal=p.baseNormal; if(!p.customRef)p.ref=fmtRange(p.baseLow,p.baseHigh);}
+  });
+}
+function init(){
+ setSample('Arterial',false); const sel=$('presetSelect'); Object.keys(presets).forEach(k=>{let o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o)}); buildParams(); render(); renderHistory();
+}
+function buildParams(){
+ const list=$('paramList'); list.innerHTML='';
+ const head=document.createElement('div'); head.className='param-head'; head.innerHTML=`<button class="head-cell include" onclick="cycleIncludeHeader()" title="Cycle none, standard, all" id="includeHead">✓</button><span class="head-cell">Parameter</span><span class="head-cell">Value</span><button class="head-cell center" id="flagHead" onclick="toggleColumn('flags')">↑↓</button><button class="head-cell" id="unitHead" onclick="toggleColumn('units')">Unit</button><button class="head-cell off" id="rangeHead" onclick="toggleColumn('ranges')">Range</button>`; list.appendChild(head);
+ let last=''; params.forEach(p=>{
+   if(p.group!==last){last=p.group; let d=document.createElement('div'); d.className='group-title'; d.textContent=last; list.appendChild(d)}
+   let row=document.createElement('div'); row.className='param'; row.id=`row-${p.id}`; row.innerHTML=`<input type="checkbox" id="on-${p.id}" ${p.on?'checked':''} onchange="updateParam('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="val-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateParam('${p.id}','value',this.value)"><div class="flag-cell" id="flag-${p.id}"></div><div class="unit-cell" id="unitLabel-${p.id}" onclick="toggleEdit('${p.id}')"></div><div class="range-cell" id="rangeLabel-${p.id}" onclick="toggleEdit('${p.id}')"></div><div class="edit-panel" id="edit-${p.id}"><input id="unit-${p.id}" type="text" value="${p.unit}" aria-label="Unit" oninput="updateParam('${p.id}','unit',this.value)" placeholder="Unit"><input id="ref-${p.id}" type="text" value="${p.ref}" aria-label="Reference range" oninput="updateParam('${p.id}','ref',this.value)" placeholder="Reference range"></div>`;
+   list.appendChild(row);
+ });
+ updateParamDisplay(); updateColumnHeaders();
+}
+function updateParamDisplay(){
+ params.forEach(p=>{
+   const on=$('on-'+p.id), val=$('val-'+p.id), flag=$('flag-'+p.id), unit=$('unitLabel-'+p.id), range=$('rangeLabel-'+p.id), unitInput=$('unit-'+p.id), refInput=$('ref-'+p.id);
+   if(on)on.checked=p.on; if(val && val.value!==p.value)val.value=p.value; if(flag){flag.textContent=flagFor(p); flag.classList.toggle('off',!showFlags);} if(unit){unit.textContent=p.unit||'—'; unit.classList.toggle('off',!showUnits);} if(range){range.textContent=p.ref; range.classList.toggle('off',!showRanges);} if(unitInput && unitInput.value!==p.unit)unitInput.value=p.unit; if(refInput && refInput.value!==p.ref)refInput.value=p.ref;
+ });
+}
+function updateParam(id,key,val){
+ let p=params.find(x=>x.id===id); if(!p)return;
+ if(key==='value'){p.value=val; if(String(val).trim() && !p.on){p.on=true; const cb=$('on-'+id); if(cb)cb.checked=true;}}
+ else if(key==='on'){p.on=val; includeCycleState='custom'; updateIncludeHeader();}
+ else if(key==='unit'){p.unit=val; p.customUnit=true;}
+ else if(key==='ref'){p.ref=val; p.customRef=true;}
+ updateParamDisplay(); render();
+}
+function toggleEdit(id){const el=$('edit-'+id); if(el)el.classList.toggle('open');}
+function toggleColumn(which){if(which==='flags')showFlags=!showFlags; if(which==='units')showUnits=!showUnits; if(which==='ranges')showRanges=!showRanges; updateColumnHeaders(); updateParamDisplay(); render();}
+function updateColumnHeaders(){ $('flagHead').classList.toggle('off',!showFlags); $('unitHead').classList.toggle('off',!showUnits); $('rangeHead').classList.toggle('off',!showRanges); updateIncludeHeader();}
+function updateIncludeHeader(){const h=$('includeHead'); if(!h)return; h.textContent=includeCycleState==='none'?'☐':includeCycleState==='all'?'☑':'✓'; h.title=`Include: ${includeCycleState}. Tap to cycle none → standard → all`;}
+function cycleIncludeHeader(){
+ if(includeCycleState==='none'){selectStandard(); includeCycleState='standard';}
+ else if(includeCycleState==='standard'){selectAll(); includeCycleState='all';}
+ else {selectNone(); includeCycleState='none';}
+ updateParamDisplay(); updateIncludeHeader(); render();
+}
+function selectStandard(){params.forEach(p=>p.on=STANDARD_IDS.includes(p.id));}
+function selectAll(){params.forEach(p=>p.on=true);}
+function selectNone(){params.forEach(p=>p.on=false);}
+function setSample(t,doRender=true){sampleType=t; applySampleRanges(); ['Arterial','Venous','Capillary'].forEach(x=>{const b=$('sample-'+x); if(b)b.classList.toggle('active',x===t)}); updateParamDisplay(); if(doRender)render();}
+function loadSelectedPreset(){const name=$('presetSelect').value;if(!name){currentPreset='';$('stageRow').innerHTML='';return;} currentPreset=name; const stages=Object.keys(presets[name].stages); currentStage=stages[0]; drawStages(); loadStage(currentStage);}
+function drawStages(){const row=$('stageRow'); row.innerHTML=''; if(!currentPreset)return; Object.keys(presets[currentPreset].stages).forEach(s=>{let b=document.createElement('button'); b.textContent=s; b.className='small'+(s===currentStage?' active':''); b.onclick=()=>{currentStage=s; loadStage(s); drawStages()}; row.appendChild(b);});}
+function loadStage(stage){clearValues(false); const data=presets[currentPreset].stages[stage]; Object.entries(data).forEach(([id,val])=>{let p=params.find(x=>x.id===id); if(p){p.value=val; p.on=true;}}); includeCycleState='custom'; updateIncludeHeader(); updateParamDisplay(); render();}
+function fillBlankNormals(){params.forEach(p=>{if(p.on && !String(p.value).trim()){p.value=p.normal;}}); updateParamDisplay(); render();}
+function clearValues(doRender=true){params.forEach(p=>{p.value='';}); updateParamDisplay(); if(doRender)render();}
+function parseRef(p){let m=String(p.ref).replace(/[–—]/g,'-').match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/); return m?[parseFloat(m[1]),parseFloat(m[2])]:[p.low,p.high];}
+function flagFor(p){const v=parseFloat(String(p.value).replace(',','.')); if(Number.isNaN(v))return ''; const [lo,hi]=parseRef(p); if(v<lo)return '↓'; if(v>hi)return '↑'; return '';}
+function pad(s,n){s=String(s); return s.length>=n?s.slice(0,n):s+' '.repeat(n-s.length)}
+function receiptText(){const lines=[]; const sid=$('scenarioId').value||'SIM'; const now=new Date(); const stamp=now.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+ lines.push('--------------------------------'); lines.push('POINT OF CARE TESTING'); lines.push('Simulation Mode'); lines.push('--------------------------------'); lines.push('Scenario: '+sid); lines.push('Sample:   '+sampleType); lines.push('Date:     '+stamp); lines.push('--------------------------------');
+ let current=''; params.filter(p=>p.on && String(p.value).trim()).forEach(p=>{ if(p.group!==current){current=p.group; lines.push(''); lines.push(p.group.toUpperCase());} const f=showFlags?flagFor(p):''; const unit=showUnits&&p.unit?' '+p.unit:''; const ref=showRanges?' ['+p.ref+']':''; lines.push(pad(p.name,11)+' '+pad(p.value,7)+' '+pad(f,1)+unit+ref); });
+ lines.push(''); lines.push('--------------------------------'); lines.push('Generated by ResusPro'); lines.push('resuspro.com'); lines.push('For simulation use only'); lines.push('--------------------------------'); return lines.join('\n');}
+function esc(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
+function receiptHtml(){return '<div class="receipt-brand"><img src="logo.png" alt="ResusPro" onerror="this.style.display=\'none\'"></div><pre>'+esc(receiptText())+'</pre>';}
+function render(){const html=receiptHtml(); $('receiptPreview').innerHTML=html; $('modalReceipt').innerHTML=html; $('printReceipt').innerHTML=html;}
+function openOutput(){render(); $('outputModal').style.display='flex';}
+function closeOutput(){ $('outputModal').style.display='none';}
+function saveHistory(mode){const item={time:new Date().toISOString(),mode,scenario:$('scenarioId').value||'',sample:sampleType,text:receiptText()}; const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]'); arr.unshift(item); localStorage.setItem('resusproBloodGasHistory',JSON.stringify(arr.slice(0,100))); renderHistory();}
+function doPrint(mode){saveHistory(mode); closeOutput(); setTimeout(()=>window.print(),100);}
+async function copyReceipt(){const txt=receiptText(); try{await navigator.clipboard.writeText(txt);}catch(e){alert(txt)} saveHistory('copy'); closeOutput();}
+function renderHistory(){const el=$('historyList'); const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]'); if(!arr.length){el.innerHTML='<p class="muted">No outputs saved yet. Printing, PDF export, or copy will save automatically on this device.</p>';return;} el.innerHTML=arr.slice(0,20).map((h,i)=>`<div class="history-item"><b>${new Date(h.time).toLocaleString('en-GB')} · ${h.mode}</b><span class="muted">${h.scenario||'SIM'} · ${h.sample}</span><div class="btn-row" style="margin-top:6px"><button class="small" onclick="loadHistory(${i})">Load text</button></div></div>`).join('');}
+function loadHistory(i){const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]'); if(arr[i]){ $('receiptPreview').textContent=arr[i].text; window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});} }
+function clearHistory(){if(confirm('Clear saved output history on this device?')){localStorage.removeItem('resusproBloodGasHistory');renderHistory();}}
+document.addEventListener('input',e=>{if(e.target.id==='scenarioId')render();});
+init();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(err => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+
+</script>
+</body>
+</html>
