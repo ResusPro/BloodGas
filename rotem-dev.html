@@ -87,20 +87,7 @@
     .version{font-size:.76rem;margin-top:2px;opacity:.95;line-height:1.15}.dev-link{color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit}
     @media(max-width:560px){body{padding:8px}.hero{border-radius:14px;padding:7px 8px}.app-logo{width:112px;max-width:38vw}h1{font-size:.92rem}.subtitle{font-size:.72rem}.grid2,.preset-row{grid-template-columns:1fr}.card{border-radius:16px}.section{padding:10px}.card h2{padding-left:10px}.param-head,.param{grid-template-columns:25px minmax(58px,1fr) 58px 25px 43px 58px;gap:4px}.param-head{font-size:.7rem;padding:7px 4px}.pname{font-size:.88rem}.value-input{font-size:.95rem}.unit-cell,.range-cell{font-size:.74rem}.edit-panel{grid-template-columns:1fr;margin-left:29px}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}.hero button{min-height:40px;padding:9px 12px}}
     @media print{body{background:#fff;padding:0}.app>*:not(#printOnly){display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:42mm;max-height:13mm}.no-print{display:none!important}}
-  
-    .rotem-include-head{
-      border:0;
-      background:transparent;
-      color:var(--blue);
-      border-radius:9px;
-      min-height:30px;
-      padding:4px;
-      font-size:1rem;
-      font-weight:850;
-      text-align:center;
-      cursor:pointer;
-    }
-</style>
+  </style>
 </head>
 <body>
 <div class="app">
@@ -112,7 +99,7 @@
         </a>
         <div class="brand-text">
           <h1>ROTEM/TEG SimLab</h1>
-          <div class="version">v1.1.0-dev-rot007 | <a class="dev-link" href="index.html">BloodGas →</a></div>
+          <div class="version">v1.1.0-dev-rot008 | <a class="dev-link" href="index.html">BloodGas →</a></div>
         </div>
       </div>
       
@@ -208,7 +195,7 @@ const viscoPresets={
 };
 let mode='bloodgas', sampleType='Arterial', currentPreset='', currentStage='T0', includeCycleState='standard';
 let showFlags=true, showUnits=true, showRanges=false;
-let viscoType='ROTEM', assay='EXTEM', viscoShowFlags=true, viscoShowUnits=true, viscoShowRanges=false;
+let viscoType='ROTEM', assay='EXTEM', viscoShowFlags=true, viscoShowUnits=true, viscoShowRanges=true;
 function $(id){return document.getElementById(id)}
 function fmtRange(lo,hi){return `${lo}-${hi}`}
 function activePresets(){return mode==='bloodgas'?bloodPresets:viscoPresets}
@@ -224,13 +211,16 @@ function toggleColumn(which){if(which==='flags')showFlags=!showFlags;if(which===
 function updateColumnHeaders(){if($('flagHead'))$('flagHead').classList.toggle('off',!showFlags); if($('unitHead'))$('unitHead').classList.toggle('off',!showUnits); if($('rangeHead'))$('rangeHead').classList.toggle('off',!showRanges); const h=$('includeHead'); if(h)h.textContent=includeCycleState==='none'?'☐':includeCycleState==='all'?'☑':'✓';}
 function cycleIncludeHeader(){if(includeCycleState==='none'){params.forEach(p=>p.on=STANDARD_IDS.includes(p.id));includeCycleState='standard'} else if(includeCycleState==='standard'){params.forEach(p=>p.on=true);includeCycleState='all'} else {params.forEach(p=>p.on=false);includeCycleState='none'} updateParamDisplay();updateColumnHeaders();render();}
 function setSample(t,doRender=true){sampleType=t;applySampleRanges();['Arterial','Venous','Capillary'].forEach(x=>{const b=$('sample-'+x);if(b)b.classList.toggle('active',x===t)});updateParamDisplay();if(doRender)render();}
-function buildVisco(){const sel=$('assaySelect'); sel.innerHTML=''; assayMap[viscoType].forEach(a=>{let o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o)}); sel.value=assayMap[viscoType].includes(assay)?assay:assayMap[viscoType][0]; assay=sel.value; const list=$('viscoParamList'); list.innerHTML=''; const head=document.createElement('div'); head.className='param-head'; head.innerHTML='<span></span><span>Parameter</span><span>Value</span><button class="head-cell center" id="vFlagHead2" onclick="toggleViscoColumn(\'flags\')">↑↓</button><button class="head-cell" id="vUnitHead2" onclick="toggleViscoColumn(\'units\')">Unit</button><button class="head-cell off" id="vRangeHead2" onclick="toggleViscoColumn(\'ranges\')">Range</button>'; list.appendChild(head); viscoParams.forEach(p=>{let row=document.createElement('div'); row.className='param'; row.id='vrow-'+p.id; row.innerHTML=`<input type="checkbox" id="von-${p.id}" checked onchange="updateVisco('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="vval-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateVisco('${p.id}','value',this.value)"><div class="flag-cell" id="vflag-${p.id}"></div><div class="unit-cell" id="vunit-${p.id}">${p.unit}</div><div class="range-cell" id="vrange-${p.id}">${p.ref}</div>`; list.appendChild(row);}); updateViscoDisplay();}
+function buildVisco(){const sel=$('assaySelect'); sel.innerHTML=''; assayMap[viscoType].forEach(a=>{let o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o)}); sel.value=assayMap[viscoType].includes(assay)?assay:assayMap[viscoType][0]; assay=sel.value; const list=$('viscoParamList'); list.innerHTML=''; const head=document.createElement('div'); head.className='param-head'; head.innerHTML='<button class="head-cell center" id="vIncludeHead" onclick="toggleAllViscoParams()" title="Select/deselect all ROTEM/TEG parameters">☑</button><span>Parameter</span><span>Value</span><button class="head-cell center" id="vFlagHead2" onclick="toggleViscoColumn(\'flags\')">↑↓</button><button class="head-cell" id="vUnitHead2" onclick="toggleViscoColumn(\'units\')">Unit</button><button class="head-cell" id="vRangeHead2" onclick="toggleViscoColumn(\'ranges\')">Range</button>'; list.appendChild(head); viscoParams.forEach(p=>{let row=document.createElement('div'); row.className='param'; row.id='vrow-'+p.id; row.innerHTML=`<input type="checkbox" id="von-${p.id}" checked onchange="updateVisco('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="vval-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateVisco('${p.id}','value',this.value)"><div class="flag-cell" id="vflag-${p.id}"></div><div class="unit-cell" id="vunit-${p.id}">${p.unit}</div><div class="range-cell" id="vrange-${p.id}">${p.ref}</div>`; list.appendChild(row);}); updateViscoDisplay();}
 function setViscoType(t){viscoType=t; $('visco-ROTEM').classList.toggle('active',t==='ROTEM'); $('visco-TEG').classList.toggle('active',t==='TEG'); assay=assayMap[t][0]; buildVisco(); render();}
 function setAssay(a){assay=a; render();}
 function updateVisco(id,key,val){let p=viscoParams.find(x=>x.id===id); if(!p)return; if(key==='value'){p.value=val;if(String(val).trim())p.on=true;} else p[key]=val; updateViscoDisplay(); render();}
-function updateViscoDisplay(){viscoParams.forEach(p=>{const on=$('von-'+p.id),val=$('vval-'+p.id),flag=$('vflag-'+p.id),row=$('vrow-'+p.id); if(on)on.checked=p.on; if(val&&val.value!==p.value)val.value=p.value; if(flag){flag.textContent=flagFor(p);flag.classList.toggle('off',!viscoShowFlags)} const u=$('vunit-'+p.id),r=$('vrange-'+p.id); if(u)u.classList.toggle('off',!viscoShowUnits); if(r)r.classList.toggle('off',!viscoShowRanges); if(row)row.classList.toggle('off-row',!p.on);}); drawTrace(); updateViscoButtons();}
+function updateViscoDisplay(){viscoParams.forEach(p=>{const on=$('von-'+p.id),val=$('vval-'+p.id),flag=$('vflag-'+p.id),row=$('vrow-'+p.id); if(on)on.checked=p.on; if(val&&val.value!==p.value)val.value=p.value; if(flag){flag.textContent=flagFor(p);flag.classList.toggle('off',!viscoShowFlags)} const u=$('vunit-'+p.id),r=$('vrange-'+p.id); if(u)u.classList.toggle('off',!viscoShowUnits); if(r)r.classList.toggle('off',!viscoShowRanges); if(row)row.classList.toggle('off-row',!p.on);}); drawTrace(); updateViscoButtons(); updateViscoIncludeHeader();}
 function toggleViscoColumn(which){if(which==='flags')viscoShowFlags=!viscoShowFlags;if(which==='units')viscoShowUnits=!viscoShowUnits;if(which==='ranges')viscoShowRanges=!viscoShowRanges;updateViscoDisplay();render();}
 function updateViscoButtons(){['viscoFlagHead','vFlagHead2'].forEach(id=>{if($(id)){ $(id).classList.toggle('active',viscoShowFlags); $(id).classList.toggle('off',!viscoShowFlags); }});['viscoUnitHead','vUnitHead2'].forEach(id=>{if($(id)){ $(id).classList.toggle('active',viscoShowUnits); $(id).classList.toggle('off',!viscoShowUnits); }});['viscoRangeHead','vRangeHead2'].forEach(id=>{if($(id)){ $(id).classList.toggle('active',viscoShowRanges); $(id).classList.toggle('off',!viscoShowRanges); }});}
+function updateViscoIncludeHeader(){const h=$('vIncludeHead'); if(!h)return; const selected=viscoParams.filter(p=>p.on).length; h.textContent=selected===0?'☐':selected===viscoParams.length?'☑':'✓'; h.title=selected===viscoParams.length?'All selected. Tap to select none.':'Tap to select all.';}
+function toggleAllViscoParams(){const anyOff=viscoParams.some(p=>!p.on); viscoParams.forEach(p=>p.on=anyOff); updateViscoDisplay(); render();}
+
 function drawTrace(){
  const svg=$('viscoTrace'); if(!svg)return;
  const get=id=>parseFloat((viscoParams.find(p=>p.id===id)||{}).value)||0;
@@ -296,76 +286,6 @@ function clearHistory(){if(confirm('Clear saved output history on this device?')
 document.addEventListener('input',e=>{if(e.target.id==='scenarioId')render();});
 init();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(err=>console.warn('Service worker registration failed:',err));});}
-
-
-/* ROTEM/TEG dev rot007: visible all/none include header */
-function getRotemCheckboxes(){
-  return Array.from(document.querySelectorAll(
-    '#rotemParamList input[type="checkbox"], .rotem-param input[type="checkbox"], input[id^="rotem-on-"], input[id^="rot-on-"], input[id^="on-r"]'
-  ));
-}
-
-function cycleRotemIncludeHeader(){
-  const rows = getRotemCheckboxes();
-  if (!rows.length) return;
-  const anyUnchecked = rows.some(cb => !cb.checked);
-  rows.forEach(cb => {
-    cb.checked = anyUnchecked;
-    cb.dispatchEvent(new Event('change', { bubbles: true }));
-  });
-  updateRotemIncludeHeader();
-  if (typeof renderRotem === 'function') renderRotem();
-  if (typeof render === 'function') render();
-}
-
-function updateRotemIncludeHeader(){
-  const head = document.getElementById('rotemIncludeHead');
-  if (!head) return;
-  const rows = getRotemCheckboxes();
-  const checked = rows.filter(cb => cb.checked).length;
-  head.textContent = checked === 0 ? '☐' : checked === rows.length ? '☑' : '✓';
-  head.title = checked === rows.length ? 'All selected. Tap to select none.' : 'Tap to select all.';
-}
-
-function ensureRotemIncludeHeader(){
-  let head = document.getElementById('rotemIncludeHead');
-  if (head) { updateRotemIncludeHeader(); return; }
-
-  const headers = Array.from(document.querySelectorAll('div, section'));
-  const header = headers.find(el => {
-    const txt = (el.textContent || '').replace(/\s+/g,' ').trim();
-    const isHeaderLike = txt.includes('Parameter') && txt.includes('Value') && txt.includes('Unit') && txt.includes('Range');
-    const hasGrid = window.getComputedStyle(el).display === 'grid';
-    return isHeaderLike && hasGrid;
-  });
-
-  if (!header) return;
-
-  const btn = document.createElement('button');
-  btn.className = 'rotem-include-head';
-  btn.id = 'rotemIncludeHead';
-  btn.type = 'button';
-  btn.title = 'Tap to select all/none';
-  btn.textContent = '☑';
-  btn.onclick = cycleRotemIncludeHeader;
-
-  header.insertBefore(btn, header.firstChild);
-
-  const computed = window.getComputedStyle(header).gridTemplateColumns;
-  if (!computed.startsWith('40px')) {
-    header.style.gridTemplateColumns = '40px ' + computed;
-  }
-
-  updateRotemIncludeHeader();
-}
-
-document.addEventListener('change', function(e){
-  if (e.target && getRotemCheckboxes().includes(e.target)) updateRotemIncludeHeader();
-});
-setTimeout(ensureRotemIncludeHeader, 0);
-setTimeout(ensureRotemIncludeHeader, 300);
-setTimeout(ensureRotemIncludeHeader, 1000);
-
 </script>
 </body>
 </html>
