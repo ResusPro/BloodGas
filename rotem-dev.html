@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -99,7 +99,7 @@
         </a>
         <div class="brand-text">
           <h1>ROTEM/TEG SimLab</h1>
-          <div class="version">v1.1.0-dev-rot005 | <a class="dev-link" href="index.html">BloodGas →</a></div>
+          <div class="version">v1.1.0-dev-rot006 | <a class="dev-link" href="index.html">BloodGas →</a></div>
         </div>
       </div>
       
@@ -139,7 +139,6 @@
     <div class="section">
       <div class="grid2">
         <div><label for="assaySelect">Assay</label><select id="assaySelect" onchange="setAssay(this.value)"></select></div>
-        <div><label>Column display</label><div class="btn-row"><button class="small active" id="viscoFlagHead" onclick="toggleViscoColumn('flags')">↑↓</button><button class="small active" id="viscoUnitHead" onclick="toggleViscoColumn('units')">Unit</button><button class="small" id="viscoRangeHead" onclick="toggleViscoColumn('ranges')">Range</button></div></div>
       </div>
       <div class="trace-wrap"><svg id="viscoTrace" viewBox="0 0 420 150" role="img" aria-label="Simulated viscoelastic trace"></svg></div>
       <div id="viscoParamList" style="margin-top:10px"></div>
@@ -284,6 +283,36 @@ function clearHistory(){if(confirm('Clear saved output history on this device?')
 document.addEventListener('input',e=>{if(e.target.id==='scenarioId')render();});
 init();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(err=>console.warn('Service worker registration failed:',err));});}
+
+/* ROTEM/TEG dev rot006: single header controls */
+function cycleRotemIncludeHeader(){
+  const rows = document.querySelectorAll('#rotemParamList input[type="checkbox"], .rotem-param input[type="checkbox"], input[id^="rotem-on-"], input[id^="rot-on-"]');
+  if (!rows.length) return;
+  const anyUnchecked = Array.from(rows).some(cb => !cb.checked);
+  rows.forEach(cb => {
+    cb.checked = anyUnchecked;
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  updateRotemIncludeHeader();
+  if (typeof renderRotem === 'function') renderRotem();
+  if (typeof render === 'function') render();
+}
+function updateRotemIncludeHeader(){
+  const head = document.getElementById('rotemIncludeHead');
+  if (!head) return;
+  const rows = document.querySelectorAll('#rotemParamList input[type="checkbox"], .rotem-param input[type="checkbox"], input[id^="rotem-on-"], input[id^="rot-on-"]');
+  const checked = Array.from(rows).filter(cb => cb.checked).length;
+  if (!rows.length) { head.textContent = '✓'; return; }
+  head.textContent = checked === 0 ? '☐' : checked === rows.length ? '☑' : '✓';
+  head.title = checked === rows.length ? 'All selected. Tap to select none.' : 'Tap to select all.';
+}
+document.addEventListener('change', function(e){
+  if (e.target && e.target.matches('#rotemParamList input[type="checkbox"], .rotem-param input[type="checkbox"], input[id^="rotem-on-"], input[id^="rot-on-"]')) {
+    updateRotemIncludeHeader();
+  }
+});
+setTimeout(updateRotemIncludeHeader, 0);
+
 </script>
 </body>
 </html>
