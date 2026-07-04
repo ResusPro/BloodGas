@@ -1,13 +1,19 @@
-ResusPro BloodGas v1.0.3 — logo fix
+ResusPro BloodGas v1.0.4 — thermal logo + arrow flags
 
-WHY THE LOGO WAS MISSING
-The previous Test CloudPRNT action sent only plain text. In addition, jobs containing both PNG and text were advertised in both formats, allowing the printer to choose text/plain. Text-only jobs cannot contain the ResusPro logo.
+WHY THIS VERSION EXISTS
+The previous PNG receipt printed the logo in its original colours. On a monochrome thermal printer, the red/blue elements could become faint or disappear, which clipped the visual identity (for example the word PRO and shield details). In addition, the out-of-range indicator still used H/L letters.
 
 WHAT THIS VERSION CHANGES
-1. Test CloudPRNT now builds and sends a PNG receipt containing logo.png.
-2. Any job with a PNG is advertised to the printer as image/png only, so it cannot silently choose the text fallback.
-3. The duplicate printed word RESUSPRO is removed when the actual logo is present.
-4. The existing D1 storage and /cloudprnt/... path fix are retained.
+1. The receipt PNG now converts logo.png into a high-contrast black-on-white thermal version before printing.
+2. Out-of-range indicators now use arrows instead of letters:
+   - ↓ below range
+   - ↑ above range
+3. A note is shown in the UI clarifying that sample type changes the blood-gas reference ranges and fill-normal values.
+4. The existing D1 storage, working /cloudprnt/... path fix, and logo-PNG-only CloudPRNT behaviour are retained.
+
+SAMPLE-TYPE LOGIC
+- Already implemented: arterial / venous / capillary reference ranges for the core blood-gas parameters (pH, pCO2, pO2, HCO3, BE, SaO2, Lactate).
+- Unchanged for now: electrolytes, renal indices, Hb/Hct, and POCT chemistry keep shared ranges unless manually edited.
 
 DEPLOYMENT
 A. CLOUDFLARE WORKER
@@ -22,5 +28,5 @@ B. GITHUB PAGES / PWA
 - After GitHub Pages updates, fully close and reopen the installed PWA once.
 
 TEST
-- Open Settings and select Test CloudPRNT.
-- The printed test receipt should now have the ResusPro logo at the top.
+- Use Test CloudPRNT and confirm the full ResusPro logo prints clearly in black.
+- Enter a value below or above range and confirm the flag column shows ↓ or ↑ on screen and on the printed receipt.

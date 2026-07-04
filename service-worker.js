@@ -1,4 +1,4 @@
-const CACHE_NAME = 'resuspro-bloodgas-v1.0.3-logo-fix';
+const CACHE_NAME = 'resuspro-bloodgas-v1.0.4-thermal-logo-arrows';
 const APP_SHELL = [
   './',
   './index.html',
