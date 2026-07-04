@@ -81,13 +81,6 @@
     .printer-status.ok{color:#027a48}.printer-status.bad{color:#b42318}
   </style>
 </head>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js');
-  });
-}
-</script>
 <body>
 <div class="app">
   <div class="hero">
@@ -98,7 +91,7 @@ if ('serviceWorker' in navigator) {
         </a>
         <span class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <span class="subtitle">v1.0.0-rc2-printer002 | <a href="rotem-dev.html" style="color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit;">ROTEM/TEG Dev →</a></span>
+          <span class="subtitle">v1.0.0-rc2-printer003-cloud | <a href="rotem-dev.html" style="color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit;">ROTEM/TEG Dev →</a></span>
         </span>
       </div>
       
@@ -145,26 +138,19 @@ if ('serviceWorker' in navigator) {
     <h2>Output</h2>
     <p>Choose where to send or save this simulated result.</p>
     <div class="preview-wrap"><div id="modalReceipt" class="receipt"></div></div>
-    
-    <details class="printer-settings">
-      <summary>ResusPro BloodGas printer settings</summary>
-      <p class="muted" style="margin:8px 0">Default printer: 192.168.55.128. This override is saved on this device only.</p>
-      <div class="printer-row">
-        <div>
-          <label for="resusProPrinterAddress" style="margin-top:0">Printer address</label>
-          <input id="resusProPrinterAddress" type="text" inputmode="url" placeholder="192.168.55.128" autocomplete="off">
-        </div>
-        <button type="button" onclick="saveResusProPrinter()">Save</button>
+    <div class="printer-settings">
+      <strong>Dedicated ResusPro BloodGas printer</strong>
+      <div id="resusProPrinterStatus" class="printer-status ok">
+        Ready. One tap sends this result to the configured CloudPRNT printer.
       </div>
       <div class="btn-row" style="margin-top:8px">
-        <button type="button" onclick="testResusProPrinter()">Test print</button>
-        <button type="button" onclick="clearResusProPrinter()">Use default</button>
+        <button class="small" type="button" onclick="testResusProPrinter()">Test printer</button>
+        <button class="small" type="button" onclick="checkResusProPrinter()">Check status</button>
       </div>
-      <div id="resusProPrinterStatus" class="printer-status">Ready to print to ResusPro BloodGas.</div>
-    </details>
+    </div>
 
-    <div class="btn-row" style="margin-top:12px">
-      <button class="blue" onclick="printResusProBloodGas()">ResusPro BloodGas</button>
+<div class="btn-row" style="margin-top:12px">
+      <button id="resusProCloudPrintButton" class="blue" onclick="printResusProBloodGas()">ResusPro BloodGas</button>
       <button onclick="doPrint('printer')">Local printer</button>
       <button onclick="doPrint('pdf')">Save as PDF</button>
       <button onclick="copyReceipt()">Copy</button>
@@ -287,28 +273,193 @@ document.addEventListener('input',e=>{if(e.target.id==='scenarioId')render();});
 init();
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(err => {
-      console.warn('Service worker registration failed:', err);
-    });
+    navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' })
+      .then(registration => registration.update())
+      .catch(err => {
+        console.warn('Service worker registration failed:', err);
+      });
   });
 }
 
 
-const RESUSPRO_PRINTER_DEFAULT_ADDRESS = '192.168.55.128';
-const RESUSPRO_PRINTER_KEY = 'resusproBloodGasPrinterAddressOverride';
-function normalisePrinterAddress(raw){return String(raw||'').trim().replace(/^https?:\/\//i,'').replace(/\/.*$/,'');}
-function getResusProPrinterAddress(){const el=document.getElementById('resusProPrinterAddress');const typed=el?el.value.trim():'';return normalisePrinterAddress(typed||localStorage.getItem(RESUSPRO_PRINTER_KEY)||RESUSPRO_PRINTER_DEFAULT_ADDRESS);}
-function resusProPrinterEndpoint(){return 'http://'+getResusProPrinterAddress()+'/StarWebPRNT/SendMessage';}
-function setPrinterStatus(msg, ok){const el=document.getElementById('resusProPrinterStatus');if(!el)return;el.textContent=msg;el.classList.toggle('ok',ok===true);el.classList.toggle('bad',ok===false);}
-function saveResusProPrinter(){const addr=getResusProPrinterAddress();if(!addr){setPrinterStatus('Enter a printer address.',false);return false;}if(addr===RESUSPRO_PRINTER_DEFAULT_ADDRESS)localStorage.removeItem(RESUSPRO_PRINTER_KEY);else localStorage.setItem(RESUSPRO_PRINTER_KEY,addr);const el=document.getElementById('resusProPrinterAddress');if(el)el.value=addr;setPrinterStatus('ResusPro BloodGas printer set to '+addr,true);return true;}
-function clearResusProPrinter(){localStorage.removeItem(RESUSPRO_PRINTER_KEY);const el=document.getElementById('resusProPrinterAddress');if(el)el.value=RESUSPRO_PRINTER_DEFAULT_ADDRESS;setPrinterStatus('Using default ResusPro BloodGas printer: '+RESUSPRO_PRINTER_DEFAULT_ADDRESS,true);}
-function loadResusProPrinterSettings(){const addr=localStorage.getItem(RESUSPRO_PRINTER_KEY)||RESUSPRO_PRINTER_DEFAULT_ADDRESS;const el=document.getElementById('resusProPrinterAddress');if(el)el.value=addr;setPrinterStatus('Ready to print to ResusPro BloodGas at '+addr,true);}
-function xmlEscapeForStar(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));}
-function buildResusProWebPrntXml(text){const safe=xmlEscapeForStar(String(text).replace(/\r?\n/g,'\n'));return "<root><initialization reset='false' print='false'/>"+"<alignment position='center'/>"+"<text width='2' height='2'>RESUSPRO\\n</text>"+"<text>BLOODGAS SIMLAB\\nSimulation Mode\\n</text>"+"<text>------------------------------------------\\n</text>"+"<alignment position='left'/>"+"<text>"+safe+"\\n</text>"+"<feed line='3'/><cutpaper feed='true' type='partial'/></root>";}
-function sendResusProWebPrnt(xml, ok, fail){const xhr=new XMLHttpRequest();const endpoint=resusProPrinterEndpoint();xhr.open('POST',endpoint,true);xhr.timeout=12000;xhr.setRequestHeader('Content-Type','application/xml; charset=UTF-8');xhr.onload=function(){xhr.status>=200&&xhr.status<300?ok(xhr.responseText):fail('Printer returned HTTP '+xhr.status+': '+(xhr.responseText||xhr.statusText||''));};xhr.onerror=function(){fail('Could not reach ResusPro BloodGas at '+endpoint+'. Check same Wi-Fi/LAN and WebPRNT LAN support. Browser security may block GitHub HTTPS → local HTTP printing.');};xhr.ontimeout=function(){fail('Timed out contacting ResusPro BloodGas at '+endpoint);};xhr.send(xml);}
-function testResusProPrinter(){saveResusProPrinter();const txt='RESUSPRO BLOODGAS TEST PRINT\nDate: '+new Date().toLocaleString('en-GB')+'\nPrinter: '+getResusProPrinterAddress()+'\n------------------------------------------\nIf you can read this, direct web printing is working.\n------------------------------------------';setPrinterStatus('Sending test print to ResusPro BloodGas...',null);sendResusProWebPrnt(buildResusProWebPrntXml(txt),()=>setPrinterStatus('Test print sent to ResusPro BloodGas.',true),err=>setPrinterStatus(err,false));}
-function printResusProBloodGas(){const txt=receiptText();setPrinterStatus('Sending result to ResusPro BloodGas...',null);sendResusProWebPrnt(buildResusProWebPrntXml(txt),()=>{saveHistory('resuspro-bloodgas');setPrinterStatus('Printed to ResusPro BloodGas.',true);closeOutput();},err=>setPrinterStatus(err,false));}
-document.addEventListener('DOMContentLoaded',loadResusProPrinterSettings);setTimeout(loadResusProPrinterSettings,0);
+
+const RESUSPRO_CLOUDPRINT_API = 'https://resuspro-bloodgas-print.dr-nick.workers.dev/api/print';
+const RESUSPRO_CLOUDPRINT_HEALTH = 'https://resuspro-bloodgas-print.dr-nick.workers.dev/health';
+const RESUSPRO_CLOUDPRINT_KEY = 'bga-6f3d98e0c4a247b5a12f';
+
+function setPrinterStatus(message, ok){
+  const el = document.getElementById('resusProPrinterStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.toggle('ok', ok === true);
+  el.classList.toggle('bad', ok === false);
+}
+
+function printerSafeReceiptText(value){
+  let text = String(value || '')
+    .replace(/↑/g, 'H')
+    .replace(/↓/g, 'L')
+    .replace(/[–—−]/g, '-')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
+  try { text = text.normalize('NFKD'); } catch (_) {}
+  return text
+    .replace(/μ|µ/g, 'u')
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, '')
+    .replace(/\r\n/g, '\n');
+}
+
+async function sendResusProCloudPrint(receiptText, source){
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const response = await fetch(RESUSPRO_CLOUDPRINT_API, {
+      method: 'POST',
+      mode: 'cors',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-ResusPro-Key': RESUSPRO_CLOUDPRINT_KEY
+      },
+      body: JSON.stringify({
+        receiptText: printerSafeReceiptText(receiptText),
+        source: source || 'bloodgas-webapp'
+      }),
+      signal: controller.signal
+    });
+
+    let data = {};
+    try { data = await response.json(); } catch (_) {}
+
+    if (!response.ok) {
+      throw new Error(data.error || ('Print service returned HTTP ' + response.status));
+    }
+    if (!data.ok || !data.jobId) {
+      throw new Error('The print service did not confirm that the job was queued.');
+    }
+    return data;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function checkResusProPrinter(){
+  setPrinterStatus('Checking the dedicated printer...', null);
+  try {
+    const response = await fetch(RESUSPRO_CLOUDPRINT_HEALTH, {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-store'
+    });
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || 'Status check failed');
+
+    const lastSeen = data.printer && data.printer.lastSeen
+      ? new Date(data.printer.lastSeen)
+      : null;
+
+    if (!lastSeen || Number.isNaN(lastSeen.getTime())) {
+      setPrinterStatus('Cloud print service is available, but the printer has not checked in yet.', false);
+      return;
+    }
+
+    const seconds = Math.max(0, Math.round((Date.now() - lastSeen.getTime()) / 1000));
+    if (seconds <= 30) {
+      setPrinterStatus('Printer online — last contact ' + seconds + ' seconds ago.', true);
+    } else {
+      setPrinterStatus(
+        'Cloud service is available. Printer last contacted it at ' +
+        lastSeen.toLocaleString('en-GB') + '.',
+        false
+      );
+    }
+  } catch (error) {
+    setPrinterStatus(
+      'Could not check printer status: ' +
+      (error && error.message ? error.message : String(error)),
+      false
+    );
+  }
+}
+
+async function testResusProPrinter(){
+  const now = new Date().toLocaleString('en-GB');
+  const testText = [
+    'RESUSPRO BLOODGAS',
+    'WEB APP TEST RECEIPT',
+    '==========================================',
+    'Sent: ' + now,
+    '',
+    'The BloodGas web app has successfully',
+    'queued this receipt through CloudPRNT.',
+    '',
+    'For simulation use only',
+    '==========================================',
+    ''
+  ].join('\n');
+
+  setPrinterStatus('Sending a test receipt...', null);
+  try {
+    const data = await sendResusProCloudPrint(testText, 'bloodgas-webapp-test');
+    setPrinterStatus(
+      'Test receipt queued successfully. It should print on the next poll, usually within about 5 seconds.',
+      true
+    );
+    return data;
+  } catch (error) {
+    const message = error && error.name === 'AbortError'
+      ? 'The print request timed out.'
+      : (error && error.message ? error.message : String(error));
+    setPrinterStatus('Test print failed: ' + message, false);
+    return null;
+  }
+}
+
+async function printResusProBloodGas(){
+  const button = document.getElementById('resusProCloudPrintButton');
+  const originalText = button ? button.textContent : 'ResusPro BloodGas';
+
+  if (button && button.disabled) return;
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Sending...';
+  }
+
+  setPrinterStatus('Sending result to the dedicated printer...', null);
+
+  try {
+    const data = await sendResusProCloudPrint(receiptText(), 'bloodgas-webapp');
+    saveHistory('resuspro-bloodgas');
+    setPrinterStatus(
+      'Queued successfully. It should print on the next poll, usually within about 5 seconds.',
+      true
+    );
+    if (button) button.textContent = 'Queued ✓';
+    setTimeout(() => {
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }, 1400);
+    return data;
+  } catch (error) {
+    const message = error && error.name === 'AbortError'
+      ? 'The print request timed out. Check that this device has internet access.'
+      : (error && error.message ? error.message : String(error));
+    setPrinterStatus('Could not queue the print: ' + message, false);
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalText;
+    }
+    return null;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setPrinterStatus('Ready. One tap sends this result to the configured CloudPRNT printer.', true);
+});
+
 
 </script>
 </body>

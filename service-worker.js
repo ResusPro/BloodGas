@@ -1,8 +1,7 @@
-const CACHE_NAME = 'resuspro-bloodgas-v1-0-rc1c';
+const CACHE_NAME = 'resuspro-bloodgas-v1-0-rc2-printer003-cloud';
 const APP_SHELL = [
   './',
   './index.html',
-  './rotem-dev.html',
   './manifest.json',
   './logo.png',
   './pwa-icon-192.png',
