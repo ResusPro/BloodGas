@@ -14,7 +14,7 @@
   <meta name="application-name" content="BloodGas SimLab" />
   <meta name="description" content="ResusPro BloodGas point-of-care simulation result generator." />
   <title>ResusPro BloodGas</title>
-  <!-- Build: v1.0.0 RC2 printer004 one-tap CloudPRNT -->
+  <!-- Build: v1.0.0 RC2 printer005 status, branding and patient ID -->
   <style>
     :root{
       --blue:#1565c0; --blue2:#0d47a1; --bg:#eef2f6; --card:#fff; --line:#d9e1ea;
@@ -75,6 +75,20 @@
     @media print{body{background:#fff;padding:0}.app>*:not(#printOnly){display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:42mm;max-height:13mm}.no-print{display:none!important}}
   
 
+
+    #resusProCloudPrintButton{
+      min-width:74px;
+      transition:background .18s ease,color .18s ease,box-shadow .18s ease,opacity .18s ease
+    }
+    #resusProCloudPrintButton.printer-checking{background:#e4e7ec;color:#344054}
+    #resusProCloudPrintButton.printer-online{background:#12b76a;color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.28)}
+    #resusProCloudPrintButton.printer-stale{background:#f79009;color:#fff}
+    #resusProCloudPrintButton.printer-offline{background:#d92d20;color:#fff}
+    #resusProCloudPrintButton.printer-sending{background:#2e90fa;color:#fff}
+    .case-id-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .sample-block{margin-top:2px}
+    @media(max-width:560px){.case-id-grid{grid-template-columns:1fr}}
+
     .hero-actions{display:flex;gap:7px;align-items:center;flex:0 0 auto}
     .hero-settings{width:42px;min-width:42px;padding:8px;font-size:1.15rem;line-height:1}
     .print-toast{
@@ -104,7 +118,7 @@
         </a>
         <span class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <span class="subtitle">v1.0.0-rc2-printer004-one-tap | <a href="rotem-dev.html" style="color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit;">ROTEM/TEG Dev →</a></span>
+          <span class="subtitle">v1.0.0-rc2-printer005-status-branding-id | <a href="rotem-dev.html" style="color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit;">ROTEM/TEG Dev →</a></span>
         </span>
       </div>
       
@@ -118,9 +132,19 @@
   <div class="card">
     <h2>Case details</h2>
     <div class="section">
-      <div class="grid2">
-        <div><label for="scenarioId">Scenario ID</label><input id="scenarioId" type="text" value="SIM-001" /></div>
-        <div><label>Sample type</label><div class="sample-buttons"><button id="sample-Arterial" onclick="setSample('Arterial')">Arterial</button><button id="sample-Venous" onclick="setSample('Venous')">Venous</button><button id="sample-Capillary" onclick="setSample('Capillary')">Capillary</button></div></div>
+      <div class="case-id-grid">
+        <div>
+          <label for="scenarioId">Patient / scenario ID</label>
+          <input id="scenarioId" type="text" value="SIM-001" placeholder="e.g. Patient A or SIM-001" oninput="render()" />
+        </div>
+        <div>
+          <label for="resusBay">Resus bay / location</label>
+          <input id="resusBay" type="text" placeholder="e.g. Resus Bay 2" oninput="render()" />
+        </div>
+      </div>
+      <div class="sample-block">
+        <label>Sample type</label>
+        <div class="sample-buttons"><button id="sample-Arterial" onclick="setSample('Arterial')">Arterial</button><button id="sample-Venous" onclick="setSample('Venous')">Venous</button><button id="sample-Capillary" onclick="setSample('Capillary')">Capillary</button></div>
       </div>
       <div class="preset-row">
         <div><label for="presetSelect">Example scenario</label><select id="presetSelect" onchange="loadSelectedPreset()"><option value="">Select an example...</option></select></div>
@@ -271,8 +295,8 @@ function clearValues(doRender=true){params.forEach(p=>{p.value='';}); updatePara
 function parseRef(p){let m=String(p.ref).replace(/[–—]/g,'-').match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/); return m?[parseFloat(m[1]),parseFloat(m[2])]:[p.low,p.high];}
 function flagFor(p){const v=parseFloat(String(p.value).replace(',','.')); if(Number.isNaN(v))return ''; const [lo,hi]=parseRef(p); if(v<lo)return '↓'; if(v>hi)return '↑'; return '';}
 function pad(s,n){s=String(s); return s.length>=n?s.slice(0,n):s+' '.repeat(n-s.length)}
-function receiptText(){const lines=[]; const sid=$('scenarioId').value||'SIM'; const now=new Date(); const stamp=now.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
- lines.push('--------------------------------'); lines.push('POINT OF CARE TESTING'); lines.push('Simulation Mode'); lines.push('--------------------------------'); lines.push('Scenario: '+sid); lines.push('Sample:   '+sampleType); lines.push('Date:     '+stamp); lines.push('--------------------------------');
+function receiptText(){const lines=[]; const sid=($('scenarioId').value||'').trim()||'Unidentified'; const bay=($('resusBay').value||'').trim()||'Not entered'; const now=new Date(); const stamp=now.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+ lines.push('================================'); lines.push('RESUSPRO BLOOD GAS'); lines.push('SIMULATION RESULT'); lines.push('================================'); lines.push('Patient ID: '+sid); lines.push('Resus bay:  '+bay); lines.push('Sample:     '+sampleType); lines.push('Date:       '+stamp); lines.push('--------------------------------');
  let current=''; params.filter(p=>p.on && String(p.value).trim()).forEach(p=>{ if(p.group!==current){current=p.group; lines.push(''); lines.push(p.group.toUpperCase());} const f=showFlags?flagFor(p):''; const unit=showUnits&&p.unit?' '+p.unit:''; const ref=showRanges?' ['+p.ref+']':''; lines.push(pad(p.name,11)+' '+pad(p.value,7)+' '+pad(f,1)+unit+ref); });
  lines.push(''); lines.push('--------------------------------'); lines.push('Generated by ResusPro'); lines.push('resuspro.com'); lines.push('For simulation use only'); lines.push('--------------------------------'); return lines.join('\n');}
 function esc(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
@@ -280,7 +304,7 @@ function receiptHtml(){return '<div class="receipt-brand"><img src="logo.png" al
 function render(){const html=receiptHtml(); $('receiptPreview').innerHTML=html; $('modalReceipt').innerHTML=html; $('printReceipt').innerHTML=html;}
 function openOutput(){render(); $('outputModal').style.display='flex';}
 function closeOutput(){ $('outputModal').style.display='none';}
-function saveHistory(mode){const item={time:new Date().toISOString(),mode,scenario:$('scenarioId').value||'',sample:sampleType,text:receiptText()}; const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]'); arr.unshift(item); localStorage.setItem('resusproBloodGasHistory',JSON.stringify(arr.slice(0,100))); renderHistory();}
+function saveHistory(mode){const item={time:new Date().toISOString(),mode,scenario:$('scenarioId').value||'',bay:$('resusBay').value||'',sample:sampleType,text:receiptText()}; const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]'); arr.unshift(item); localStorage.setItem('resusproBloodGasHistory',JSON.stringify(arr.slice(0,100))); renderHistory();}
 function doPrint(mode){saveHistory(mode); closeOutput(); setTimeout(()=>window.print(),100);}
 async function copyReceipt(){const txt=receiptText(); try{await navigator.clipboard.writeText(txt);}catch(e){alert(txt)} saveHistory('copy'); closeOutput();}
 function renderHistory(){const el=$('historyList'); const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]'); if(!arr.length){el.innerHTML='<p class="muted">No outputs saved yet. Printing, PDF export, or copy will save automatically on this device.</p>';return;} el.innerHTML=arr.slice(0,20).map((h,i)=>`<div class="history-item"><b>${new Date(h.time).toLocaleString('en-GB')} · ${h.mode}</b><span class="muted">${h.scenario||'SIM'} · ${h.sample}</span><div class="btn-row" style="margin-top:6px"><button class="small" onclick="loadHistory(${i})">Load text</button></div></div>`).join('');}
@@ -300,9 +324,13 @@ if ('serviceWorker' in navigator) {
 
 
 
+
 const RESUSPRO_CLOUDPRINT_API = 'https://resuspro-bloodgas-print.dr-nick.workers.dev/api/print';
 const RESUSPRO_CLOUDPRINT_HEALTH = 'https://resuspro-bloodgas-print.dr-nick.workers.dev/health';
 const RESUSPRO_CLOUDPRINT_KEY = 'bga-6f3d98e0c4a247b5a12f';
+let resusProPrintBusy = false;
+let resusProLastPrinterState = 'checking';
+let receiptLogoPromise = null;
 
 function setPrinterStatus(message, ok){
   const el = document.getElementById('resusProPrinterStatus');
@@ -310,6 +338,25 @@ function setPrinterStatus(message, ok){
   el.textContent = message;
   el.classList.toggle('ok', ok === true);
   el.classList.toggle('bad', ok === false);
+}
+
+function setPrintButtonState(state){
+  resusProLastPrinterState = state;
+  const button = document.getElementById('resusProCloudPrintButton');
+  if (!button || resusProPrintBusy) return;
+  button.classList.remove('printer-checking','printer-online','printer-stale','printer-offline','printer-sending');
+  button.classList.add(
+    state === 'online' ? 'printer-online' :
+    state === 'stale' ? 'printer-stale' :
+    state === 'offline' ? 'printer-offline' :
+    'printer-checking'
+  );
+  button.textContent = 'Print';
+  button.title =
+    state === 'online' ? 'Printer online — tap to print' :
+    state === 'stale' ? 'Printer contact is delayed — tap to queue' :
+    state === 'offline' ? 'Printer appears offline — tap to queue for later' :
+    'Checking printer status';
 }
 
 let printToastTimer = null;
@@ -339,9 +386,182 @@ function printerSafeReceiptText(value){
     .replace(/\r\n/g, '\n');
 }
 
-async function sendResusProCloudPrint(receiptText, source){
+function loadReceiptLogo(){
+  if (receiptLogoPromise) return receiptLogoPromise;
+  receiptLogoPromise = new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = 'logo.png';
+  });
+  return receiptLogoPromise;
+}
+
+function selectedReceiptSections(){
+  const sectionMap = new Map();
+  params.filter(p => p.on && String(p.value).trim()).forEach(p => {
+    if (!sectionMap.has(p.group)) sectionMap.set(p.group, []);
+    sectionMap.get(p.group).push(p);
+  });
+  return Array.from(sectionMap.entries()).map(([name, items]) => ({ name, items }));
+}
+
+function fitCanvasText(ctx, text, maxWidth, startSize, weight='700', family='Arial'){
+  let size = startSize;
+  while (size > 15) {
+    ctx.font = `${weight} ${size}px ${family}`;
+    if (ctx.measureText(text).width <= maxWidth) break;
+    size -= 1;
+  }
+  return size;
+}
+
+async function buildBrandedReceiptPngBase64(){
+  const width = 576;
+  const margin = 28;
+  const contentWidth = width - margin * 2;
+  const patientId = (document.getElementById('scenarioId').value || '').trim() || 'Unidentified';
+  const resusBay = (document.getElementById('resusBay').value || '').trim() || 'Not entered';
+  const stamp = new Date().toLocaleString('en-GB', {
+    day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'
+  });
+  const sections = selectedReceiptSections();
+  const rowCount = sections.reduce((sum, section) => sum + section.items.length, 0);
+  const height = 430 + sections.length * 42 + rowCount * 31 + 145;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d', { alpha: false });
+  if (!ctx) throw new Error('This browser could not create the branded receipt image.');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, width, height);
+  ctx.fillStyle = '#000000';
+  ctx.textBaseline = 'alphabetic';
+
+  let y = 24;
+  const logo = await loadReceiptLogo();
+  if (logo) {
+    const logoWidth = 500;
+    const logoHeight = Math.round(logoWidth * logo.naturalHeight / logo.naturalWidth);
+    ctx.drawImage(logo, (width - logoWidth) / 2, y, logoWidth, logoHeight);
+    y += logoHeight + 10;
+  } else {
+    ctx.textAlign = 'center';
+    ctx.font = '900 52px Arial';
+    ctx.fillText('RESUSPRO', width / 2, y + 52);
+    y += 70;
+  }
+
+  ctx.textAlign = 'center';
+  ctx.font = '900 29px Arial';
+  ctx.fillText('BLOOD GAS — SIMULATION RESULT', width / 2, y + 30);
+  y += 48;
+
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#000';
+  ctx.strokeRect(margin, y, contentWidth, 116);
+  ctx.textAlign = 'left';
+  ctx.font = '700 18px Arial';
+  ctx.fillText('PATIENT / SCENARIO ID', margin + 14, y + 25);
+  const patientSize = fitCanvasText(ctx, patientId, contentWidth - 28, 31, '900');
+  ctx.font = `900 ${patientSize}px Arial`;
+  ctx.fillText(patientId, margin + 14, y + 58);
+  ctx.font = '700 18px Arial';
+  ctx.fillText('RESUS BAY / LOCATION', margin + 14, y + 84);
+  const baySize = fitCanvasText(ctx, resusBay, contentWidth - 220, 25, '900');
+  ctx.font = `900 ${baySize}px Arial`;
+  ctx.fillText(resusBay, margin + 220, y + 85);
+  y += 132;
+
+  ctx.font = '700 19px Arial';
+  ctx.fillText(`Sample: ${sampleType}`, margin, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(stamp, width - margin, y);
+  ctx.textAlign = 'left';
+  y += 20;
+
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(margin, y);
+  ctx.lineTo(width - margin, y);
+  ctx.stroke();
+  y += 25;
+
+  sections.forEach(section => {
+    ctx.fillStyle = '#000';
+    ctx.font = '900 21px Arial';
+    ctx.fillText(section.name.toUpperCase(), margin, y);
+    y += 12;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(margin, y);
+    ctx.lineTo(width - margin, y);
+    ctx.stroke();
+    y += 24;
+
+    section.items.forEach(p => {
+      const flag = showFlags ? flagFor(p) : '';
+      const unit = showUnits && p.unit ? p.unit : '';
+      const ref = showRanges ? `[${p.ref}]` : '';
+
+      ctx.font = '700 19px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(String(p.name), margin, y);
+
+      ctx.font = '900 21px "Courier New", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(String(p.value), margin + 342, y);
+
+      ctx.font = '900 19px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(flag === '↑' ? 'H' : flag === '↓' ? 'L' : '', margin + 370, y);
+
+      ctx.font = '600 16px Arial';
+      ctx.textAlign = 'right';
+      ctx.fillText([unit, ref].filter(Boolean).join(' '), width - margin, y);
+      y += 31;
+    });
+    y += 10;
+  });
+
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(margin, y);
+  ctx.lineTo(width - margin, y);
+  ctx.stroke();
+  y += 29;
+
+  ctx.textAlign = 'center';
+  ctx.font = '900 20px Arial';
+  ctx.fillText('RESUSPRO PROFESSIONAL MEDICAL TRAINING', width / 2, y);
+  y += 27;
+  ctx.font = '700 17px Arial';
+  ctx.fillText('For simulation use only', width / 2, y);
+  y += 25;
+  ctx.font = '600 16px Arial';
+  ctx.fillText('resuspro.com', width / 2, y);
+
+  // Convert all artwork to true monochrome for predictable thermal output.
+  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const pixels = image.data;
+  for (let i = 0; i < pixels.length; i += 4) {
+    const luminance = 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
+    const value = luminance < 205 ? 0 : 255;
+    pixels[i] = value;
+    pixels[i + 1] = value;
+    pixels[i + 2] = value;
+    pixels[i + 3] = 255;
+  }
+  ctx.putImageData(image, 0, 0);
+
+  return canvas.toDataURL('image/png').split(',')[1];
+}
+
+async function sendResusProCloudPrint(receiptText, source, receiptImageBase64=''){
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), 20000);
 
   try {
     const response = await fetch(RESUSPRO_CLOUDPRINT_API, {
@@ -354,6 +574,8 @@ async function sendResusProCloudPrint(receiptText, source){
       },
       body: JSON.stringify({
         receiptText: printerSafeReceiptText(receiptText),
+        receiptImageBase64,
+        mediaType: receiptImageBase64 ? 'image/png' : 'text/plain',
         source: source || 'bloodgas-webapp'
       }),
       signal: controller.signal
@@ -374,8 +596,12 @@ async function sendResusProCloudPrint(receiptText, source){
   }
 }
 
-async function checkResusProPrinter(){
-  setPrinterStatus('Checking the dedicated printer...', null);
+async function checkResusProPrinter(silent=false){
+  if (!silent) {
+    setPrinterStatus('Checking the dedicated printer...', null);
+    setPrintButtonState('checking');
+  }
+
   try {
     const response = await fetch(RESUSPRO_CLOUDPRINT_HEALTH, {
       method: 'GET',
@@ -385,31 +611,48 @@ async function checkResusProPrinter(){
     const data = await response.json();
     if (!response.ok || !data.ok) throw new Error(data.error || 'Status check failed');
 
-    const lastSeen = data.printer && data.printer.lastSeen
-      ? new Date(data.printer.lastSeen)
-      : null;
+    const printer = data.printer || null;
+    const lastSeen = printer && printer.lastSeen ? new Date(printer.lastSeen) : null;
+    const statusCode = String(printer && printer.statusCode || '');
 
     if (!lastSeen || Number.isNaN(lastSeen.getTime())) {
-      setPrinterStatus('Cloud print service is available, but the printer has not checked in yet.', false);
-      return;
+      setPrintButtonState('offline');
+      setPrinterStatus('Cloud service is available, but the printer has not checked in yet.', false);
+      return 'offline';
     }
 
     const seconds = Math.max(0, Math.round((Date.now() - lastSeen.getTime()) / 1000));
-    if (seconds <= 30) {
-      setPrinterStatus('Printer online — last contact ' + seconds + ' seconds ago.', true);
-    } else {
-      setPrinterStatus(
-        'Cloud service is available. Printer last contacted it at ' +
-        lastSeen.toLocaleString('en-GB') + '.',
-        false
-      );
+    const printerError = statusCode && !statusCode.startsWith('200');
+
+    if (printerError) {
+      setPrintButtonState('offline');
+      setPrinterStatus('Printer reported: ' + decodeURIComponent(statusCode), false);
+      return 'offline';
     }
+
+    if (seconds <= 20) {
+      setPrintButtonState('online');
+      setPrinterStatus('Printer online — last contact ' + seconds + ' seconds ago.', true);
+      return 'online';
+    }
+
+    if (seconds <= 90) {
+      setPrintButtonState('stale');
+      setPrinterStatus('Printer contact delayed — last seen ' + seconds + ' seconds ago.', null);
+      return 'stale';
+    }
+
+    setPrintButtonState('offline');
+    setPrinterStatus('Printer appears offline — last contact ' + lastSeen.toLocaleString('en-GB') + '.', false);
+    return 'offline';
   } catch (error) {
+    setPrintButtonState('offline');
     setPrinterStatus(
       'Could not check printer status: ' +
       (error && error.message ? error.message : String(error)),
       false
     );
+    return 'offline';
   }
 }
 
@@ -433,7 +676,7 @@ async function testResusProPrinter(){
   try {
     const data = await sendResusProCloudPrint(testText, 'bloodgas-webapp-test');
     setPrinterStatus(
-      'Test receipt queued successfully. It should print on the next poll, usually within about 5 seconds.',
+      'Test receipt queued successfully. It should print on the next poll.',
       true
     );
     return data;
@@ -448,28 +691,50 @@ async function testResusProPrinter(){
 
 async function printResusProBloodGas(){
   const button = document.getElementById('resusProCloudPrintButton');
-  const originalText = button ? button.textContent : 'ResusPro BloodGas';
+  if (resusProPrintBusy) return;
 
-  if (button && button.disabled) return;
-  if (button) {
-    button.disabled = true;
-    button.textContent = 'Sending...';
+  const patientId = (document.getElementById('scenarioId').value || '').trim();
+  const resusBay = (document.getElementById('resusBay').value || '').trim();
+  if (!patientId && !resusBay) {
+    showPrintToast('Enter a Patient ID or Resus bay before printing.', false);
+    document.getElementById('scenarioId').focus();
+    return;
   }
 
-  setPrinterStatus('Sending result to the dedicated printer...', null);
+  resusProPrintBusy = true;
+  if (button) {
+    button.disabled = true;
+    button.classList.remove('printer-checking','printer-online','printer-stale','printer-offline');
+    button.classList.add('printer-sending');
+    button.textContent = 'Preparing…';
+  }
+  setPrinterStatus('Preparing branded receipt...', null);
 
   try {
-    const data = await sendResusProCloudPrint(receiptText(), 'bloodgas-webapp');
+    let imageBase64 = '';
+    try {
+      imageBase64 = await buildBrandedReceiptPngBase64();
+    } catch (imageError) {
+      console.warn('Branded image generation failed; falling back to text.', imageError);
+    }
+
+    if (button) button.textContent = 'Sending…';
+    setPrinterStatus('Sending result to the dedicated printer...', null);
+    const data = await sendResusProCloudPrint(receiptText(), 'bloodgas-webapp', imageBase64);
     saveHistory('resuspro-bloodgas');
-    const successMessage = 'Queued successfully — printing now.';
+
+    const successMessage = imageBase64
+      ? 'Branded result queued — printing now.'
+      : 'Result queued — branding image was unavailable, so text was sent.';
     setPrinterStatus(successMessage, true);
     showPrintToast(successMessage, true);
+
     if (button) button.textContent = 'Queued ✓';
     setTimeout(() => {
-      if (button) {
-        button.disabled = false;
-        button.textContent = originalText;
-      }
+      resusProPrintBusy = false;
+      if (button) button.disabled = false;
+      setPrintButtonState(resusProLastPrinterState);
+      checkResusProPrinter(true);
     }, 1400);
     return data;
   } catch (error) {
@@ -479,16 +744,24 @@ async function printResusProBloodGas(){
     const failureMessage = 'Could not queue the print: ' + message;
     setPrinterStatus(failureMessage, false);
     showPrintToast(failureMessage, false);
-    if (button) {
-      button.disabled = false;
-      button.textContent = originalText;
-    }
+    resusProPrintBusy = false;
+    if (button) button.disabled = false;
+    setPrintButtonState('offline');
     return null;
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  setPrinterStatus('The header Print button sends directly to the configured CloudPRNT printer.', true);
+  setPrintButtonState('checking');
+  setPrinterStatus('Checking the dedicated CloudPRNT printer...', null);
+  checkResusProPrinter(true);
+  window.setInterval(() => {
+    if (!document.hidden && !resusProPrintBusy) checkResusProPrinter(true);
+  }, 10000);
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && !resusProPrintBusy) checkResusProPrinter(true);
 });
 
 
