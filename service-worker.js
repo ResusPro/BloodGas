@@ -1,4 +1,4 @@
-const CACHE_NAME = 'resuspro-bloodgas-v1-0-rc2-printer005-status-branding-id';
+const CACHE_NAME = 'resuspro-bloodgas-v1-0-rc2-printer006-mono-logo';
 const APP_SHELL = [
   './',
   './index.html',

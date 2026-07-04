@@ -14,7 +14,7 @@
   <meta name="application-name" content="BloodGas SimLab" />
   <meta name="description" content="ResusPro BloodGas point-of-care simulation result generator." />
   <title>ResusPro BloodGas</title>
-  <!-- Build: v1.0.0 RC2 printer005 status, branding and patient ID -->
+  <!-- Build: v1.0.0 RC2 printer006 true-monochrome branded receipt -->
   <style>
     :root{
       --blue:#1565c0; --blue2:#0d47a1; --bg:#eef2f6; --card:#fff; --line:#d9e1ea;
@@ -118,7 +118,7 @@
         </a>
         <span class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <span class="subtitle">v1.0.0-rc2-printer005-status-branding-id | <a href="rotem-dev.html" style="color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit;">ROTEM/TEG Dev →</a></span>
+          <span class="subtitle">v1.0.0-rc2-printer006-mono-logo | <a href="rotem-dev.html" style="color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit;">ROTEM/TEG Dev →</a></span>
         </span>
       </div>
       
@@ -416,6 +416,144 @@ function fitCanvasText(ctx, text, maxWidth, startSize, weight='700', family='Ari
   return size;
 }
 
+
+function pngWriteUint32BE(array, offset, value){
+  array[offset] = (value >>> 24) & 255;
+  array[offset + 1] = (value >>> 16) & 255;
+  array[offset + 2] = (value >>> 8) & 255;
+  array[offset + 3] = value & 255;
+}
+
+function pngCrc32(bytes){
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i += 1) {
+    crc ^= bytes[i];
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = (crc >>> 1) ^ ((crc & 1) ? 0xEDB88320 : 0);
+    }
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function pngAdler32(bytes){
+  let a = 1;
+  let b = 0;
+  const MOD = 65521;
+  for (let i = 0; i < bytes.length; i += 1) {
+    a = (a + bytes[i]) % MOD;
+    b = (b + a) % MOD;
+  }
+  return ((b << 16) | a) >>> 0;
+}
+
+function pngChunk(type, data){
+  const typeBytes = new TextEncoder().encode(type);
+  const chunk = new Uint8Array(12 + data.length);
+  pngWriteUint32BE(chunk, 0, data.length);
+  chunk.set(typeBytes, 4);
+  chunk.set(data, 8);
+  const crcInput = new Uint8Array(typeBytes.length + data.length);
+  crcInput.set(typeBytes, 0);
+  crcInput.set(data, typeBytes.length);
+  pngWriteUint32BE(chunk, 8 + data.length, pngCrc32(crcInput));
+  return chunk;
+}
+
+function zlibStore(raw){
+  const blocks = [];
+  let offset = 0;
+
+  while (offset < raw.length) {
+    const length = Math.min(65535, raw.length - offset);
+    const finalBlock = offset + length >= raw.length;
+    const block = new Uint8Array(5 + length);
+    block[0] = finalBlock ? 1 : 0; // BFINAL plus stored-block BTYPE=00
+    block[1] = length & 255;
+    block[2] = (length >>> 8) & 255;
+    const inverse = (~length) & 0xFFFF;
+    block[3] = inverse & 255;
+    block[4] = (inverse >>> 8) & 255;
+    block.set(raw.subarray(offset, offset + length), 5);
+    blocks.push(block);
+    offset += length;
+  }
+
+  const total = 2 + blocks.reduce((sum, block) => sum + block.length, 0) + 4;
+  const output = new Uint8Array(total);
+  output[0] = 0x78;
+  output[1] = 0x01; // valid zlib header, fastest/no compression
+  let cursor = 2;
+  blocks.forEach(block => {
+    output.set(block, cursor);
+    cursor += block.length;
+  });
+  pngWriteUint32BE(output, cursor, pngAdler32(raw));
+  return output;
+}
+
+function bytesToBase64(bytes){
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+    const chunk = bytes.subarray(offset, Math.min(offset + chunkSize, bytes.length));
+    binary += String.fromCharCode(...chunk);
+  }
+  return btoa(binary);
+}
+
+function encodeCanvasAsOneBitPngBase64(canvas, threshold=205){
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  const rowBytes = Math.ceil(canvas.width / 8);
+  const raw = new Uint8Array(canvas.height * (1 + rowBytes));
+
+  for (let y = 0; y < canvas.height; y += 1) {
+    const rowStart = y * (1 + rowBytes);
+    raw[rowStart] = 0; // PNG filter: None
+
+    for (let x = 0; x < canvas.width; x += 1) {
+      const pixel = (y * canvas.width + x) * 4;
+      const luminance =
+        0.2126 * rgba[pixel] +
+        0.7152 * rgba[pixel + 1] +
+        0.0722 * rgba[pixel + 2];
+
+      // 1-bit grayscale PNG: sample 0 = black, 1 = white.
+      if (luminance >= threshold) {
+        const byteIndex = rowStart + 1 + (x >>> 3);
+        raw[byteIndex] |= 1 << (7 - (x & 7));
+      }
+    }
+  }
+
+  const signature = Uint8Array.from([137,80,78,71,13,10,26,10]);
+
+  const ihdr = new Uint8Array(13);
+  pngWriteUint32BE(ihdr, 0, canvas.width);
+  pngWriteUint32BE(ihdr, 4, canvas.height);
+  ihdr[8] = 1;  // bit depth
+  ihdr[9] = 0;  // colour type: grayscale
+  ihdr[10] = 0; // compression
+  ihdr[11] = 0; // filter
+  ihdr[12] = 0; // no interlace
+
+  const chunks = [
+    signature,
+    pngChunk('IHDR', ihdr),
+    pngChunk('IDAT', zlibStore(raw)),
+    pngChunk('IEND', new Uint8Array(0))
+  ];
+  const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const png = new Uint8Array(total);
+  let cursor = 0;
+  chunks.forEach(chunk => {
+    png.set(chunk, cursor);
+    cursor += chunk.length;
+  });
+
+  return bytesToBase64(png);
+}
+
 async function buildBrandedReceiptPngBase64(){
   const width = 576;
   const margin = 28;
@@ -543,20 +681,9 @@ async function buildBrandedReceiptPngBase64(){
   ctx.font = '600 16px Arial';
   ctx.fillText('resuspro.com', width / 2, y);
 
-  // Convert all artwork to true monochrome for predictable thermal output.
-  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const pixels = image.data;
-  for (let i = 0; i < pixels.length; i += 4) {
-    const luminance = 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
-    const value = luminance < 205 ? 0 : 255;
-    pixels[i] = value;
-    pixels[i + 1] = value;
-    pixels[i + 2] = value;
-    pixels[i + 3] = 255;
-  }
-  ctx.putImageData(image, 0, 0);
-
-  return canvas.toDataURL('image/png').split(',')[1];
+  // Encode as a genuine 1-bit grayscale PNG. This avoids the browser's
+  // usual 24/32-bit PNG output and keeps the CloudPRNT image compact.
+  return encodeCanvasAsOneBitPngBase64(canvas, 205);
 }
 
 async function sendResusProCloudPrint(receiptText, source, receiptImageBase64=''){
@@ -724,7 +851,7 @@ async function printResusProBloodGas(){
     saveHistory('resuspro-bloodgas');
 
     const successMessage = imageBase64
-      ? 'Branded result queued — printing now.'
+      ? 'Monochrome branded result queued — printing now.'
       : 'Result queued — branding image was unavailable, so text was sent.';
     setPrinterStatus(successMessage, true);
     showPrintToast(successMessage, true);
