@@ -14,7 +14,7 @@
   <meta name="application-name" content="BloodGas SimLab" />
   <meta name="description" content="ResusPro BloodGas point-of-care simulation result generator." />
   <title>ResusPro BloodGas</title>
-  <!-- Build: v1.0.0 RC2 printer006 true-monochrome branded receipt -->
+  <!-- Build: v1.0.0 RC2 printer007 confirmed print status -->
   <style>
     :root{
       --blue:#1565c0; --blue2:#0d47a1; --bg:#eef2f6; --card:#fff; --line:#d9e1ea;
@@ -118,7 +118,7 @@
         </a>
         <span class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <span class="subtitle">v1.0.0-rc2-printer006-mono-logo | <a href="rotem-dev.html" style="color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit;">ROTEM/TEG Dev →</a></span>
+          <span class="subtitle">v1.0.0-rc2-printer007-confirmed-print | <a href="rotem-dev.html" style="color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit;">ROTEM/TEG Dev →</a></span>
         </span>
       </div>
       
@@ -326,6 +326,7 @@ if ('serviceWorker' in navigator) {
 
 
 const RESUSPRO_CLOUDPRINT_API = 'https://resuspro-bloodgas-print.dr-nick.workers.dev/api/print';
+const RESUSPRO_CLOUDPRINT_JOB_API = 'https://resuspro-bloodgas-print.dr-nick.workers.dev/api/job/';
 const RESUSPRO_CLOUDPRINT_HEALTH = 'https://resuspro-bloodgas-print.dr-nick.workers.dev/health';
 const RESUSPRO_CLOUDPRINT_KEY = 'bga-6f3d98e0c4a247b5a12f';
 let resusProPrintBusy = false;
@@ -723,6 +724,88 @@ async function sendResusProCloudPrint(receiptText, source, receiptImageBase64=''
   }
 }
 
+
+function wait(milliseconds){
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
+async function getResusProJobStatus(jobId){
+  const response = await fetch(RESUSPRO_CLOUDPRINT_JOB_API + encodeURIComponent(jobId), {
+    method: 'GET',
+    mode: 'cors',
+    cache: 'no-store',
+    headers: { 'X-ResusPro-Key': RESUSPRO_CLOUDPRINT_KEY }
+  });
+
+  let data = {};
+  try { data = await response.json(); } catch (_) {}
+
+  if (response.status === 404 && data.status === 'propagating') {
+    return { ok: false, status: 'propagating' };
+  }
+  if (!response.ok) {
+    throw new Error(data.error || ('Job status returned HTTP ' + response.status));
+  }
+  return data;
+}
+
+async function waitForResusProPrintConfirmation(jobId, onProgress, maximumWaitMs=120000){
+  const started = Date.now();
+  let lastStatus = '';
+
+  while (Date.now() - started < maximumWaitMs) {
+    let data;
+    try {
+      data = await getResusProJobStatus(jobId);
+    } catch (error) {
+      // A temporary status read failure should not turn a successfully queued
+      // print into a false failure. Retry until the overall timeout.
+      await wait(1500);
+      continue;
+    }
+
+    const status = data.status || 'propagating';
+    if (status !== lastStatus || data.imageFailureCode) {
+      lastStatus = status;
+      if (typeof onProgress === 'function') onProgress(data);
+    }
+
+    if (status === 'printed') return data;
+    if (status === 'failed') {
+      throw new Error('Printer reported failure' + (data.resultCode ? ': ' + data.resultCode : '.'));
+    }
+
+    await wait(1200);
+  }
+
+  return {
+    ok: false,
+    status: 'confirmation-timeout',
+    jobId
+  };
+}
+
+function describePrintProgress(data){
+  const status = data && data.status ? data.status : 'propagating';
+
+  if (data && data.imageFailureCode && data.mediaType === 'text/plain') {
+    return 'Printer could not decode the branded image; retrying the same result as text.';
+  }
+  if (status === 'queued' || status === 'propagating') {
+    return 'Queued — waiting for the printer to collect the job.';
+  }
+  if (status === 'offered') {
+    return 'Printer has accepted the job.';
+  }
+  if (status === 'downloaded') {
+    return 'Printer has downloaded the job and is printing.';
+  }
+  if (status === 'printed') {
+    return 'Printed successfully.';
+  }
+  return 'Waiting for printer confirmation.';
+}
+
 async function checkResusProPrinter(silent=false){
   if (!silent) {
     setPrinterStatus('Checking the dedicated printer...', null);
@@ -799,19 +882,31 @@ async function testResusProPrinter(){
     ''
   ].join('\n');
 
-  setPrinterStatus('Sending a test receipt...', null);
+  setPrinterStatus('Queuing a test receipt...', null);
   try {
-    const data = await sendResusProCloudPrint(testText, 'bloodgas-webapp-test');
-    setPrinterStatus(
-      'Test receipt queued successfully. It should print on the next poll.',
-      true
+    const queued = await sendResusProCloudPrint(testText, 'bloodgas-webapp-test');
+    setPrinterStatus('Queued — waiting for the printer to collect the test job.', null);
+
+    const result = await waitForResusProPrintConfirmation(
+      queued.jobId,
+      progress => setPrinterStatus(describePrintProgress(progress), progress.status === 'printed' ? true : null),
+      120000
     );
-    return data;
+
+    if (result.status === 'printed') {
+      setPrinterStatus('Test receipt printed successfully.', true);
+      showPrintToast('Test receipt printed successfully.', true);
+    } else {
+      setPrinterStatus('Test receipt remains queued; no completion confirmation has been received yet.', null);
+      showPrintToast('Test queued, but not yet confirmed as printed.', false);
+    }
+    return result;
   } catch (error) {
     const message = error && error.name === 'AbortError'
       ? 'The print request timed out.'
       : (error && error.message ? error.message : String(error));
     setPrinterStatus('Test print failed: ' + message, false);
+    showPrintToast('Test print failed: ' + message, false);
     return null;
   }
 }
@@ -845,30 +940,67 @@ async function printResusProBloodGas(){
       console.warn('Branded image generation failed; falling back to text.', imageError);
     }
 
-    if (button) button.textContent = 'Sending…';
-    setPrinterStatus('Sending result to the dedicated printer...', null);
-    const data = await sendResusProCloudPrint(receiptText(), 'bloodgas-webapp', imageBase64);
-    saveHistory('resuspro-bloodgas');
+    if (button) button.textContent = 'Queuing…';
+    setPrinterStatus('Queuing result with the CloudPRNT service...', null);
 
-    const successMessage = imageBase64
-      ? 'Monochrome branded result queued — printing now.'
-      : 'Result queued — branding image was unavailable, so text was sent.';
-    setPrinterStatus(successMessage, true);
-    showPrintToast(successMessage, true);
+    const queued = await sendResusProCloudPrint(
+      receiptText(),
+      'bloodgas-webapp',
+      imageBase64
+    );
 
-    if (button) button.textContent = 'Queued ✓';
+    saveHistory('resuspro-bloodgas-queued');
+
+    if (button) button.textContent = 'Queued…';
+    setPrinterStatus('Queued — waiting for the printer to collect the job.', null);
+    showPrintToast('Queued — waiting for printer confirmation.', null);
+
+    const result = await waitForResusProPrintConfirmation(
+      queued.jobId,
+      progress => {
+        const message = describePrintProgress(progress);
+        setPrinterStatus(message, progress.status === 'printed' ? true : null);
+        if (button) {
+          button.textContent =
+            progress.status === 'downloaded' ? 'Printing…' :
+            progress.status === 'offered' ? 'Accepted…' :
+            progress.status === 'printed' ? 'Printed ✓' :
+            'Queued…';
+        }
+      },
+      120000
+    );
+
+    if (result.status === 'printed') {
+      const completed = result.completedAt
+        ? new Date(result.completedAt).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' })
+        : '';
+      const successMessage = completed
+        ? 'Printed successfully at ' + completed + '.'
+        : 'Printed successfully.';
+      setPrinterStatus(successMessage, true);
+      showPrintToast(successMessage, true);
+      if (button) button.textContent = 'Printed ✓';
+    } else {
+      const pendingMessage = 'Queued, but the printer has not yet returned completion confirmation.';
+      setPrinterStatus(pendingMessage, null);
+      showPrintToast(pendingMessage, false);
+      if (button) button.textContent = 'Queued';
+    }
+
     setTimeout(() => {
       resusProPrintBusy = false;
       if (button) button.disabled = false;
       setPrintButtonState(resusProLastPrinterState);
       checkResusProPrinter(true);
-    }, 1400);
-    return data;
+    }, result.status === 'printed' ? 1800 : 3000);
+
+    return result;
   } catch (error) {
     const message = error && error.name === 'AbortError'
       ? 'The print request timed out. Check that this device has internet access.'
       : (error && error.message ? error.message : String(error));
-    const failureMessage = 'Could not queue the print: ' + message;
+    const failureMessage = 'Could not complete the print: ' + message;
     setPrinterStatus(failureMessage, false);
     showPrintToast(failureMessage, false);
     resusProPrintBusy = false;
