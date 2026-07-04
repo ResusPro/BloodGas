@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.0 — CloudPRNT -->
+  <!-- ResusPro BloodGas v1.0.1 — CloudPRNT D1 -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -70,7 +70,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.0 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.1 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -252,7 +252,7 @@ async function buildReceiptPng(){
   ctx.font='24px "Courier New", monospace';ctx.textBaseline='top';for(const line of lines){if(y+lineHeight>height-margin)break;ctx.font=(line==='PATIENT / SCENARIO'||line==='RESUS BAY / LOCATION')?'bold 24px "Courier New", monospace':'24px "Courier New", monospace';ctx.fillText(line,margin,y);y+=lineHeight}
   return canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/,'')
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.0`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.1`})}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
 function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}

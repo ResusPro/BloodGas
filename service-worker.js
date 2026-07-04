@@ -1,4 +1,4 @@
-const CACHE_NAME = 'resuspro-bloodgas-v1.0.0';
+const CACHE_NAME = 'resuspro-bloodgas-v1.0.1-d1';
 const APP_SHELL = [
   './',
   './index.html',
