@@ -1,6 +1,7 @@
-const CACHE_NAME = 'resuspro-bloodgas-v1.0.5-media-decode-fix';
+const APP_VERSION = '1.0.6';
+const CACHE_NAME = `resuspro-bloodgas-v${APP_VERSION}`;
+const OFFLINE_INDEX = './index.html';
 const APP_SHELL = [
-  './',
   './index.html',
   './manifest.json',
   './logo.png',
@@ -8,19 +9,23 @@ const APP_SHELL = [
 
 self.addEventListener('install', event => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache =>
-      Promise.allSettled(APP_SHELL.map(url => cache.add(url)))
-    )
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await Promise.allSettled(APP_SHELL.map(async url => {
+      const response = await fetch(new Request(`${url}?v=${APP_VERSION}`, { cache: 'reload' }));
+      if (response.ok) await cache.put(url, response);
+    }));
+  })());
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)));
+    await self.clients.claim();
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of clients) client.postMessage({ type: 'APP_UPDATED', version: APP_VERSION });
+  })());
 });
 
 self.addEventListener('fetch', event => {
@@ -30,29 +35,30 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request, { cache: 'no-store' })
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
-          return response;
-        })
-        .catch(() => caches.match('./index.html'))
-    );
-    return;
-  }
+  // Always ask the network first. The cache is only an offline fallback.
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(request, { cache: 'no-store' });
+      if (response.ok) {
+        const cache = await caches.open(CACHE_NAME);
+        const cacheKey = request.mode === 'navigate' ? OFFLINE_INDEX : request;
+        await cache.put(cacheKey, response.clone());
+      }
+      return response;
+    } catch (_) {
+      const cached = await caches.match(request.mode === 'navigate' ? OFFLINE_INDEX : request);
+      if (cached) return cached;
+      if (request.mode === 'navigate') {
+        return new Response('BloodGas is offline and has not yet cached this version.', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        });
+      }
+      throw _;
+    }
+  })());
+});
 
-  event.respondWith(
-    caches.match(request).then(cached => {
-      const network = fetch(request).then(response => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-        }
-        return response;
-      });
-      return cached || network;
-    })
-  );
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
