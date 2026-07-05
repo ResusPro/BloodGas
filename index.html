@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.4 — thermal logo + arrow flags + sample-aware note -->
+  <!-- ResusPro BloodGas v1.0.5 — media decoding fix + arrow flags -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -70,7 +70,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.4 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.5 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -213,7 +213,7 @@ function receiptLines(){
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.4" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.5" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
 function testReceiptLines(){
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
@@ -256,16 +256,22 @@ function applyPrinterState(state,status={}){
 }
 function formatStatus(status={},fallbackState=printerState){const state=status.state||fallbackState;if(state==='idle')return'ResusPro BloodGas printer: Idle';if(state==='printing'){const count=Number(status.queueDepth||0);return`ResusPro BloodGas printer: ${status.label||'Printing'}${count?` · ${count} queued`:''}`}const seen=status.lastSeen?new Date(status.lastSeen).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'never';return`ResusPro BloodGas printer: ${status.label||'Offline'} · last seen ${seen}`}
 async function buildReceiptPng(sourceLines=receiptLines()){
-  const logo=await loadImage('logo.png');
-  const lines=logo?withoutDuplicateTextBrand(sourceLines):sourceLines;
-  const width=576,margin=24,lineHeight=27,logoHeight=72,titleGap=12;const height=Math.min(2350,margin+logoHeight+titleGap+lines.length*lineHeight+margin);
+  const lines=withoutDuplicateTextBrand(sourceLines);
+  const width=576,margin=24,lineHeight=27,brandHeight=82,titleGap=10;const height=Math.min(2350,margin+brandHeight+titleGap+lines.length*lineHeight+margin);
   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.fillStyle='#000';
-  let y=margin;if(logo){const scale=Math.min(320/logo.naturalWidth,logoHeight/logo.naturalHeight,1);const w=logo.naturalWidth*scale,h=logo.naturalHeight*scale;drawThermalLogo(ctx,logo,(width-w)/2,y,w,h);y+=h+titleGap}else{ctx.font='bold 42px Arial';ctx.textAlign='center';ctx.fillText('RESUSPRO',width/2,y+48);ctx.textAlign='left';y+=logoHeight+titleGap}
+  let y=margin;drawThermalBrand(ctx,width,y);y+=brandHeight+titleGap;
   ctx.font='24px "Courier New", monospace';ctx.textBaseline='top';for(const line of lines){if(y+lineHeight>height-margin)break;ctx.font=(line==='PATIENT / SCENARIO'||line==='RESUS BAY / LOCATION')?'bold 24px "Courier New", monospace':'24px "Courier New", monospace';ctx.fillText(line,margin,y);y+=lineHeight}
-  return canvas.toDataURL('image/png').replace(/^data:image\/png;base64,/,'')
+  const dataUrl=canvas.toDataURL('image/png');if(!dataUrl.startsWith('data:image/png;base64,'))throw new Error('Could not create a PNG receipt image.');return dataUrl.slice('data:image/png;base64,'.length)
 }
-function drawThermalLogo(ctx,logo,x,y,w,h){const source=document.createElement('canvas');source.width=Math.max(1,Math.round(w));source.height=Math.max(1,Math.round(h));const sctx=source.getContext('2d',{willReadFrequently:true});sctx.clearRect(0,0,source.width,source.height);sctx.drawImage(logo,0,0,source.width,source.height);const data=sctx.getImageData(0,0,source.width,source.height);const px=data.data;for(let i=0;i<px.length;i+=4){const alpha=px[i+3];const r=px[i],g=px[i+1],b=px[i+2];const luminance=(0.2126*r)+(0.7152*g)+(0.0722*b);const ink=alpha>18&&!(r>248&&g>248&&b>248)&&luminance<252;if(ink){px[i]=0;px[i+1]=0;px[i+2]=0;px[i+3]=255}else{px[i]=255;px[i+1]=255;px[i+2]=255;px[i+3]=255}}sctx.putImageData(data,0,0);ctx.drawImage(source,x,y,w,h)}
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.4`})}
+function drawThermalBrand(ctx,width,y){
+  ctx.save();ctx.fillStyle='#000';ctx.strokeStyle='#000';ctx.lineWidth=3;ctx.textBaseline='alphabetic';ctx.textAlign='left';
+  const brand='RESUS PRO';ctx.font='bold 38px Arial, sans-serif';const brandWidth=ctx.measureText(brand).width;const shieldWidth=38;const gap=18;const total=brandWidth+gap+shieldWidth;const x=(width-total)/2;
+  ctx.fillText(brand,x,y+40);
+  const sx=x+brandWidth+gap,sy=y+8;ctx.beginPath();ctx.moveTo(sx+19,sy);ctx.lineTo(sx+35,sy+7);ctx.lineTo(sx+32,sy+31);ctx.quadraticCurveTo(sx+19,sy+48,sx+6,sy+31);ctx.lineTo(sx+3,sy+7);ctx.closePath();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(sx+8,sy+24);ctx.lineTo(sx+14,sy+24);ctx.lineTo(sx+17,sy+17);ctx.lineTo(sx+21,sy+31);ctx.lineTo(sx+24,sy+24);ctx.lineTo(sx+30,sy+24);ctx.stroke();
+  ctx.font='15px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+67);ctx.restore();
+}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.5`})}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
 function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}
