@@ -1,32 +1,27 @@
-ResusPro BloodGas v1.0.4 — thermal logo + arrow flags
+ResusPro BloodGas v1.0.7 — printer-safe 1-bit PNG
 
-WHY THIS VERSION EXISTS
-The previous PNG receipt printed the logo in its original colours. On a monochrome thermal printer, the red/blue elements could become faint or disappear, which clipped the visual identity (for example the word PRO and shield details). In addition, the out-of-range indicator still used H/L letters.
+WHY FULL RESULTS FAILED
+The short test receipt printed, but a longer receipt with many results, units, ranges and arrows produced a CloudPRNT media decoding error. The browser had been creating a 24/32-bit PNG. Star documents that CloudPRNT printers can have a much lower maximum height for 24-bit PNG than for monochrome PNG because the uncompressed image must fit in printer memory.
 
-WHAT THIS VERSION CHANGES
-1. The receipt PNG now converts logo.png into a high-contrast black-on-white thermal version before printing.
-2. Out-of-range indicators now use arrows instead of letters:
-   - ↓ below range
-   - ↑ above range
-3. A note is shown in the UI clarifying that sample type changes the blood-gas reference ranges and fill-normal values.
-4. The existing D1 storage, working /cloudprnt/... path fix, and logo-PNG-only CloudPRNT behaviour are retained.
-
-SAMPLE-TYPE LOGIC
-- Already implemented: arterial / venous / capillary reference ranges for the core blood-gas parameters (pH, pCO2, pO2, HCO3, BE, SaO2, Lactate).
-- Unchanged for now: electrolytes, renal indices, Hb/Hct, and POCT chemistry keep shared ranges unless manually edited.
+WHAT v1.0.7 CHANGES
+1. Generates a genuine 1-bit grayscale PNG rather than a browser-default colour PNG.
+2. Keeps the full-width 576-dot layout and the working monochrome ResusPro logo.
+3. Advertises the job as image/vnd.star.png with its mono_len height so the printer can check it against its supported monochrome image length.
+4. Automatically reduces the receipt font when units and ranges make lines wider, so all enabled columns fit the 576-dot paper width.
+5. Retains arrow flags, all optional columns, D1 storage and the reliable PWA update mechanism.
+6. The Worker automatically adds two small metadata columns to the existing D1 jobs table; no SQL needs to be run manually.
 
 DEPLOYMENT
-A. CLOUDFLARE WORKER
-- Replace the entire Worker code with cloudflare-worker.js.
-- Keep the D1 binding named DB.
-- Deploy.
+Cloudflare Worker:
+- Replace the complete Worker with cloudflare-worker.js and deploy.
+- Keep the existing DB binding.
 
-B. GITHUB PAGES / PWA
-- Replace index.html and service-worker.js.
-- manifest.json is included but functionally unchanged.
-- Keep the existing logo.png in the same folder as index.html.
-- After GitHub Pages updates, fully close and reopen the installed PWA once.
+GitHub Pages / PWA:
+- Replace index.html, service-worker.js and update.html.
+- After publishing, the app should update itself rapidly. If needed, open update.html once.
 
 TEST
-- Use Test CloudPRNT and confirm the full ResusPro logo prints clearly in black.
-- Enter a value below or above range and confirm the flag column shows ↓ or ↑ on screen and on the printed receipt.
+1. Confirm the header reads v1.0.7.
+2. Turn on all parameters/columns.
+3. Enter several normal, high and low values.
+4. Print. The receipt should retain the logo, ranges, units and arrow flags without a media decoding error.

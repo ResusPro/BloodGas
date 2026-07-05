@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.6 — media decoding fix + reliable PWA updating -->
+  <!-- ResusPro BloodGas v1.0.7 — 1-bit monochrome PNG + reliable PWA updating -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -70,7 +70,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.6 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.7 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -222,8 +222,8 @@ function renderReceipt(){const html=receiptHtml();$('settingsReceipt').innerHTML
 async function cloudPrint(){
   const button=$('cloudPrintButton');button.disabled=true;button.textContent='Queuing…';
   try{
-    const pngBase64=await buildReceiptPng();
-    const response=await fetch(`${PRINT_API}/api/print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),receiptText:receiptText(),pngBase64}),cache:'no-store'});
+    const png=await buildReceiptPng();
+    const response=await fetch(`${PRINT_API}/api/print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),receiptText:receiptText(),pngBase64:png.base64,pngHeight:png.height,pngBitDepth:png.bitDepth}),cache:'no-store'});
     const result=await readJsonResponse(response);if(!response.ok||!result.ok)throw new Error(result.error||`Print service returned ${response.status}`);
     saveHistory('CloudPRNT queued',result.jobId);showToast('Result queued for ResusPro BloodGas printer.','success');trackJob(result.jobId);await refreshPrinterStatus(false);
   }catch(error){showToast(`Could not queue print: ${error.message}`,'error')}
@@ -232,8 +232,8 @@ async function cloudPrint(){
 async function sendTestPrint(){
   try{
     const lines=testReceiptLines();
-    const pngBase64=await buildReceiptPng(lines);
-    const response=await fetch(`${PRINT_API}/api/test`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({patientId:'TEST-PATIENT',resusBay:'TEST BAY',receiptText:lines.join('\n'),pngBase64}),cache:'no-store'});
+    const png=await buildReceiptPng(lines);
+    const response=await fetch(`${PRINT_API}/api/test`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({patientId:'TEST-PATIENT',resusBay:'TEST BAY',receiptText:lines.join('\n'),pngBase64:png.base64,pngHeight:png.height,pngBitDepth:png.bitDepth}),cache:'no-store'});
     const result=await readJsonResponse(response);if(!response.ok||!result.ok)throw new Error(result.error||`Print service returned ${response.status}`);saveHistory('CloudPRNT test queued',result.jobId);showToast('Test receipt queued.','success');trackJob(result.jobId);refreshPrinterStatus(false)
   }catch(error){showToast(`Test print failed: ${error.message}`,'error')}
 }
@@ -257,12 +257,71 @@ function applyPrinterState(state,status={}){
 function formatStatus(status={},fallbackState=printerState){const state=status.state||fallbackState;if(state==='idle')return'ResusPro BloodGas printer: Idle';if(state==='printing'){const count=Number(status.queueDepth||0);return`ResusPro BloodGas printer: ${status.label||'Printing'}${count?` · ${count} queued`:''}`}const seen=status.lastSeen?new Date(status.lastSeen).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'never';return`ResusPro BloodGas printer: ${status.label||'Offline'} · last seen ${seen}`}
 async function buildReceiptPng(sourceLines=receiptLines()){
   const lines=withoutDuplicateTextBrand(sourceLines);
-  const width=576,margin=24,lineHeight=27,brandHeight=82,titleGap=10;const height=Math.min(2350,margin+brandHeight+titleGap+lines.length*lineHeight+margin);
-  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.fillStyle='#000';
+  const width=576,margin=24,brandHeight=82,titleGap=10;
+  const longest=Math.max(32,...lines.map(line=>String(line).length));
+  const fontSize=Math.max(16,Math.min(24,Math.floor((width-(margin*2))/(longest*0.61))));
+  const lineHeight=fontSize+5;
+  const height=Math.min(1800,margin+brandHeight+titleGap+lines.length*lineHeight+margin);
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.fillStyle='#000';
   let y=margin;drawThermalBrand(ctx,width,y);y+=brandHeight+titleGap;
-  ctx.font='24px "Courier New", monospace';ctx.textBaseline='top';for(const line of lines){if(y+lineHeight>height-margin)break;ctx.font=(line==='PATIENT / SCENARIO'||line==='RESUS BAY / LOCATION')?'bold 24px "Courier New", monospace':'24px "Courier New", monospace';ctx.fillText(line,margin,y);y+=lineHeight}
-  const dataUrl=canvas.toDataURL('image/png');if(!dataUrl.startsWith('data:image/png;base64,'))throw new Error('Could not create a PNG receipt image.');return dataUrl.slice('data:image/png;base64,'.length)
+  ctx.font=`${fontSize}px "Courier New", monospace`;ctx.textBaseline='top';
+  for(const line of lines){
+    if(y+lineHeight>height-margin)break;
+    ctx.font=(line==='PATIENT / SCENARIO'||line==='RESUS BAY / LOCATION')?`bold ${fontSize}px "Courier New", monospace`:`${fontSize}px "Courier New", monospace`;
+    ctx.fillText(line,margin,y);y+=lineHeight;
+  }
+  const pngBytes=await encodeMonochromePng(canvas,220);
+  return {base64:bytesToBase64(pngBytes),height,width,bitDepth:1};
 }
+async function encodeMonochromePng(canvas,threshold=220){
+  if(typeof CompressionStream!=='function')throw new Error('This browser cannot create the printer-safe monochrome PNG. Please update Chrome or Android System WebView.');
+  const width=canvas.width,height=canvas.height,ctx=canvas.getContext('2d',{willReadFrequently:true});
+  const rgba=ctx.getImageData(0,0,width,height).data;
+  const rowBytes=Math.ceil(width/8),raw=new Uint8Array(height*(rowBytes+1));
+  let source=0,target=0;
+  for(let y=0;y<height;y++){
+    raw[target++]=0;
+    for(let byteIndex=0;byteIndex<rowBytes;byteIndex++){
+      let packed=0;
+      for(let bit=0;bit<8;bit++){
+        const x=byteIndex*8+bit;
+        let white=1;
+        if(x<width){
+          const index=source+x*4;
+          const alpha=rgba[index+3]/255;
+          const luminance=((0.2126*rgba[index])+(0.7152*rgba[index+1])+(0.0722*rgba[index+2]))*alpha+(255*(1-alpha));
+          white=luminance>=threshold?1:0;
+        }
+        packed|=white<<(7-bit);
+      }
+      raw[target++]=packed;
+    }
+    source+=width*4;
+  }
+  const compressedStream=new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'));
+  const compressed=new Uint8Array(await new Response(compressedStream).arrayBuffer());
+  const ihdr=new Uint8Array(13);
+  writeUint32(ihdr,0,width);writeUint32(ihdr,4,height);
+  ihdr[8]=1;ihdr[9]=0;ihdr[10]=0;ihdr[11]=0;ihdr[12]=0;
+  return concatBytes(
+    new Uint8Array([137,80,78,71,13,10,26,10]),
+    pngChunk('IHDR',ihdr),
+    pngChunk('IDAT',compressed),
+    pngChunk('IEND',new Uint8Array(0)),
+  );
+}
+function pngChunk(type,data){
+  const typeBytes=new TextEncoder().encode(type),chunk=new Uint8Array(12+data.length);
+  writeUint32(chunk,0,data.length);chunk.set(typeBytes,4);chunk.set(data,8);
+  const crcInput=new Uint8Array(typeBytes.length+data.length);crcInput.set(typeBytes);crcInput.set(data,typeBytes.length);
+  writeUint32(chunk,8+data.length,crc32(crcInput));return chunk;
+}
+const CRC32_TABLE=(()=>{const table=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);table[n]=c>>>0}return table})();
+function crc32(bytes){let c=0xffffffff;for(const byte of bytes)c=CRC32_TABLE[(c^byte)&0xff]^(c>>>8);return(c^0xffffffff)>>>0}
+function writeUint32(bytes,offset,value){bytes[offset]=(value>>>24)&255;bytes[offset+1]=(value>>>16)&255;bytes[offset+2]=(value>>>8)&255;bytes[offset+3]=value&255}
+function concatBytes(...parts){const total=parts.reduce((sum,part)=>sum+part.length,0),out=new Uint8Array(total);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length}return out}
+function bytesToBase64(bytes){let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary)}
 function drawThermalBrand(ctx,width,y){
   ctx.save();ctx.fillStyle='#000';ctx.strokeStyle='#000';ctx.lineWidth=3;ctx.textBaseline='alphabetic';ctx.textAlign='left';
   const brand='RESUS PRO';ctx.font='bold 38px Arial, sans-serif';const brandWidth=ctx.measureText(brand).width;const shieldWidth=38;const gap=18;const total=brandWidth+gap+shieldWidth;const x=(width-total)/2;
@@ -271,7 +330,7 @@ function drawThermalBrand(ctx,width,y){
   ctx.beginPath();ctx.moveTo(sx+8,sy+24);ctx.lineTo(sx+14,sy+24);ctx.lineTo(sx+17,sy+17);ctx.lineTo(sx+21,sy+31);ctx.lineTo(sx+24,sy+24);ctx.lineTo(sx+30,sy+24);ctx.stroke();
   ctx.font='15px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+67);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.6`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.7`})}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
 function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}
@@ -291,7 +350,7 @@ if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
   window.addEventListener('load',async()=>{
     try{
-      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.6',{updateViaCache:'none'});
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.7',{updateViaCache:'none'});
       await registration.update();
       setInterval(()=>registration.update().catch(()=>{}),30*60*1000);
     }catch(error){console.warn('Service worker registration failed',error)}
