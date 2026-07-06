@@ -5,162 +5,161 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#1565c0" />
   <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="resuspro-icon-192.png" />
+  <link rel="apple-touch-icon" href="pwa-icon-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="ROTEM/TEG" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="application-name" content="ROTEM/TEG SimLab" />
   <meta name="description" content="ResusPro BloodGas and ROTEM/TEG point-of-care simulation result generator." />
   <title>ResusPro ROTEM/TEG</title>
-  <!-- Build: v1.1.0-dev2 ROTEM/TEG module -->
+  <!-- Build: v1.1.0-dev-rot008b — BloodGas v1.0.9 UI / CloudPRNT sync -->
   <style>
     :root{
-      --blue:#1565c0; --blue2:#0d47a1; --bg:#eef2f6; --card:#fff; --line:#d9e1ea;
-      --text:#101828; --muted:#526070; --soft:#e8eef5; --danger:#b42318;
-      --shadow:0 2px 12px rgba(16,24,40,.08);
+      --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
+      --text:#101828;--muted:#526070;--soft:#e8eef5;--danger:#b42318;
+      --green:#18864b;--amber:#e59b16;--red:#c62828;--shadow:0 2px 12px rgba(16,24,40,.08);
+      --hero-fixed-top:8px;--hero-space:82px;--param-sticky-top:90px
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
-    body{padding:10px;padding-bottom:28px}
+    html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);overflow-x:clip}
+    body{padding:10px 10px 28px}
     .app{width:100%;max-width:920px;margin:0 auto}
-    .hero{background:linear-gradient(135deg,var(--blue),#1976d2);color:#fff;border-radius:16px;padding:8px 10px;margin:0 0 10px;box-shadow:var(--shadow)}
+    .hero{position:fixed;top:var(--hero-fixed-top);left:50%;transform:translateX(-50%);width:calc(100% - 20px);max-width:920px;z-index:40;background:linear-gradient(135deg,var(--blue),#1976d2);color:#fff;border-radius:16px;padding:8px 10px;margin:0;box-shadow:0 4px 16px rgba(16,24,40,.18);isolation:isolate}
+    .hero-spacer{height:var(--hero-space);width:100%;pointer-events:none}
     .hero-top{display:flex;gap:10px;align-items:center;justify-content:space-between;min-width:0}
-    .brand-link{display:flex;align-items:center;gap:9px;min-width:0;color:#fff;text-decoration:none}
-    .logo-pill{background:rgba(255,255,255,.94);border-radius:13px;padding:5px 8px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(16,24,40,.18);flex:0 0 auto}
-    .app-logo{width:128px;max-width:42vw;height:auto;display:block}
-    .brand-text{min-width:0}
-    h1{font-size:1rem;line-height:1.05;margin:0;font-weight:850;letter-spacing:.2px;white-space:normal}
-    .subtitle{font-size:.76rem;margin-top:2px;opacity:.95;line-height:1.15}
-    .version{font-size:.65rem;opacity:.8;margin-top:1px}
+    .brand{display:flex;align-items:center;gap:9px;min-width:0;color:#fff;text-decoration:none}
+    .logo-pill{background:rgba(255,255,255,.95);border-radius:13px;padding:5px 8px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(16,24,40,.18);flex:0 0 auto}
+    .app-logo{width:128px;max-width:39vw;height:auto;display:block}
+    .brand-text{min-width:0}.brand-text h1{font-size:1rem;line-height:1.05;margin:0;font-weight:850;letter-spacing:.2px;white-space:normal}
+    .version{font-size:.76rem;margin-top:2px;opacity:.96;line-height:1.15}.dev-link{color:#90caf9;text-decoration:underline;font:inherit;font-weight:700}
+    .hero-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
     .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     button,.button-like,select,input{font:inherit}
     button{border:0;border-radius:14px;padding:12px 14px;font-weight:760;background:var(--soft);color:var(--text);cursor:pointer;min-height:44px}
-    button.primary{background:#fff;color:var(--blue2)}
-    button.blue{background:var(--blue);color:#fff}
-    button.small{padding:9px 11px;min-height:38px;border-radius:12px;font-size:.92rem}
-    button.danger{background:#fee4e2;color:var(--danger)}
-    button.active{background:var(--blue);color:#fff}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:12px 0;box-shadow:var(--shadow);overflow:hidden}
-    .card h2{font-size:1.12rem;margin:0;padding:14px 16px 8px}
-    .section{padding:12px 16px;border-top:1px solid var(--line)}
+    button:disabled{opacity:.68;cursor:wait}
+    button.primary{background:#fff;color:var(--blue2)}button.blue{background:var(--blue);color:#fff}button.small{padding:9px 11px;min-height:38px;border-radius:12px;font-size:.92rem}button.danger{background:#fee4e2;color:var(--danger)}button.active{background:var(--blue);color:#fff}
+    .settings-button{width:42px;min-width:42px;padding:0;background:rgba(255,255,255,.18);color:#fff;font-size:1.25rem}
+    .print-button{min-width:104px;color:#fff;transition:background .2s ease}.print-button.state-idle{background:var(--green)}.print-button.state-printing{background:var(--amber);color:#1f2937}.print-button.state-offline{background:var(--red)}.print-button.state-checking{background:#fff;color:var(--blue2)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:12px 0;box-shadow:var(--shadow);overflow:hidden}.card.parameters-card{overflow:visible}
+    .card h2{font-size:1.12rem;margin:0;padding:14px 16px 8px}.section{padding:12px 16px;border-top:1px solid var(--line)}
     label{display:block;font-weight:720;color:#344054;margin:10px 0 6px;font-size:.95rem}
     input[type="text"],input[type="number"],select{width:100%;border:1px solid #cfd8e3;border-radius:14px;background:#fff;padding:12px 13px;min-height:46px;color:var(--text);font-size:1rem}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
-    .tabs button{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}
-    .tabs button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-    .sample-buttons,.seg-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .seg-buttons.two{grid-template-columns:repeat(2,1fr)}
-    .sample-buttons button,.seg-buttons button{background:var(--soft);font-size:.94rem;padding:10px 8px}
-    .sample-buttons button.active,.seg-buttons button.active{background:var(--blue);color:#fff}
-    .preset-row{display:grid;grid-template-columns:1fr;gap:8px;align-items:end}
-    .stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .stage-row button.active{background:var(--blue);color:#fff}
-    .group-title{font-weight:850;color:#1d2939;margin:14px 0 7px;padding-top:5px;border-top:1px solid #eef2f6}
-    .param-head,.param{display:grid;grid-template-columns:30px minmax(70px,1fr) minmax(66px,.75fr) 34px minmax(52px,.65fr) minmax(76px,.8fr);gap:6px;align-items:center;min-width:0}
-    .param-head{position:sticky;top:0;z-index:2;background:#f8fafc;border:1px solid #e5ebf3;border-radius:12px;padding:8px 6px;margin-bottom:8px;font-size:.8rem;font-weight:850;color:#344054}
-    .head-cell{border:0;background:transparent;min-height:0;padding:4px 2px;border-radius:8px;text-align:left;font-size:inherit;font-weight:inherit;color:inherit;cursor:pointer}
-    .head-cell.center{text-align:center}.head-cell.off{color:#a0aab8;background:#eef2f6;opacity:.55}
-    .param{padding:7px 0;border-bottom:1px solid #eef2f6}
-    .param.off-row .pname,.param.off-row .unit-cell,.param.off-row .range-cell,.param.off-row .flag-cell{opacity:.5}
-    .param input[type="checkbox"]{width:23px;height:23px;accent-color:var(--blue);margin:0}
-    .pname{font-weight:780;color:#263445;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .value-input{font-weight:760;text-align:center;min-height:39px!important;padding:7px 6px!important;border-radius:11px!important}
-    .flag-cell{text-align:center;font-weight:900;font-size:1.05rem;color:#344054;min-height:1.2em}
-    .unit-cell,.range-cell{font-size:.86rem;color:#526070;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;border-radius:8px;padding:4px 2px}
-    .unit-cell.off,.range-cell.off,.flag-cell.off{opacity:.25}
-    .edit-panel{display:none;grid-column:2/7;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 8px 36px}
-    .edit-panel.open{display:grid}
-    .edit-panel input{min-height:38px;padding:8px 10px;font-size:.92rem;border-radius:10px}
-    .trace-wrap{background:#f8fafc;border:1px solid #e5ebf3;border-radius:14px;padding:10px;margin:8px 0 0}
-    .trace-wrap svg{width:100%;height:150px;display:block;background:#fff;border:1px dashed #cfd8e3;border-radius:10px}.trace-fill{opacity:.13}.trace-main{fill:none;stroke-width:3;stroke-linecap:round}.trace-axis{stroke:#d0d5dd;stroke-width:1}.trace-marker{stroke:#98a2b3;stroke-width:1;stroke-dasharray:4 3}.trace-dot{fill:#fff;stroke-width:2}.trace-label{font:700 12px system-ui,-apple-system,Segoe UI,Arial,sans-serif;fill:#344054}.trace-metric{font:600 10px system-ui,-apple-system,Segoe UI,Arial,sans-serif;fill:#526070}.trace-warning{font:800 10px system-ui,-apple-system,Segoe UI,Arial,sans-serif;fill:#b42318}
-    .preview-wrap{padding:12px 16px;background:#f7f9fc;border-top:1px solid var(--line)}
-    .receipt{width:100%;max-width:360px;margin:0 auto;background:#fff;color:#111;border:1px dashed #98a2b3;padding:12px 12px;font-family:"Courier New",Courier,monospace;font-size:13px;line-height:1.25;overflow-wrap:anywhere}
-    .receipt-brand{text-align:center;margin:0 0 4px}
-    .receipt-brand img{max-width:130px;max-height:42px;height:auto;width:auto;display:inline-block}
-    .receipt pre{font:inherit;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;padding:10px;z-index:50}
-    .modal{width:100%;max-width:620px;max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
-    .modal h2{margin:0 0 8px;font-size:1.2rem}.modal p{color:var(--muted);margin:0 0 10px}
-    .history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}
-    .muted{color:var(--muted);font-size:.92rem}.hidden{display:none!important}
-    .version{font-size:.76rem;margin-top:2px;opacity:.95;line-height:1.15}.dev-link{color:#90caf9;text-decoration:underline;font-weight:700;font-size:inherit;line-height:inherit}
-    @media(max-width:560px){body{padding:8px}.hero{border-radius:14px;padding:7px 8px}.app-logo{width:112px;max-width:38vw}h1{font-size:.92rem}.subtitle{font-size:.72rem}.grid2,.preset-row{grid-template-columns:1fr}.card{border-radius:16px}.section{padding:10px}.card h2{padding-left:10px}.param-head,.param{grid-template-columns:25px minmax(58px,1fr) 58px 25px 43px 58px;gap:4px}.param-head{font-size:.7rem;padding:7px 4px}.pname{font-size:.88rem}.value-input{font-size:.95rem}.unit-cell,.range-cell{font-size:.74rem}.edit-panel{grid-template-columns:1fr;margin-left:29px}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}.hero button{min-height:40px;padding:9px 12px}}
-    @media print{body{background:#fff;padding:0}.app>*:not(#printOnly){display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:42mm;max-height:13mm}.no-print{display:none!important}}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.tabs button{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}.tabs button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+    .sample-buttons,.seg-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.seg-buttons.two{grid-template-columns:repeat(2,1fr)}.sample-buttons button,.seg-buttons button{background:var(--soft);font-size:.94rem;padding:10px 8px}.sample-buttons button.active,.seg-buttons button.active{background:var(--blue);color:#fff}
+    .preset-row{display:grid;grid-template-columns:1fr;gap:8px;align-items:end}.stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.stage-row button.active{background:var(--blue);color:#fff}.group-title{font-weight:850;color:#1d2939;margin:16px 0 7px;padding-top:6px;border-top:1px solid #eef2f6}
+    .param-head,.param{display:grid;grid-template-columns:34px minmax(78px,1.2fr) minmax(76px,.9fr) 38px minmax(54px,.65fr) minmax(74px,.9fr);gap:6px;align-items:center;min-width:0}
+    .param-head{position:sticky;top:var(--param-sticky-top);background:#fff;z-index:25;border-bottom:2px solid var(--line);padding:6px 0;min-height:46px;font-size:.78rem;font-weight:850;color:#344054;box-shadow:0 4px 8px rgba(16,24,40,.06)}
+    .param{padding:7px 0;border-bottom:1px solid #eef2f6}.param.off-row .pname,.param.off-row .unit-cell,.param.off-row .range-cell,.param.off-row .flag-cell{opacity:.5}.param input[type="checkbox"]{width:23px;height:23px;accent-color:var(--blue);justify-self:center;margin:0}
+    .head-cell{display:flex;align-items:center;justify-content:flex-start;align-self:stretch;border:0;background:transparent;color:#344054;border-radius:9px;min-height:40px;margin:0;padding:0 4px;font-size:.78rem;font-weight:850;line-height:1.15;text-align:left;cursor:pointer}.param-head>*{align-self:stretch}.param-head span{display:flex;align-items:center}.head-cell.center{justify-content:center;text-align:center}.head-cell.off{color:#b8c0cc;text-decoration:line-through}.head-cell.include{justify-content:center;font-size:1rem;text-align:center;color:var(--blue)}
+    #flagHead,#vFlagHead2{display:inline-flex;flex-direction:row;flex-wrap:nowrap;white-space:nowrap;justify-content:center;font-family:"Arial Black",Arial,sans-serif;font-size:1.18rem;font-weight:950;letter-spacing:-.08em;-webkit-text-stroke:.7px currentColor;text-shadow:.35px 0 currentColor,-.35px 0 currentColor}
+    .pname{font-weight:780;color:#263445;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.95rem}.value-input{font-weight:760;text-align:center;padding:9px 8px!important;min-height:38px!important;border-radius:11px!important}
+    .flag-cell{text-align:center;color:#344054;min-height:1.2em;font-family:"Arial Black",Arial,sans-serif;font-size:1.3rem;font-weight:950;line-height:1;-webkit-text-stroke:.75px currentColor;text-shadow:.35px 0 currentColor,-.35px 0 currentColor}.unit-cell,.range-cell{font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.unit-cell.off,.range-cell.off,.flag-cell.off{visibility:hidden}
+    .edit-panel{display:none;grid-column:2/7;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px;margin-top:4px}.edit-panel.open{display:grid}.edit-panel input{min-height:38px;padding:8px 10px;font-size:.92rem;border-radius:10px}
+    .trace-wrap{background:#f8fafc;border:1px solid #e5ebf3;border-radius:14px;padding:10px;margin:8px 0 0}.trace-wrap svg{width:100%;height:150px;display:block;background:#fff;border:1px dashed #cfd8e3;border-radius:10px}.trace-fill{opacity:.13}.trace-main{fill:none;stroke-width:3;stroke-linecap:round}.trace-axis{stroke:#d0d5dd;stroke-width:1}.trace-marker{stroke:#98a2b3;stroke-width:1;stroke-dasharray:4 3}.trace-dot{fill:#fff;stroke-width:2}.trace-label{font:700 12px system-ui,-apple-system,Segoe UI,Arial,sans-serif;fill:#344054}.trace-metric{font:600 10px system-ui,-apple-system,Segoe UI,Arial,sans-serif;fill:#526070}.trace-warning{font:800 10px system-ui,-apple-system,Segoe UI,Arial,sans-serif;fill:#b42318}
+    .preview-wrap{padding:12px;background:#f7f9fc;border:1px solid var(--line);border-radius:14px}.receipt{width:100%;max-width:390px;margin:0 auto;background:#fff;color:#111;border:1px dashed #98a2b3;padding:12px;font-family:"Courier New",Courier,monospace;font-size:13px;line-height:1.25;overflow-wrap:anywhere}.receipt-brand{text-align:center;margin:0 0 5px}.receipt-brand img{max-width:190px;max-height:60px;width:auto;height:auto}.receipt pre{font:inherit;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.54);display:none;align-items:flex-end;justify-content:center;padding:10px;z-index:50}.modal-backdrop.open{display:flex}.modal{width:100%;max-width:680px;max-height:94vh;overflow:auto;background:#fff;border-radius:20px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,.25)}.modal h2{margin:0 0 8px;font-size:1.2rem}.modal h3{font-size:1rem;margin:18px 0 8px}.modal p{color:var(--muted);margin:0 0 10px}
+    .history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}.muted{color:var(--muted);font-size:.92rem}.hidden{display:none!important}.status-strip{display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 11px;border-radius:12px;background:#f8fafc;border:1px solid #e4e7ec;font-size:.9rem}.status-dot{width:11px;height:11px;border-radius:50%;background:#98a2b3;flex:0 0 auto}.status-dot.idle{background:var(--green)}.status-dot.printing{background:var(--amber)}.status-dot.offline{background:var(--red)}
+    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#101828;color:#fff;padding:11px 15px;border-radius:13px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:100;max-width:calc(100vw - 24px);text-align:center;font-weight:700;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.error{background:#b42318}.toast.success{background:#166534}
+    @supports(top:env(safe-area-inset-top)){:root{--hero-fixed-top:calc(env(safe-area-inset-top) + 8px)}}
+    @media(max-width:560px){body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.version{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2,.preset-row{grid-template-columns:1fr}.card{border-radius:16px}.section{padding:10px}.card h2{padding-left:10px}.param-head,.param{grid-template-columns:30px minmax(58px,1fr) minmax(58px,.8fr) 34px minmax(42px,.55fr) minmax(58px,.7fr);gap:4px}.pname{font-size:.86rem}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead,#vFlagHead2{font-size:1.02rem;letter-spacing:-.1em}.flag-cell{font-size:1.18rem}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
+    @media print{body{background:#fff;padding:0}.app,.modal-backdrop,.toast{display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:48mm;max-height:15mm}}
   </style>
 </head>
 <body>
 <div class="app">
-  <div class="hero">
+  <header class="hero">
     <div class="hero-top">
-      <div class="brand-link">
+      <div class="brand">
         <a class="logo-pill" href="https://resuspro.com" target="_blank" rel="noopener">
-          <img class="app-logo" src="logo.png" alt="ResusPro" onerror="this.closest('.logo-pill').style.display='none'" />
+          <img class="app-logo" src="logo.png" alt="ResusPro" onerror="this.closest('.logo-pill').style.display='none'">
         </a>
         <div class="brand-text">
           <h1>ROTEM/TEG SimLab</h1>
-          <div class="version">v1.1.0-dev-rot008 | <a class="dev-link" href="index.html">BloodGas →</a></div>
+          <div class="version">v1.1.0-dev-rot008b | <a class="dev-link" href="index.html">BloodGas →</a></div>
         </div>
       </div>
-      
-      <button class="primary" onclick="openOutput()">Print</button>
+      <div class="hero-actions">
+        <button class="settings-button" type="button" onclick="openSettings()" aria-label="Settings">⚙</button>
+        <button id="cloudPrintButton" class="print-button state-checking" type="button" onclick="cloudPrint()">Checking…</button>
+      </div>
     </div>
-  </div>
+  </header>
+  <div class="hero-spacer" id="heroSpacer" aria-hidden="true"></div>
 
   <div class="tabs">
-    <button id="tab-bloodgas" class="active" onclick="setMode('bloodgas')">Blood Gas</button>
-    <button id="tab-visco" onclick="setMode('visco')">ROTEM / TEG</button>
+    <button id="tab-bloodgas" class="active" type="button" onclick="setMode('bloodgas')">Blood Gas</button>
+    <button id="tab-visco" type="button" onclick="setMode('visco')">ROTEM / TEG</button>
   </div>
 
-  <div class="card">
+  <section class="card">
     <h2>Case details</h2>
     <div class="section">
       <div class="grid2">
-        <div><label for="scenarioId">Scenario ID</label><input id="scenarioId" type="text" value="SIM-001" /></div>
-        <div id="sampleBlock"><label>Sample type</label><div class="sample-buttons"><button id="sample-Arterial" onclick="setSample('Arterial')">Arterial</button><button id="sample-Venous" onclick="setSample('Venous')">Venous</button><button id="sample-Capillary" onclick="setSample('Capillary')">Capillary</button></div></div>
-        <div id="viscoTypeBlock" class="hidden"><label>Result type</label><div class="seg-buttons two"><button id="visco-ROTEM" onclick="setViscoType('ROTEM')">ROTEM</button><button id="visco-TEG" onclick="setViscoType('TEG')">TEG</button></div></div>
+        <div>
+          <label for="patientId">Patient / scenario ID <span class="muted">(optional)</span></label>
+          <input id="patientId" type="text" value="" placeholder="Leave blank to omit from printout" autocomplete="off">
+        </div>
+        <div>
+          <label for="resusBay">Resus bay / location <span class="muted">(optional)</span></label>
+          <input id="resusBay" type="text" value="" placeholder="Leave blank to omit from printout" autocomplete="off">
+        </div>
+      </div>
+      <div id="sampleBlock">
+        <label>Sample type</label>
+        <div class="sample-buttons"><button id="sample-Arterial" type="button" onclick="setSample('Arterial')">Arterial</button><button id="sample-Venous" type="button" onclick="setSample('Venous')">Venous</button><button id="sample-Capillary" type="button" onclick="setSample('Capillary')">Capillary</button></div>
+      </div>
+      <div id="viscoTypeBlock" class="hidden">
+        <label>Result type</label>
+        <div class="seg-buttons two"><button id="visco-ROTEM" type="button" onclick="setViscoType('ROTEM')">ROTEM</button><button id="visco-TEG" type="button" onclick="setViscoType('TEG')">TEG</button></div>
       </div>
       <div class="preset-row">
-        <div><label id="presetLabel" for="presetSelect">Example scenario</label><select id="presetSelect" onchange="loadSelectedPreset()"><option value="">Select an example...</option></select></div>
+        <div><label id="presetLabel" for="presetSelect">Example scenario</label><select id="presetSelect" onchange="loadSelectedPreset()"><option value="">Select an example…</option></select></div>
       </div>
       <div class="stage-row" id="stageRow"></div>
-      <div class="btn-row" style="margin-top:12px"><button onclick="fillBlankNormals()">Add normal values</button><button onclick="clearValues()">Clear values</button></div>
-      <p class="muted">Example names are for faculty only and are not printed.</p><p class="dev-note">Development preview: use <a href="index.html">live BloodGas</a> for the stable public version.</p>
+      <div class="btn-row" style="margin-top:12px"><button type="button" onclick="fillBlankNormals()">Add normal values</button><button type="button" onclick="clearValues()">Clear values</button></div>
     </div>
-  </div>
+  </section>
 
-  <div class="card" id="bloodgasPanel">
+  <section class="card parameters-card" id="bloodgasPanel">
     <h2>Blood gas / POCT parameters</h2>
     <div class="section" id="paramList"></div>
-  </div>
+  </section>
 
-  <div class="card hidden" id="viscoPanel">
+  <section class="card parameters-card hidden" id="viscoPanel">
     <h2>ROTEM / TEG result</h2>
     <div class="section">
-      <div class="grid2">
-        <div><label for="assaySelect">Assay</label><select id="assaySelect" onchange="setAssay(this.value)"></select></div>
-      </div>
+      <div class="grid2"><div><label for="assaySelect">Assay</label><select id="assaySelect" onchange="setAssay(this.value)"></select></div></div>
       <div class="trace-wrap"><svg id="viscoTrace" viewBox="0 0 420 150" role="img" aria-label="Simulated viscoelastic trace"></svg></div>
       <div id="viscoParamList" style="margin-top:10px"></div>
     </div>
-  </div>
-
-  <div class="card"><h2>Live print preview</h2><div class="preview-wrap"><div id="receiptPreview" class="receipt"></div></div></div>
-  <div class="card"><h2>Output history</h2><div class="section"><div class="btn-row"><button onclick="renderHistory()">Refresh</button><button class="danger" onclick="clearHistory()">Clear history</button></div><div id="historyList" style="margin-top:10px"></div></div></div>
-  <div id="printOnly" class="hidden"><div id="printReceipt" class="receipt"></div></div>
+  </section>
 </div>
 
-<div class="modal-backdrop" id="outputModal">
+<div id="settingsModal" class="modal-backdrop" onclick="backdropClose(event,'settingsModal')">
   <div class="modal">
-    <h2>Output</h2>
-    <p>Choose where to send or save this simulated result.</p>
-    <div class="preview-wrap"><div id="modalReceipt" class="receipt"></div></div>
-    <div class="btn-row" style="margin-top:12px"><button class="blue" onclick="doPrint('printer')">Local printer</button><button onclick="doPrint('pdf')">Save as PDF</button><button onclick="copyReceipt()">Copy</button><button onclick="closeOutput()">Close</button></div>
-    <p class="muted" style="margin-top:10px">For PDF, choose “Save as PDF” in your browser print dialog if available.</p>
+    <div class="btn-row" style="justify-content:space-between"><h2>Output & printer</h2><button class="small" type="button" onclick="closeSettings()">Close</button></div>
+    <p>Cloud printing is one tap from the green/amber/red button on the home page.</p>
+    <div id="settingsPrinterStatus" class="status-strip"><span class="status-dot"></span><span>Checking…</span></div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="blue" type="button" onclick="refreshPrinterStatus(true)">Refresh status</button>
+      <button type="button" onclick="sendTestPrint()">Test CloudPRNT</button>
+      <button type="button" onclick="localPrint('printer')">Local print</button>
+      <button type="button" onclick="localPrint('pdf')">Save as PDF</button>
+      <button type="button" onclick="copyReceipt()">Copy</button>
+    </div>
+    <h3>Receipt preview</h3>
+    <div class="preview-wrap"><div id="settingsReceipt" class="receipt"></div></div>
+    <h3>Output history</h3>
+    <div class="btn-row"><button class="small" type="button" onclick="renderHistory()">Refresh</button><button class="small danger" type="button" onclick="clearHistory()">Clear history</button></div>
+    <div id="historyList"></div>
   </div>
 </div>
+<div id="printOnly" class="hidden"><div id="printReceipt" class="receipt"></div></div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
+'use strict';
+const PRINT_API='https://resuspro-bloodgas-print.dr-nick.workers.dev';
 const STANDARD_IDS=['pH','pCO2','pO2','HCO3','BE','SaO2','Lactate','Na','K','Cl','iCa','Glucose','Hb'];
 const sampleRanges={
   Arterial:{pH:[7.35,7.45,'7.40'],pCO2:[4.7,6.0,'5.3'],pO2:[10.0,13.3,'12.0'],HCO3:[22,28,'24'],BE:[-2,2,'0'],SaO2:[94,100,'98'],Lactate:[0.5,2.2,'1.0']},
@@ -196,14 +195,18 @@ const viscoPresets={
 let mode='bloodgas', sampleType='Arterial', currentPreset='', currentStage='T0', includeCycleState='standard';
 let showFlags=true, showUnits=true, showRanges=false;
 let viscoType='ROTEM', assay='EXTEM', viscoShowFlags=true, viscoShowUnits=true, viscoShowRanges=true;
+let printerState='checking',statusTimer=null;
 function $(id){return document.getElementById(id)}
 function fmtRange(lo,hi){return `${lo}-${hi}`}
 function activePresets(){return mode==='bloodgas'?bloodPresets:viscoPresets}
-function init(){setSample('Arterial',false); buildParams(); buildVisco(); setMode('bloodgas',false); render(); renderHistory();}
+function init(){restoreCaseDetails();setSample('Arterial',false);buildParams();buildVisco();setMode('bloodgas',false);setupFixedLayout();render();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);$('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);}
+function restoreCaseDetails(){if(!localStorage.getItem('bloodgasOptionalDetailsMigrated')){if(localStorage.getItem('bloodgasPatientId')==='SIM-001')localStorage.removeItem('bloodgasPatientId');if(localStorage.getItem('bloodgasResusBay')==='Resus Bay 1')localStorage.removeItem('bloodgasResusBay');localStorage.setItem('bloodgasOptionalDetailsMigrated','1')}$('patientId').value=localStorage.getItem('bloodgasPatientId')||'';$('resusBay').value=localStorage.getItem('bloodgasResusBay')||'';}
+function caseDetailChanged(){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value);if(patient)localStorage.setItem('bloodgasPatientId',patient);else localStorage.removeItem('bloodgasPatientId');if(bay)localStorage.setItem('bloodgasResusBay',bay);else localStorage.removeItem('bloodgasResusBay');render();}
+function setupFixedLayout(){const hero=document.querySelector('.hero'),spacer=$('heroSpacer');if(!hero||!spacer)return;const update=()=>{const top=parseFloat(getComputedStyle(hero).top)||0;const height=Math.ceil(hero.getBoundingClientRect().height);document.documentElement.style.setProperty('--hero-space',`${height+Math.max(0,top)+4}px`);document.documentElement.style.setProperty('--param-sticky-top',`${Math.ceil(top+height+8)}px`)};update();window.addEventListener('resize',update,{passive:true});window.addEventListener('orientationchange',()=>setTimeout(update,150),{passive:true});if(document.fonts&&document.fonts.ready)document.fonts.ready.then(update).catch(()=>{});}
 function setMode(m,doRender=true){mode=m; $('tab-bloodgas').classList.toggle('active',m==='bloodgas'); $('tab-visco').classList.toggle('active',m==='visco'); $('bloodgasPanel').classList.toggle('hidden',m!=='bloodgas'); $('viscoPanel').classList.toggle('hidden',m!=='visco'); $('sampleBlock').classList.toggle('hidden',m!=='bloodgas'); $('viscoTypeBlock').classList.toggle('hidden',m!=='visco'); $('presetLabel').textContent=m==='bloodgas'?'Example scenario':'Example ROTEM/TEG scenario'; populatePresets(); drawStages(); if(doRender)render();}
 function populatePresets(){const sel=$('presetSelect'); sel.innerHTML='<option value="">Select an example...</option>'; Object.keys(activePresets()).forEach(k=>{let o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o)}); currentPreset=''; currentStage='T0';}
 function applySampleRanges(){params.forEach(p=>{const r=sampleRanges[sampleType]&&sampleRanges[sampleType][p.id]; if(r){p.low=r[0];p.high=r[1];p.normal=r[2]; if(!p.customRef)p.ref=fmtRange(r[0],r[1]);} else {p.low=p.baseLow;p.high=p.baseHigh;p.normal=p.baseNormal; if(!p.customRef)p.ref=fmtRange(p.baseLow,p.baseHigh);}});}
-function buildParams(){const list=$('paramList'); list.innerHTML=''; const head=document.createElement('div'); head.className='param-head'; head.innerHTML=`<button class="head-cell center" onclick="cycleIncludeHeader()" id="includeHead">✓</button><span>Parameter</span><span>Value</span><button class="head-cell center" id="flagHead" onclick="toggleColumn('flags')">↑↓</button><button class="head-cell" id="unitHead" onclick="toggleColumn('units')">Unit</button><button class="head-cell off" id="rangeHead" onclick="toggleColumn('ranges')">Range</button>`; list.appendChild(head); let last=''; params.forEach(p=>{if(p.group!==last){last=p.group;let d=document.createElement('div');d.className='group-title';d.textContent=last;list.appendChild(d)} let row=document.createElement('div');row.className='param';row.id='row-'+p.id;row.innerHTML=`<input type="checkbox" id="on-${p.id}" onchange="updateParam('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="val-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateParam('${p.id}','value',this.value)"><div class="flag-cell" id="flag-${p.id}"></div><div class="unit-cell" id="unitLabel-${p.id}" onclick="toggleEdit('${p.id}')"></div><div class="range-cell" id="rangeLabel-${p.id}" onclick="toggleEdit('${p.id}')"></div><div class="edit-panel" id="edit-${p.id}"><input id="unit-${p.id}" type="text" value="${p.unit}" oninput="updateParam('${p.id}','unit',this.value)" placeholder="Unit"><input id="ref-${p.id}" type="text" value="${p.ref}" oninput="updateParam('${p.id}','ref',this.value)" placeholder="Reference range"></div>`; list.appendChild(row);}); updateParamDisplay(); updateColumnHeaders();}
+function buildParams(){const list=$('paramList'); list.innerHTML=''; const head=document.createElement('div'); head.className='param-head'; head.innerHTML=`<button class="head-cell include" onclick="cycleIncludeHeader()" id="includeHead" title="Cycle none, standard, all">✓</button><span class="head-cell">Parameter</span><span class="head-cell">Value</span><button class="head-cell center" id="flagHead" onclick="toggleColumn('flags')" title="Out-of-range indicator">↑↓</button><button class="head-cell" id="unitHead" onclick="toggleColumn('units')">Unit</button><button class="head-cell off" id="rangeHead" onclick="toggleColumn('ranges')">Range</button>`; list.appendChild(head); let last=''; params.forEach(p=>{if(p.group!==last){last=p.group;let d=document.createElement('div');d.className='group-title';d.textContent=last;list.appendChild(d)} let row=document.createElement('div');row.className='param';row.id='row-'+p.id;row.innerHTML=`<input type="checkbox" id="on-${p.id}" onchange="updateParam('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="val-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateParam('${p.id}','value',this.value)"><div class="flag-cell" id="flag-${p.id}"></div><div class="unit-cell" id="unitLabel-${p.id}" onclick="toggleEdit('${p.id}')"></div><div class="range-cell" id="rangeLabel-${p.id}" onclick="toggleEdit('${p.id}')"></div><div class="edit-panel" id="edit-${p.id}"><input id="unit-${p.id}" type="text" value="${p.unit}" oninput="updateParam('${p.id}','unit',this.value)" placeholder="Unit"><input id="ref-${p.id}" type="text" value="${p.ref}" oninput="updateParam('${p.id}','ref',this.value)" placeholder="Reference range"></div>`; list.appendChild(row);}); updateParamDisplay(); updateColumnHeaders();}
 function updateParamDisplay(){params.forEach(p=>{const on=$('on-'+p.id),val=$('val-'+p.id),flag=$('flag-'+p.id),unit=$('unitLabel-'+p.id),range=$('rangeLabel-'+p.id),row=$('row-'+p.id),unitInput=$('unit-'+p.id),refInput=$('ref-'+p.id); if(on)on.checked=p.on; if(val&&val.value!==p.value)val.value=p.value; if(flag){flag.textContent=flagFor(p);flag.classList.toggle('off',!showFlags)} if(unit){unit.textContent=p.unit||'—';unit.classList.toggle('off',!showUnits)} if(range){range.textContent=p.ref;range.classList.toggle('off',!showRanges)} if(row)row.classList.toggle('off-row',!p.on); if(unitInput&&unitInput.value!==p.unit)unitInput.value=p.unit; if(refInput&&refInput.value!==p.ref)refInput.value=p.ref;});}
 function updateParam(id,key,val){let p=params.find(x=>x.id===id); if(!p)return; if(key==='value'){p.value=val; if(String(val).trim()&&!p.on){p.on=true;includeCycleState='custom';}} else if(key==='on'){p.on=val;includeCycleState='custom';} else if(key==='unit'){p.unit=val;} else if(key==='ref'){p.ref=val;p.customRef=true;} updateParamDisplay(); updateColumnHeaders(); render();}
 function toggleEdit(id){$('edit-'+id).classList.toggle('open')}
@@ -211,7 +214,7 @@ function toggleColumn(which){if(which==='flags')showFlags=!showFlags;if(which===
 function updateColumnHeaders(){if($('flagHead'))$('flagHead').classList.toggle('off',!showFlags); if($('unitHead'))$('unitHead').classList.toggle('off',!showUnits); if($('rangeHead'))$('rangeHead').classList.toggle('off',!showRanges); const h=$('includeHead'); if(h)h.textContent=includeCycleState==='none'?'☐':includeCycleState==='all'?'☑':'✓';}
 function cycleIncludeHeader(){if(includeCycleState==='none'){params.forEach(p=>p.on=STANDARD_IDS.includes(p.id));includeCycleState='standard'} else if(includeCycleState==='standard'){params.forEach(p=>p.on=true);includeCycleState='all'} else {params.forEach(p=>p.on=false);includeCycleState='none'} updateParamDisplay();updateColumnHeaders();render();}
 function setSample(t,doRender=true){sampleType=t;applySampleRanges();['Arterial','Venous','Capillary'].forEach(x=>{const b=$('sample-'+x);if(b)b.classList.toggle('active',x===t)});updateParamDisplay();if(doRender)render();}
-function buildVisco(){const sel=$('assaySelect'); sel.innerHTML=''; assayMap[viscoType].forEach(a=>{let o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o)}); sel.value=assayMap[viscoType].includes(assay)?assay:assayMap[viscoType][0]; assay=sel.value; const list=$('viscoParamList'); list.innerHTML=''; const head=document.createElement('div'); head.className='param-head'; head.innerHTML='<button class="head-cell center" id="vIncludeHead" onclick="toggleAllViscoParams()" title="Select/deselect all ROTEM/TEG parameters">☑</button><span>Parameter</span><span>Value</span><button class="head-cell center" id="vFlagHead2" onclick="toggleViscoColumn(\'flags\')">↑↓</button><button class="head-cell" id="vUnitHead2" onclick="toggleViscoColumn(\'units\')">Unit</button><button class="head-cell" id="vRangeHead2" onclick="toggleViscoColumn(\'ranges\')">Range</button>'; list.appendChild(head); viscoParams.forEach(p=>{let row=document.createElement('div'); row.className='param'; row.id='vrow-'+p.id; row.innerHTML=`<input type="checkbox" id="von-${p.id}" checked onchange="updateVisco('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="vval-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateVisco('${p.id}','value',this.value)"><div class="flag-cell" id="vflag-${p.id}"></div><div class="unit-cell" id="vunit-${p.id}">${p.unit}</div><div class="range-cell" id="vrange-${p.id}">${p.ref}</div>`; list.appendChild(row);}); updateViscoDisplay();}
+function buildVisco(){const sel=$('assaySelect'); sel.innerHTML=''; assayMap[viscoType].forEach(a=>{let o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o)}); sel.value=assayMap[viscoType].includes(assay)?assay:assayMap[viscoType][0]; assay=sel.value; const list=$('viscoParamList'); list.innerHTML=''; const head=document.createElement('div'); head.className='param-head'; head.innerHTML='<button class="head-cell include" id="vIncludeHead" onclick="toggleAllViscoParams()" title="Select/deselect all ROTEM/TEG parameters">☑</button><span class="head-cell">Parameter</span><span class="head-cell">Value</span><button class="head-cell center" id="vFlagHead2" onclick="toggleViscoColumn(\'flags\')" title="Out-of-range indicator">↑↓</button><button class="head-cell" id="vUnitHead2" onclick="toggleViscoColumn(\'units\')">Unit</button><button class="head-cell" id="vRangeHead2" onclick="toggleViscoColumn(\'ranges\')">Range</button>'; list.appendChild(head); viscoParams.forEach(p=>{let row=document.createElement('div'); row.className='param'; row.id='vrow-'+p.id; row.innerHTML=`<input type="checkbox" id="von-${p.id}" checked onchange="updateVisco('${p.id}','on',this.checked)"><div class="pname">${p.name}</div><input class="value-input" id="vval-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateVisco('${p.id}','value',this.value)"><div class="flag-cell" id="vflag-${p.id}"></div><div class="unit-cell" id="vunit-${p.id}">${p.unit}</div><div class="range-cell" id="vrange-${p.id}">${p.ref}</div>`; list.appendChild(row);}); updateViscoDisplay();}
 function setViscoType(t){viscoType=t; $('visco-ROTEM').classList.toggle('active',t==='ROTEM'); $('visco-TEG').classList.toggle('active',t==='TEG'); assay=assayMap[t][0]; buildVisco(); render();}
 function setAssay(a){assay=a; render();}
 function updateVisco(id,key,val){let p=viscoParams.find(x=>x.id===id); if(!p)return; if(key==='value'){p.value=val;if(String(val).trim())p.on=true;} else p[key]=val; updateViscoDisplay(); render();}
@@ -267,25 +270,59 @@ function clearValues(doRender=true){if(mode==='bloodgas'){params.forEach(p=>p.va
 function parseRef(p){let m=String(p.ref).replace(/[–—]/g,'-').match(/(-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)/);return m?[parseFloat(m[1]),parseFloat(m[2])]:[p.low,p.high];}
 function flagFor(p){const v=parseFloat(String(p.value).replace(',','.'));if(Number.isNaN(v))return '';const [lo,hi]=parseRef(p);if(v<lo)return '↓';if(v>hi)return '↑';return '';}
 function pad(s,n){s=String(s);return s.length>=n?s.slice(0,n):s+' '.repeat(n-s.length)}
-function receiptText(){return mode==='bloodgas'?bloodReceiptText():viscoReceiptText();}
-function commonHeader(lines,title){const sid=$('scenarioId').value||'SIM';const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});lines.push('--------------------------------');lines.push('POINT OF CARE TESTING');lines.push('Simulation Mode');lines.push('--------------------------------');lines.push(title);lines.push('Scenario: '+sid);lines.push('Date:     '+stamp);lines.push('--------------------------------');}
-function commonFooter(lines){lines.push('');lines.push('--------------------------------');lines.push('Generated by ResusPro');lines.push('resuspro.com');lines.push('For simulation use only');lines.push('--------------------------------');}
-function bloodReceiptText(){const lines=[];commonHeader(lines,'Blood Gas / POCT');lines.push('Sample:   '+sampleType);let current='';params.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{if(p.group!==current){current=p.group;lines.push('');lines.push(p.group.toUpperCase());}const f=showFlags?flagFor(p):'';const unit=showUnits&&p.unit?' '+p.unit:'';const ref=showRanges?' ['+p.ref+']':'';lines.push(pad(p.name,11)+' '+pad(p.value,7)+' '+pad(f,1)+unit+ref);});commonFooter(lines);return lines.join('\n');}
-function viscoReceiptText(){const lines=[];commonHeader(lines,viscoType+' VISCOELASTIC RESULT');lines.push('System:   '+viscoType);lines.push('Assay:    '+assay);lines.push('--------------------------------');lines.push('Parameter      Result');viscoParams.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{const f=viscoShowFlags?flagFor(p):'';const unit=viscoShowUnits&&p.unit?' '+p.unit:'';const ref=viscoShowRanges?' ['+p.ref+']':'';lines.push(pad(p.name,14)+' '+pad(p.value,6)+' '+pad(f,1)+unit+ref);});lines.push('');lines.push('Trace: simulated preview only');commonFooter(lines);return lines.join('\n');}
-function esc(s){return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));}
-function receiptHtml(){return '<div class="receipt-brand"><img src="logo.png" alt="ResusPro" onerror="this.style.display=\'none\'"></div><pre>'+esc(receiptText())+'</pre>';}
-function render(){const html=receiptHtml(); $('receiptPreview').innerHTML=html; $('modalReceipt').innerHTML=html; $('printReceipt').innerHTML=html;}
-function openOutput(){render();$('outputModal').style.display='flex'}
-function closeOutput(){$('outputModal').style.display='none'}
-function saveHistory(modeOut){const item={time:new Date().toISOString(),mode:modeOut,type:mode,scenario:$('scenarioId').value||'',sample:mode==='bloodgas'?sampleType:viscoType+' '+assay,text:receiptText()};const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');arr.unshift(item);localStorage.setItem('resusproBloodGasHistory',JSON.stringify(arr.slice(0,100)));renderHistory();}
-function doPrint(modeOut){saveHistory(modeOut);closeOutput();setTimeout(()=>window.print(),100)}
-async function copyReceipt(){const txt=receiptText();try{await navigator.clipboard.writeText(txt)}catch(e){alert(txt)}saveHistory('copy');closeOutput();}
-function renderHistory(){const el=$('historyList');const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');if(!arr.length){el.innerHTML='<p class="muted">No outputs saved yet. Printing, PDF export, or copy will save automatically on this device.</p>';return;}el.innerHTML=arr.slice(0,20).map((h,i)=>`<div class="history-item"><b>${new Date(h.time).toLocaleString('en-GB')} · ${h.mode} · ${h.type||'bloodgas'}</b><span class="muted">${h.scenario||'SIM'} · ${h.sample}</span><div class="btn-row" style="margin-top:6px"><button class="small" onclick="loadHistory(${i})">Load text</button></div></div>`).join('');}
-function loadHistory(i){const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');if(arr[i]){$('receiptPreview').textContent=arr[i].text;window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}}
+function receiptText(){return receiptLines().join('\n');}
+function receiptLines(){return mode==='bloodgas'?bloodReceiptLines():viscoReceiptLines();}
+function commonHeader(lines,title){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value);const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});lines.push('--------------------------------','RESUSPRO',title,'--------------------------------');if(patient)lines.push('PATIENT / SCENARIO',patient);if(bay)lines.push('RESUS BAY / LOCATION',bay);if(patient||bay)lines.push('--------------------------------');lines.push('Time:   '+stamp,'--------------------------------');}
+function commonFooter(lines){lines.push('','--------------------------------','Generated by ResusPro','resuspro.com','FOR SIMULATION USE ONLY','--------------------------------');}
+function bloodReceiptLines(){const lines=[];commonHeader(lines,'BLOOD GAS - SIMULATION RESULT');lines.push('Sample: '+sampleType,'--------------------------------');let current='';params.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{if(p.group!==current){current=p.group;lines.push('',p.group.toUpperCase())}const f=showFlags?flagFor(p):'';const unit=showUnits&&p.unit?' '+normalisePrintText(p.unit):'';const ref=showRanges?' ['+normalisePrintText(p.ref)+']':'';lines.push(pad(normalisePrintText(p.name),12)+' '+pad(p.value,8)+' '+pad(f,1)+unit+ref)});commonFooter(lines);return lines;}
+function viscoReceiptLines(){const lines=[];commonHeader(lines,viscoType+' VISCOELASTIC RESULT');lines.push('System: '+viscoType,'Assay:  '+assay,'--------------------------------');let hasHeading=false;viscoParams.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{if(!hasHeading){lines.push('PARAMETERS');hasHeading=true}const f=viscoShowFlags?flagFor(p):'';const unit=viscoShowUnits&&p.unit?' '+normalisePrintText(p.unit):'';const ref=viscoShowRanges?' ['+normalisePrintText(p.ref)+']':'';lines.push(pad(normalisePrintText(p.name),14)+' '+pad(p.value,7)+' '+pad(f,1)+unit+ref)});lines.push('','Trace: simulated preview only');commonFooter(lines);return lines;}
+function normalisePrintText(value){return String(value).replaceAll('₂','2').replaceAll('₃','3').replaceAll('⁻','-').replaceAll('⁺','+').replaceAll('²','2').replaceAll('µ','u').replaceAll('°','deg');}
+function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'));}
+function esc(s){return String(s).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));}
+function receiptHtml(){return '<div class="receipt-brand"><img src="logo.png?v=1.1.0-dev-rot008b" alt="ResusPro" onerror="this.style.display=\'none\'"></div><pre>'+esc(withoutDuplicateTextBrand(receiptLines()).join('\n'))+'</pre>';}
+function render(){const html=receiptHtml();const settings=$('settingsReceipt'),print=$('printReceipt');if(settings)settings.innerHTML=html;if(print)print.innerHTML=html;}
+async function cloudPrint(){const button=$('cloudPrintButton');button.disabled=true;button.textContent='Queuing…';try{const png=await buildReceiptPng();const response=await fetch(`${PRINT_API}/api/print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),receiptText:receiptText(),pngBase64:png.base64,pngHeight:png.height,pngBitDepth:png.bitDepth}),cache:'no-store'});const result=await readJsonResponse(response);if(!response.ok||!result.ok)throw new Error(result.error||`Print service returned ${response.status}`);saveHistory('CloudPRNT queued',result.jobId);showToast('Result queued for ResusPro printer.','success');trackJob(result.jobId);await refreshPrinterStatus(false)}catch(error){showToast(`Could not queue print: ${error.message}`,'error')}finally{button.disabled=false;applyPrinterState(printerState)}}
+async function sendTestPrint(){try{const lines=['--------------------------------','RESUSPRO','ROTEM / TEG CLOUDPRNT TEST','--------------------------------','Printer connection successful.','For simulation use only.','--------------------------------'];const png=await buildReceiptPng(lines);const response=await fetch(`${PRINT_API}/api/test`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({patientId:'',resusBay:'',receiptText:lines.join('\n'),pngBase64:png.base64,pngHeight:png.height,pngBitDepth:png.bitDepth}),cache:'no-store'});const result=await readJsonResponse(response);if(!response.ok||!result.ok)throw new Error(result.error||`Print service returned ${response.status}`);saveHistory('CloudPRNT test queued',result.jobId);showToast('Test receipt queued.','success');trackJob(result.jobId);refreshPrinterStatus(false)}catch(error){showToast(`Test print failed: ${error.message}`,'error')}}
+async function trackJob(jobId){const started=Date.now();while(Date.now()-started<120000){await sleep(2000);try{const response=await fetch(`${PRINT_API}/api/job/${encodeURIComponent(jobId)}`,{cache:'no-store'});const job=await readJsonResponse(response);if(!response.ok||!job.ok)continue;if(job.status==='completed'){showToast('Result printed successfully.','success');refreshPrinterStatus(false);return}if(job.status==='failed'){showToast(`Printer rejected the result${job.confirmationCode?`: ${job.confirmationCode}`:''}.`,'error');refreshPrinterStatus(false);return}}catch(_){}}}
+async function refreshPrinterStatus(showMessage=false){try{const response=await fetch(`${PRINT_API}/api/status`,{cache:'no-store'});const status=await readJsonResponse(response);if(!response.ok||!status.ok)throw new Error(status.error||`Status service returned ${response.status}`);printerState=status.state||'offline';applyPrinterState(printerState,status);if(showMessage)showToast(formatStatus(status),status.state==='offline'?'error':'success')}catch(error){printerState='offline';applyPrinterState('offline',{label:'Status unavailable',queueDepth:0,lastSeen:null});if(showMessage)showToast(`Printer status unavailable: ${error.message}`,'error')}}
+function applyPrinterState(state,status={}){const button=$('cloudPrintButton');if(button){button.className=`print-button state-${state}`;if(state==='idle')button.textContent='Print';else if(state==='printing')button.textContent='Queue print';else if(state==='offline')button.textContent='Queue offline';else button.textContent='Checking…'}const box=$('settingsPrinterStatus');if(box)box.innerHTML=`<span class="status-dot ${state}"></span><span>${esc(formatStatus(status,state))}</span>`;}
+function formatStatus(status={},fallbackState=printerState){const state=status.state||fallbackState;if(state==='idle')return'ResusPro printer: Idle';if(state==='printing'){const count=Number(status.queueDepth||0);return`ResusPro printer: ${status.label||'Printing'}${count?` · ${count} queued`:''}`}const seen=status.lastSeen?new Date(status.lastSeen).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'never';return`ResusPro printer: ${status.label||'Offline'} · last seen ${seen}`;}
+async function buildReceiptPng(sourceLines=receiptLines()){const lines=withoutDuplicateTextBrand(sourceLines);const width=576,margin=24,brandHeight=110,titleGap=10;const longest=Math.max(32,...lines.map(line=>String(line).length));const fontSize=Math.max(16,Math.min(24,Math.floor((width-(margin*2))/(longest*0.61))));const lineHeight=fontSize+5;const height=Math.min(1800,margin+brandHeight+titleGap+lines.length*lineHeight+margin);const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.fillStyle='#000';let y=margin;drawThermalBrand(ctx,width,y);y+=brandHeight+titleGap;ctx.font=`${fontSize}px "Courier New", monospace`;ctx.textBaseline='top';for(const line of lines){if(y+lineHeight>height-margin)break;const isHeading=line==='PATIENT / SCENARIO'||line==='RESUS BAY / LOCATION'||line==='PARAMETERS';const isAbnormal=line.includes('↑')||line.includes('↓');ctx.font=(isHeading||isAbnormal)?`bold ${fontSize}px "Courier New", monospace`:`${fontSize}px "Courier New", monospace`;ctx.fillText(line,margin,y);y+=lineHeight}const pngBytes=await encodeMonochromePng(canvas,220);return{base64:bytesToBase64(pngBytes),height,width,bitDepth:1};}
+async function encodeMonochromePng(canvas,threshold=220){if(typeof CompressionStream!=='function')throw new Error('This browser cannot create the printer-safe monochrome PNG. Please update Chrome or Android System WebView.');const width=canvas.width,height=canvas.height,ctx=canvas.getContext('2d',{willReadFrequently:true});const rgba=ctx.getImageData(0,0,width,height).data;const rowBytes=Math.ceil(width/8),raw=new Uint8Array(height*(rowBytes+1));let source=0,target=0;for(let y=0;y<height;y++){raw[target++]=0;for(let byteIndex=0;byteIndex<rowBytes;byteIndex++){let packed=0;for(let bit=0;bit<8;bit++){const x=byteIndex*8+bit;let white=1;if(x<width){const index=source+x*4;const alpha=rgba[index+3]/255;const luminance=((0.2126*rgba[index])+(0.7152*rgba[index+1])+(0.0722*rgba[index+2]))*alpha+(255*(1-alpha));white=luminance>=threshold?1:0}packed|=white<<(7-bit)}raw[target++]=packed}source+=width*4}const compressedStream=new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'));const compressed=new Uint8Array(await new Response(compressedStream).arrayBuffer());const ihdr=new Uint8Array(13);writeUint32(ihdr,0,width);writeUint32(ihdr,4,height);ihdr[8]=1;ihdr[9]=0;ihdr[10]=0;ihdr[11]=0;ihdr[12]=0;return concatBytes(new Uint8Array([137,80,78,71,13,10,26,10]),pngChunk('IHDR',ihdr),pngChunk('IDAT',compressed),pngChunk('IEND',new Uint8Array(0)));}
+function pngChunk(type,data){const typeBytes=new TextEncoder().encode(type),chunk=new Uint8Array(12+data.length);writeUint32(chunk,0,data.length);chunk.set(typeBytes,4);chunk.set(data,8);const crcInput=new Uint8Array(typeBytes.length+data.length);crcInput.set(typeBytes);crcInput.set(data,typeBytes.length);writeUint32(chunk,8+data.length,crc32(crcInput));return chunk;}
+const CRC32_TABLE=(()=>{const table=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);table[n]=c>>>0}return table})();
+function crc32(bytes){let c=0xffffffff;for(const byte of bytes)c=CRC32_TABLE[(c^byte)&0xff]^(c>>>8);return(c^0xffffffff)>>>0;}
+function writeUint32(bytes,offset,value){bytes[offset]=(value>>>24)&255;bytes[offset+1]=(value>>>16)&255;bytes[offset+2]=(value>>>8)&255;bytes[offset+3]=value&255;}
+function concatBytes(...parts){const total=parts.reduce((sum,part)=>sum+part.length,0),out=new Uint8Array(total);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length}return out;}
+function bytesToBase64(bytes){let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary);}
+function drawThermalBrand(ctx,width,y){ctx.save();ctx.fillStyle='#000';ctx.strokeStyle='#000';ctx.lineWidth=3.8;ctx.textBaseline='alphabetic';ctx.textAlign='left';const brand='RESUS PRO';ctx.font='bold 50px Arial, sans-serif';const brandWidth=ctx.measureText(brand).width;const shieldWidth=48,gap=16,total=brandWidth+gap+shieldWidth,x=(width-total)/2;ctx.fillText(brand,x,y+53);const sx=x+brandWidth+gap,sy=y+7;ctx.beginPath();ctx.moveTo(sx+24,sy);ctx.lineTo(sx+44,sy+9);ctx.lineTo(sx+40,sy+41);ctx.quadraticCurveTo(sx+24,sy+61,sx+8,sy+41);ctx.lineTo(sx+4,sy+9);ctx.closePath();ctx.stroke();ctx.beginPath();ctx.moveTo(sx+10,sy+31);ctx.lineTo(sx+18,sy+31);ctx.lineTo(sx+22,sy+21);ctx.lineTo(sx+27,sy+40);ctx.lineTo(sx+31,sy+31);ctx.lineTo(sx+39,sy+31);ctx.stroke();ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+92);ctx.restore();}
+function localPrint(kind){saveHistory(kind==='pdf'?'PDF/local print':'Local print');render();closeSettings();setTimeout(()=>window.print(),100);}
+async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
+function openSettings(){render();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false);}
+function closeSettings(){$('settingsModal').classList.remove('open');}
+function backdropClose(event,id){if(event.target.id===id)event.target.classList.remove('open');}
+function saveHistory(modeOut,jobId=''){const item={time:new Date().toISOString(),mode:modeOut,jobId,type:mode,patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),sample:mode==='bloodgas'?sampleType:viscoType+' '+assay,text:receiptText()};const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');arr.unshift(item);localStorage.setItem('resusproBloodGasHistory',JSON.stringify(arr.slice(0,100)));renderHistory();}
+function renderHistory(){const el=$('historyList');const arr=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');if(!arr.length){el.innerHTML='<p class="muted">No outputs saved yet on this device.</p>';return}el.innerHTML=arr.slice(0,20).map(h=>{const details=[h.patientId||h.scenario,h.resusBay,h.sample].filter(Boolean).join(' · ');return`<div class="history-item"><b>${esc(new Date(h.time).toLocaleString('en-GB'))} · ${esc(h.mode)} · ${esc(h.type||'bloodgas')}</b>${details?`<span class="muted">${esc(details)}</span>`:''}</div>`}).join('');}
 function clearHistory(){if(confirm('Clear saved output history on this device?')){localStorage.removeItem('resusproBloodGasHistory');renderHistory();}}
-document.addEventListener('input',e=>{if(e.target.id==='scenarioId')render();});
+function showToast(message,type=''){const toast=$('toast');toast.textContent=message;toast.className=`toast show ${type}`;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>{toast.className='toast'},4200);}
+function cleanField(value){return String(value||'').replace(/[\r\n\t]+/g,' ').trim().slice(0,80);}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+async function readJsonResponse(response){const text=await response.text();try{return JSON.parse(text)}catch(_){return{ok:false,error:text||`HTTP ${response.status}`}}}
+if('serviceWorker'in navigator){
+  let reloadingForNewWorker=false,lastUpdateCheck=0;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
+  window.addEventListener('load',async()=>{
+    try{
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.1.0-dev-rot008b',{updateViaCache:'none'});
+      const checkForUpdate=async(force=false)=>{const now=Date.now();if(!force&&now-lastUpdateCheck<60000)return;lastUpdateCheck=now;try{await registration.update()}catch(_){}};
+      await checkForUpdate(true);setInterval(()=>checkForUpdate(false),5*60*1000);
+      document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdate(false)});
+      window.addEventListener('focus',()=>checkForUpdate(false));window.addEventListener('online',()=>checkForUpdate(true));
+    }catch(error){console.warn('Service worker registration failed',error)}
+  });
+}
+window.addEventListener('beforeunload',()=>{if(statusTimer)clearInterval(statusTimer)});
 init();
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./service-worker.js').catch(err=>console.warn('Service worker registration failed:',err));});}
 </script>
 </body>
 </html>
