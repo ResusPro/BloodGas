@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.10 — mobile parameter buttons + active header controls -->
+  <!-- ResusPro BloodGas v1.0.11 — temperature and FiO2-adjusted blood-gas ranges -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -41,8 +41,8 @@
     .card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:12px 0;box-shadow:var(--shadow);overflow:hidden}.card.parameters-card{overflow:visible}
     .card h2{font-size:1.12rem;margin:0;padding:14px 16px 8px}.section{padding:12px 16px;border-top:1px solid var(--line)}
     label{display:block;font-weight:720;color:#344054;margin:10px 0 6px;font-size:.95rem}
-    input[type="text"],select{width:100%;border:1px solid #cfd8e3;border-radius:14px;background:#fff;padding:12px 13px;min-height:46px;color:var(--text);font-size:1rem}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sample-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sample-buttons button{background:var(--soft);font-size:.94rem;padding:10px 8px}.sample-buttons button.active{background:var(--blue);color:#fff}
+    input[type="text"],input[type="number"],select{width:100%;border:1px solid #cfd8e3;border-radius:14px;background:#fff;padding:12px 13px;min-height:46px;color:var(--text);font-size:1rem}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.physiology-note{margin:8px 0 2px;line-height:1.35}.sample-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sample-buttons button{background:var(--soft);font-size:.94rem;padding:10px 8px}.sample-buttons button.active{background:var(--blue);color:#fff}
     .stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.stage-row button.active{background:var(--blue);color:#fff}
     .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.group-title{font-weight:850;color:#1d2939;margin:16px 0 7px;padding-top:6px;border-top:1px solid #eef2f6}
     .param-head,.param{display:grid;grid-template-columns:minmax(92px,1.35fr) minmax(76px,.9fr) 46px minmax(56px,.65fr) minmax(78px,.9fr);gap:6px;align-items:center;min-width:0}
@@ -72,7 +72,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.10 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.11 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -102,6 +102,17 @@
         <button id="sample-Venous" type="button" onclick="setSample('Venous')">Venous</button>
         <button id="sample-Capillary" type="button" onclick="setSample('Capillary')">Capillary</button>
       </div>
+      <div class="grid2">
+        <div>
+          <label for="temperature">Temperature (°C)</label>
+          <input id="temperature" type="number" min="15" max="45" step="0.1" value="37.0" inputmode="decimal" oninput="physiologyChanged()" onchange="normalisePhysiologyInputs()">
+        </div>
+        <div>
+          <label for="fio2">FiO₂ (%)</label>
+          <input id="fio2" type="number" min="21" max="100" step="1" value="21" inputmode="decimal" oninput="physiologyChanged()" onchange="normalisePhysiologyInputs()">
+        </div>
+      </div>
+      <p id="physiologyNote" class="muted physiology-note"></p>
       <label for="presetSelect">Example scenario</label>
       <select id="presetSelect" onchange="loadSelectedPreset()"><option value="">Select an example…</option></select>
       <div class="stage-row" id="stageRow"></div>
@@ -147,6 +158,11 @@
 <script>
 'use strict';
 const PRINT_API='https://resuspro-bloodgas-print.dr-nick.workers.dev';
+const DEFAULT_TEMPERATURE=37;
+const DEFAULT_FIO2=21;
+const SEA_LEVEL_PRESSURE_KPA=101.325;
+const RESPIRATORY_QUOTIENT=0.8;
+const MMHG_PER_KPA=7.50061683;
 const STANDARD_IDS=['pH','pCO2','pO2','HCO3','BE','SaO2','Lactate','Na','K','Cl','iCa','Glucose','Hb'];
 const sampleRanges={
   Arterial:{pH:[7.35,7.45,'7.40'],pCO2:[4.7,6.0,'5.3'],pO2:[10.0,13.3,'12.0'],HCO3:[22,28,'24'],BE:[-2,2,'0'],SaO2:[94,100,'98'],Lactate:[0.5,2.2,'1.0']},
@@ -169,7 +185,7 @@ const presets={
 let sampleType='Arterial';let currentPreset='';let currentStage='T0';let includeCycleState='standard';let showFlags=true;let showUnits=true;let showRanges=false;let printerState='checking';let statusTimer=null;
 const $=id=>document.getElementById(id);
 function init(){
-  restoreCaseDetails();setSample('Arterial',false);
+  restoreCaseDetails();normalisePhysiologyInputs(false);setSample('Arterial',false);
   const select=$('presetSelect');Object.keys(presets).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});
   buildParams();setupFixedLayout();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
   $('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);
@@ -201,7 +217,20 @@ function setHeaderState(id,on){const head=$(id);if(!head)return;head.classList.t
 function updateColumnHeaders(){setHeaderState('flagHead',showFlags);setHeaderState('unitHead',showUnits);setHeaderState('rangeHead',showRanges);updateIncludeHeader()}
 function updateIncludeHeader(){const head=$('includeHead');if(!head)return;const labels={standard:'Standard',all:'All',none:'None',custom:'Custom'};head.textContent=labels[includeCycleState]||'Standard';const active=includeCycleState!=='none';head.classList.toggle('active',active);head.classList.toggle('off',!active);head.title=`Parameter set: ${head.textContent}. Tap to cycle Standard → All → None → Standard${includeCycleState==='custom'?'; Custom returns to Standard':''}`}
 function cycleIncludeHeader(){if(includeCycleState==='standard'){params.forEach(p=>p.on=true);includeCycleState='all'}else if(includeCycleState==='all'){params.forEach(p=>p.on=false);includeCycleState='none'}else{params.forEach(p=>p.on=STANDARD_IDS.includes(p.id));includeCycleState='standard'}updateParamDisplay();updateColumnHeaders();renderReceipt()}
-function applySampleRanges(){params.forEach(p=>{const range=sampleRanges[sampleType]&&sampleRanges[sampleType][p.id];if(range){p.low=range[0];p.high=range[1];p.normal=range[2];if(!p.customRef)p.ref=`${range[0]}-${range[1]}`}else{p.low=p.baseLow;p.high=p.baseHigh;p.normal=p.baseNormal;if(!p.customRef)p.ref=`${p.baseLow}-${p.baseHigh}`}})}
+function clampNumber(value,min,max,fallback){const number=Number.parseFloat(String(value).replace(',','.'));return Number.isFinite(number)?Math.min(max,Math.max(min,number)):fallback}
+function getTemperature(){return clampNumber($('temperature')?.value,15,45,DEFAULT_TEMPERATURE)}
+function getFiO2Percent(){return clampNumber($('fio2')?.value,21,100,DEFAULT_FIO2)}
+function correctPhForTemperature(value,temp){return value+(temp-37)*(-0.0147+0.0065*(7.4-value))}
+function correctPco2ForTemperature(value,temp){return value*Math.pow(10,0.019*(temp-37))}
+function correctPo2ForTemperature(value,temp){const mmHg=value*MMHG_PER_KPA;const powered=Math.pow(mmHg,3.88);const coefficient=((5.49e-11*powered)+0.071)/((9.72e-9*powered)+2.30);return(mmHg*Math.pow(10,coefficient*(temp-37)))/MMHG_PER_KPA}
+function waterVapourPressureKPa(temp){return(0.045*temp*temp-0.84*temp+16.5)*0.133322368}
+function alveolarOxygenKPa(temp,fio2Fraction,pco2KPa){return Math.max(0,(SEA_LEVEL_PRESSURE_KPA-waterVapourPressureKPa(temp))*fio2Fraction-pco2KPa*(fio2Fraction+(1-fio2Fraction)/RESPIRATORY_QUOTIENT))}
+function formatAdjustedValue(id,value){if(id==='pH')return value.toFixed(2);if(id==='pCO2'||id==='pO2')return value.toFixed(1);if(Number.isInteger(value))return String(value);return String(Number(value.toFixed(2)))}
+function adjustedBloodGasValue(id,baseValue,temp,fio2Percent){if(id==='pH')return correctPhForTemperature(baseValue,temp);if(id==='pCO2')return correctPco2ForTemperature(baseValue,temp);if(id==='pO2'){if(sampleType==='Arterial'){const baselinePco2=Number(sampleRanges.Arterial.pCO2[2]);const baselineAlveolar=alveolarOxygenKPa(37,0.21,baselinePco2);const currentPco2=correctPco2ForTemperature(baselinePco2,temp);const currentAlveolar=alveolarOxygenKPa(temp,fio2Percent/100,currentPco2);return currentAlveolar*(baseValue/baselineAlveolar)}return correctPo2ForTemperature(baseValue,temp)}return baseValue}
+function applySampleRanges(){const temp=getTemperature(),fio2=getFiO2Percent();params.forEach(p=>{const range=sampleRanges[sampleType]&&sampleRanges[sampleType][p.id];const source=range||[p.baseLow,p.baseHigh,p.baseNormal];p.low=adjustedBloodGasValue(p.id,Number(source[0]),temp,fio2);p.high=adjustedBloodGasValue(p.id,Number(source[1]),temp,fio2);p.normal=formatAdjustedValue(p.id,adjustedBloodGasValue(p.id,Number(source[2]),temp,fio2));if(!p.customRef)p.ref=`${formatAdjustedValue(p.id,p.low)}-${formatAdjustedValue(p.id,p.high)}`});updatePhysiologyNote()}
+function updatePhysiologyNote(){const note=$('physiologyNote');if(!note)return;note.textContent=sampleType==='Arterial'?'Temperature adjusts the pH, pCO₂ and pO₂ reference values. FiO₂ adjusts expected arterial pO₂ (sea-level assumption).':'Temperature adjusts the pH, pCO₂ and pO₂ reference values. FiO₂ is recorded but does not alter venous or capillary oxygen ranges.'}
+function physiologyChanged(){applySampleRanges();updateParamDisplay();renderReceipt()}
+function normalisePhysiologyInputs(doRender=true){const temp=getTemperature(),fio2=getFiO2Percent();if($('temperature'))$('temperature').value=temp.toFixed(1);if($('fio2'))$('fio2').value=String(Math.round(fio2));applySampleRanges();updateParamDisplay();if(doRender)renderReceipt()}
 function setSample(type,doRender=true){sampleType=type;applySampleRanges();['Arterial','Venous','Capillary'].forEach(name=>{const button=$(`sample-${name}`);if(button)button.classList.toggle('active',name===type)});updateParamDisplay();if(doRender)renderReceipt()}
 function loadSelectedPreset(){const name=$('presetSelect').value;if(!name){currentPreset='';$('stageRow').innerHTML='';return}currentPreset=name;const stages=Object.keys(presets[name].stages);currentStage=stages[0];drawStages();loadStage(currentStage)}
 function drawStages(){const row=$('stageRow');row.innerHTML='';if(!currentPreset)return;Object.keys(presets[currentPreset].stages).forEach(stage=>{const button=document.createElement('button');button.type='button';button.textContent=stage;button.className='small'+(stage===currentStage?' active':'');button.onclick=()=>{currentStage=stage;loadStage(stage);drawStages()};row.appendChild(button)})}
@@ -218,13 +247,13 @@ function receiptLines(){
   if(patient)lines.push('PATIENT / SCENARIO',patient);
   if(bay)lines.push('RESUS BAY / LOCATION',bay);
   if(patient||bay)lines.push('--------------------------------');
-  lines.push(`Sample: ${sampleType}`,`Time:   ${stamp}`,'--------------------------------');
+  lines.push(`Sample: ${sampleType}`,`Temp: ${getTemperature().toFixed(1)} C   FiO2: ${Math.round(getFiO2Percent())}%`,`Time:   ${stamp}`,'--------------------------------');
   let current='';params.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{if(p.group!==current){current=p.group;lines.push('',p.group.toUpperCase())}const flag=showFlags?flagFor(p):'';const unit=showUnits&&p.unit?' '+p.unit:'';const range=showRanges?` [${p.ref}]`:'';lines.push(`${pad(p.name,12)} ${pad(p.value,8)} ${pad(flag,1)}${unit}${range}`)});
   lines.push('','--------------------------------','Generated by ResusPro','resuspro.com','FOR SIMULATION USE ONLY','--------------------------------');return lines
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.10" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.11" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
 function testReceiptLines(){
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
@@ -362,7 +391,7 @@ if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
   window.addEventListener('load',async()=>{
     try{
-      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.10',{updateViaCache:'none'});
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.11',{updateViaCache:'none'});
       const checkForUpdate=async(force=false)=>{const now=Date.now();if(!force&&now-lastUpdateCheck<60000)return;lastUpdateCheck=now;try{await registration.update()}catch(_){}};
       await checkForUpdate(true);
       setInterval(()=>checkForUpdate(false),5*60*1000);
