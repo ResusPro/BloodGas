@@ -1,4 +1,4 @@
-const APP_VERSION = '1.0.7';
+const APP_VERSION = '1.0.9';
 const CACHE_NAME = `resuspro-bloodgas-v${APP_VERSION}`;
 const OFFLINE_INDEX = './index.html';
 const APP_SHELL = [

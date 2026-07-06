@@ -1,27 +1,23 @@
-ResusPro BloodGas v1.0.7 — printer-safe 1-bit PNG
+ResusPro BloodGas v1.0.9 — fixed banner, optional case details and UI refinement
 
-WHY FULL RESULTS FAILED
-The short test receipt printed, but a longer receipt with many results, units, ranges and arrows produced a CloudPRNT media decoding error. The browser had been creating a 24/32-bit PNG. Star documents that CloudPRNT printers can have a much lower maximum height for 24-bit PNG than for monochrome PNG because the uncompressed image must fit in printer memory.
-
-WHAT v1.0.7 CHANGES
-1. Generates a genuine 1-bit grayscale PNG rather than a browser-default colour PNG.
-2. Keeps the full-width 576-dot layout and the working monochrome ResusPro logo.
-3. Advertises the job as image/vnd.star.png with its mono_len height so the printer can check it against its supported monochrome image length.
-4. Automatically reduces the receipt font when units and ranges make lines wider, so all enabled columns fit the 576-dot paper width.
-5. Retains arrow flags, all optional columns, D1 storage and the reliable PWA update mechanism.
-6. The Worker automatically adds two small metadata columns to the existing D1 jobs table; no SQL needs to be run manually.
+CHANGES
+1. The top ResusPro banner now uses position: fixed rather than position: sticky. It therefore remains visible while the document scrolls in both the browser and installed PWA.
+2. A dynamically sized spacer prevents page content from sitting underneath the fixed banner.
+3. The Parameters header remains sticky immediately below the fixed banner.
+4. Parameter headings are vertically centred more consistently.
+5. The high/low heading arrows are side-by-side (↑↓), cannot wrap vertically, and both header/result arrows are heavier.
+6. Patient / scenario ID and Resus bay / location are optional. Old automatic defaults (SIM-001 and Resus Bay 1) are removed once. Blank fields are completely omitted from the receipt rather than printing placeholder text.
+7. Output history also omits blank optional case details.
+8. The monochrome thermal ResusPro logo/header is larger while retaining the printer-safe 1-bit PNG system.
+9. Automatic update checking remains enabled on launch, every five minutes, when returning to the foreground, on window focus and when connectivity returns.
 
 DEPLOYMENT
-Cloudflare Worker:
-- Replace the complete Worker with cloudflare-worker.js and deploy.
-- Keep the existing DB binding.
+GITHUB / PWA ONLY
+- Replace index.html
+- Replace service-worker.js
+- Replace update.html
 
-GitHub Pages / PWA:
-- Replace index.html, service-worker.js and update.html.
-- After publishing, the app should update itself rapidly. If needed, open update.html once.
+No Cloudflare Worker change is required. cloudflare-worker.js is included only as the unchanged working reference.
 
-TEST
-1. Confirm the header reads v1.0.7.
-2. Turn on all parameters/columns.
-3. Enter several normal, high and low values.
-4. Print. The receipt should retain the logo, ranges, units and arrow flags without a media decoding error.
+ROTEM / TEG PAGE
+The current rotem-dev.html was not available in the source package used to build this release. It must be updated from the current working rot009 file rather than recreated, so that its trace-profile and all/none functionality are not lost.

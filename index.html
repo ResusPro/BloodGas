@@ -12,19 +12,19 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.8 — sticky status banner + aligned parameter header + stronger arrows -->
+  <!-- ResusPro BloodGas v1.0.9 — fixed status banner + optional case details + aligned arrow header -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
       --text:#101828;--muted:#526070;--soft:#e8eef5;--danger:#b42318;
       --green:#18864b;--amber:#e59b16;--red:#c62828;--shadow:0 2px 12px rgba(16,24,40,.08);
-      --hero-sticky-top:8px;--param-sticky-top:82px
+      --hero-fixed-top:8px;--hero-space:82px;--param-sticky-top:90px
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+    html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);overflow-x:clip}
     body{padding:10px 10px 28px}
     .app{width:100%;max-width:900px;margin:0 auto}
-    .hero{position:sticky;top:var(--hero-sticky-top);z-index:40;background:linear-gradient(135deg,var(--blue),#1976d2);color:#fff;border-radius:16px;padding:8px 10px;margin:0 0 10px;box-shadow:0 4px 16px rgba(16,24,40,.18);isolation:isolate}
+    .hero{position:fixed;top:var(--hero-fixed-top);left:50%;transform:translateX(-50%);width:calc(100% - 20px);max-width:900px;z-index:40;background:linear-gradient(135deg,var(--blue),#1976d2);color:#fff;border-radius:16px;padding:8px 10px;margin:0;box-shadow:0 4px 16px rgba(16,24,40,.18);isolation:isolate}.hero-spacer{height:var(--hero-space);width:100%;pointer-events:none}
     .hero-top{display:flex;gap:10px;align-items:center;justify-content:space-between;min-width:0}
     .brand{display:flex;align-items:center;gap:9px;min-width:0}
     .logo-pill{background:rgba(255,255,255,.95);border-radius:13px;padding:5px 8px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(16,24,40,.18);flex:0 0 auto}
@@ -45,21 +45,21 @@
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sample-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sample-buttons button{background:var(--soft);font-size:.94rem;padding:10px 8px}.sample-buttons button.active{background:var(--blue);color:#fff}
     .stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.stage-row button.active{background:var(--blue);color:#fff}
     .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.group-title{font-weight:850;color:#1d2939;margin:16px 0 7px;padding-top:6px;border-top:1px solid #eef2f6}
-    .param-head,.param{display:grid;grid-template-columns:34px minmax(78px,1.2fr) minmax(76px,.9fr) 30px minmax(54px,.65fr) minmax(74px,.9fr);gap:6px;align-items:center;min-width:0}
+    .param-head,.param{display:grid;grid-template-columns:34px minmax(78px,1.2fr) minmax(76px,.9fr) 38px minmax(54px,.65fr) minmax(74px,.9fr);gap:6px;align-items:center;min-width:0}
     .param-head{position:sticky;top:var(--param-sticky-top);background:#fff;z-index:25;border-bottom:2px solid var(--line);padding:6px 0;min-height:46px;font-size:.78rem;font-weight:850;color:#344054;box-shadow:0 4px 8px rgba(16,24,40,.06)}
     .param{padding:7px 0;border-bottom:1px solid #eef2f6}.param input[type="checkbox"]{width:23px;height:23px;accent-color:var(--blue);justify-self:center}
-    .head-cell{display:flex;align-items:center;justify-content:flex-start;align-self:stretch;border:0;background:transparent;color:#344054;border-radius:9px;min-height:34px;margin:0;padding:0 4px;font-size:.78rem;font-weight:850;line-height:1;text-align:left;cursor:pointer}.param-head span.head-cell{cursor:default}.head-cell.center{justify-content:center;text-align:center}.head-cell.off{color:#b8c0cc;text-decoration:line-through}.head-cell.include{justify-content:center;font-size:1rem;text-align:center;color:var(--blue)}#flagHead{font-family:"Arial Black",Arial,sans-serif;font-size:1.12rem;font-weight:900;letter-spacing:.02em;-webkit-text-stroke:.45px currentColor}.flag-cell{font-family:"Arial Black",Arial,sans-serif;font-size:1.22rem;font-weight:900;line-height:1;-webkit-text-stroke:.45px currentColor}
+    .head-cell{display:flex;align-items:center;justify-content:flex-start;align-self:stretch;border:0;background:transparent;color:#344054;border-radius:9px;min-height:40px;margin:0;padding:0 4px;font-size:.78rem;font-weight:850;line-height:1.15;text-align:left;cursor:pointer}.param-head>*{align-self:stretch}.param-head span.head-cell{cursor:default}.head-cell.center{justify-content:center;text-align:center}.head-cell.off{color:#b8c0cc;text-decoration:line-through}.head-cell.include{justify-content:center;font-size:1rem;text-align:center;color:var(--blue)}#flagHead{display:inline-flex;flex-direction:row;flex-wrap:nowrap;white-space:nowrap;justify-content:center;font-family:"Arial Black",Arial,sans-serif;font-size:1.18rem;font-weight:950;letter-spacing:-.08em;-webkit-text-stroke:.7px currentColor;text-shadow:.35px 0 currentColor,-.35px 0 currentColor}.flag-cell{font-family:"Arial Black",Arial,sans-serif;font-size:1.3rem;font-weight:950;line-height:1;-webkit-text-stroke:.75px currentColor;text-shadow:.35px 0 currentColor,-.35px 0 currentColor}
     .pname{font-weight:780;color:#263445;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.95rem}.value-input{font-weight:760;text-align:center;padding:9px 8px!important;min-height:38px!important;border-radius:11px!important}
     .flag-cell{text-align:center;color:#344054;min-height:1.2em}.unit-cell,.range-cell{font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.unit-cell.off,.range-cell.off,.flag-cell.off{visibility:hidden}
     .edit-panel{display:none;grid-column:2/7;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px;margin-top:4px}.edit-panel.open{display:grid}.edit-panel input{min-height:38px;padding:8px 10px;font-size:.92rem;border-radius:10px}
     .muted{color:var(--muted);font-size:.92rem}.status-strip{display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 11px;border-radius:12px;background:#f8fafc;border:1px solid #e4e7ec;font-size:.9rem}.status-dot{width:11px;height:11px;border-radius:50%;background:#98a2b3;flex:0 0 auto}.status-dot.idle{background:var(--green)}.status-dot.printing{background:var(--amber)}.status-dot.offline{background:var(--red)}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.54);display:none;align-items:flex-end;justify-content:center;padding:10px;z-index:50}.modal-backdrop.open{display:flex}.modal{width:100%;max-width:680px;max-height:94vh;overflow:auto;background:#fff;border-radius:20px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,.25)}.modal h2{margin:0 0 8px;font-size:1.2rem}.modal h3{font-size:1rem;margin:18px 0 8px}.modal p{color:var(--muted);margin:0 0 10px}
-    .receipt{width:100%;max-width:390px;margin:0 auto;background:#fff;color:#111;border:1px dashed #98a2b3;padding:12px;font-family:"Courier New",Courier,monospace;font-size:13px;line-height:1.25;overflow-wrap:anywhere}.receipt-brand{text-align:center;margin:0 0 5px}.receipt-brand img{max-width:150px;max-height:48px;width:auto;height:auto}.receipt pre{font:inherit;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+    .receipt{width:100%;max-width:390px;margin:0 auto;background:#fff;color:#111;border:1px dashed #98a2b3;padding:12px;font-family:"Courier New",Courier,monospace;font-size:13px;line-height:1.25;overflow-wrap:anywhere}.receipt-brand{text-align:center;margin:0 0 5px}.receipt-brand img{max-width:190px;max-height:60px;width:auto;height:auto}.receipt pre{font:inherit;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
     .preview-wrap{padding:12px;background:#f7f9fc;border:1px solid var(--line);border-radius:14px}.history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}.hidden{display:none!important}
     .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#101828;color:#fff;padding:11px 15px;border-radius:13px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:100;max-width:calc(100vw - 24px);text-align:center;font-weight:700;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.error{background:#b42318}.toast.success{background:#166534}
-    @supports(top:env(safe-area-inset-top)){:root{--hero-sticky-top:calc(env(safe-area-inset-top) + 8px)}}
-    @media(max-width:560px){body{padding:8px}.hero{border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:30px minmax(58px,1fr) minmax(58px,.8fr) 22px minmax(42px,.55fr) minmax(58px,.7fr);gap:4px}.pname{font-size:.86rem}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:32px}#flagHead{font-size:1rem}.flag-cell{font-size:1.12rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
-    @media print{body{background:#fff;padding:0}.app,.modal-backdrop,.toast{display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:42mm;max-height:13mm}}
+    @supports(top:env(safe-area-inset-top)){:root{--hero-fixed-top:calc(env(safe-area-inset-top) + 8px)}}
+    @media(max-width:560px){body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:30px minmax(58px,1fr) minmax(58px,.8fr) 34px minmax(42px,.55fr) minmax(58px,.7fr);gap:4px}.pname{font-size:.86rem}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1.06rem;letter-spacing:-.1em}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
+    @media print{body{background:#fff;padding:0}.app,.modal-backdrop,.toast{display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:49mm;max-height:16mm}}
   </style>
 </head>
 <body>
@@ -72,7 +72,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.8 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.9 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -81,18 +81,19 @@
       </div>
     </div>
   </header>
+  <div class="hero-spacer" id="heroSpacer" aria-hidden="true"></div>
 
   <section class="card">
     <h2>Case details</h2>
     <div class="section">
       <div class="grid2">
         <div>
-          <label for="patientId">Patient / scenario ID</label>
-          <input id="patientId" type="text" value="SIM-001" autocomplete="off">
+          <label for="patientId">Patient / scenario ID <span class="muted">(optional)</span></label>
+          <input id="patientId" type="text" value="" placeholder="Leave blank to omit from printout" autocomplete="off">
         </div>
         <div>
-          <label for="resusBay">Resus bay / location</label>
-          <input id="resusBay" type="text" value="Resus Bay 1" autocomplete="off">
+          <label for="resusBay">Resus bay / location <span class="muted">(optional)</span></label>
+          <input id="resusBay" type="text" value="" placeholder="Leave blank to omit from printout" autocomplete="off">
         </div>
       </div>
       <label>Sample type</label>
@@ -170,18 +171,23 @@ const $=id=>document.getElementById(id);
 function init(){
   restoreCaseDetails();setSample('Arterial',false);
   const select=$('presetSelect');Object.keys(presets).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});
-  buildParams();setupStickyLayout();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
+  buildParams();setupFixedLayout();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
   $('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);
 }
 function restoreCaseDetails(){
-  $('patientId').value=localStorage.getItem('bloodgasPatientId')||'SIM-001';
-  $('resusBay').value=localStorage.getItem('bloodgasResusBay')||'Resus Bay 1';
+  if(!localStorage.getItem('bloodgasOptionalDetailsMigrated')){
+    if(localStorage.getItem('bloodgasPatientId')==='SIM-001')localStorage.removeItem('bloodgasPatientId');
+    if(localStorage.getItem('bloodgasResusBay')==='Resus Bay 1')localStorage.removeItem('bloodgasResusBay');
+    localStorage.setItem('bloodgasOptionalDetailsMigrated','1');
+  }
+  $('patientId').value=localStorage.getItem('bloodgasPatientId')||'';
+  $('resusBay').value=localStorage.getItem('bloodgasResusBay')||'';
 }
-function caseDetailChanged(){localStorage.setItem('bloodgasPatientId',$('patientId').value);localStorage.setItem('bloodgasResusBay',$('resusBay').value);renderReceipt()}
-function setupStickyLayout(){const hero=document.querySelector('.hero');if(!hero)return;const update=()=>{const top=parseFloat(getComputedStyle(hero).top)||0;document.documentElement.style.setProperty('--param-sticky-top',`${Math.ceil(top+hero.getBoundingClientRect().height+8)}px`)};update();window.addEventListener('resize',update,{passive:true});if('ResizeObserver'in window)new ResizeObserver(update).observe(hero)}
+function caseDetailChanged(){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value);if(patient)localStorage.setItem('bloodgasPatientId',patient);else localStorage.removeItem('bloodgasPatientId');if(bay)localStorage.setItem('bloodgasResusBay',bay);else localStorage.removeItem('bloodgasResusBay');renderReceipt()}
+function setupFixedLayout(){const hero=document.querySelector('.hero'),spacer=$('heroSpacer');if(!hero||!spacer)return;const update=()=>{const top=parseFloat(getComputedStyle(hero).top)||0;const height=Math.ceil(hero.getBoundingClientRect().height);document.documentElement.style.setProperty('--hero-space',`${height+Math.max(0,top)+4}px`);document.documentElement.style.setProperty('--param-sticky-top',`${Math.ceil(top+height+8)}px`)};update();window.addEventListener('resize',update,{passive:true});window.addEventListener('orientationchange',update,{passive:true});if('ResizeObserver'in window)new ResizeObserver(update).observe(hero)}
 function buildParams(){
   const list=$('paramList');list.innerHTML='';
-  const head=document.createElement('div');head.className='param-head';head.innerHTML='<button class="head-cell include" type="button" onclick="cycleIncludeHeader()" id="includeHead" title="Cycle none, standard, all">✓</button><span class="head-cell">Parameter</span><span class="head-cell">Value</span><button class="head-cell center" type="button" id="flagHead" onclick="toggleColumn(\'flags\')" title="Out-of-range indicator">↑ ↓</button><button class="head-cell" type="button" id="unitHead" onclick="toggleColumn(\'units\')">Unit</button><button class="head-cell off" type="button" id="rangeHead" onclick="toggleColumn(\'ranges\')">Range</button>';list.appendChild(head);
+  const head=document.createElement('div');head.className='param-head';head.innerHTML='<button class="head-cell include" type="button" onclick="cycleIncludeHeader()" id="includeHead" title="Cycle none, standard, all">✓</button><span class="head-cell">Parameter</span><span class="head-cell center">Value</span><button class="head-cell center" type="button" id="flagHead" onclick="toggleColumn(\'flags\')" title="Out-of-range indicator" aria-label="Show or hide high and low arrows">↑↓</button><button class="head-cell" type="button" id="unitHead" onclick="toggleColumn(\'units\')">Unit</button><button class="head-cell off" type="button" id="rangeHead" onclick="toggleColumn(\'ranges\')">Range</button>';list.appendChild(head);
   let last='';params.forEach(p=>{if(p.group!==last){last=p.group;const title=document.createElement('div');title.className='group-title';title.textContent=last;list.appendChild(title)}const row=document.createElement('div');row.className='param';row.id=`row-${p.id}`;row.innerHTML=`<input type="checkbox" id="on-${p.id}" ${p.on?'checked':''} onchange="updateParam('${p.id}','on',this.checked)"><div class="pname">${escapeHtml(p.name)}</div><input class="value-input" id="val-${p.id}" inputmode="decimal" type="text" placeholder="—" oninput="updateParam('${p.id}','value',this.value)"><div class="flag-cell" id="flag-${p.id}"></div><div class="unit-cell" id="unitLabel-${p.id}" onclick="toggleEdit('${p.id}')"></div><div class="range-cell" id="rangeLabel-${p.id}" onclick="toggleEdit('${p.id}')"></div><div class="edit-panel" id="edit-${p.id}"><input id="unit-${p.id}" type="text" value="${escapeAttr(p.unit)}" aria-label="Unit" oninput="updateParam('${p.id}','unit',this.value)" placeholder="Unit"><input id="ref-${p.id}" type="text" value="${escapeAttr(p.ref)}" aria-label="Reference range" oninput="updateParam('${p.id}','ref',this.value)" placeholder="Reference range"></div>`;list.appendChild(row)});
   updateParamDisplay();updateColumnHeaders();
 }
@@ -203,15 +209,19 @@ function parseRef(p){const match=String(p.ref).replace(/[–—]/g,'-').match(/(
 function flagFor(p){const value=parseFloat(String(p.value).replace(',','.'));if(Number.isNaN(value))return'';const[low,high]=parseRef(p);if(value<low)return'↓';if(value>high)return'↑';return''}
 function pad(value,length){const text=String(value);return text.length>=length?text.slice(0,length):text+' '.repeat(length-text.length)}
 function receiptLines(){
-  const patient=cleanField($('patientId').value)||'SIM';const bay=cleanField($('resusBay').value)||'Not specified';
+  const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value);
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  const lines=['--------------------------------','RESUSPRO','BLOOD GAS - SIMULATION RESULT','--------------------------------','PATIENT / SCENARIO',patient,'RESUS BAY / LOCATION',bay,'--------------------------------',`Sample: ${sampleType}`,`Time:   ${stamp}`,'--------------------------------'];
+  const lines=['--------------------------------','RESUSPRO','BLOOD GAS - SIMULATION RESULT','--------------------------------'];
+  if(patient)lines.push('PATIENT / SCENARIO',patient);
+  if(bay)lines.push('RESUS BAY / LOCATION',bay);
+  if(patient||bay)lines.push('--------------------------------');
+  lines.push(`Sample: ${sampleType}`,`Time:   ${stamp}`,'--------------------------------');
   let current='';params.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{if(p.group!==current){current=p.group;lines.push('',p.group.toUpperCase())}const flag=showFlags?flagFor(p):'';const unit=showUnits&&p.unit?' '+p.unit:'';const range=showRanges?` [${p.ref}]`:'';lines.push(`${pad(p.name,12)} ${pad(p.value,8)} ${pad(flag,1)}${unit}${range}`)});
   lines.push('','--------------------------------','Generated by ResusPro','resuspro.com','FOR SIMULATION USE ONLY','--------------------------------');return lines
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.8" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.9" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
 function testReceiptLines(){
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
@@ -255,7 +265,7 @@ function applyPrinterState(state,status={}){
 function formatStatus(status={},fallbackState=printerState){const state=status.state||fallbackState;if(state==='idle')return'ResusPro BloodGas printer: Idle';if(state==='printing'){const count=Number(status.queueDepth||0);return`ResusPro BloodGas printer: ${status.label||'Printing'}${count?` · ${count} queued`:''}`}const seen=status.lastSeen?new Date(status.lastSeen).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'never';return`ResusPro BloodGas printer: ${status.label||'Offline'} · last seen ${seen}`}
 async function buildReceiptPng(sourceLines=receiptLines()){
   const lines=withoutDuplicateTextBrand(sourceLines);
-  const width=576,margin=24,brandHeight=82,titleGap=10;
+  const width=576,margin=24,brandHeight=102,titleGap=10;
   const longest=Math.max(32,...lines.map(line=>String(line).length));
   const fontSize=Math.max(16,Math.min(24,Math.floor((width-(margin*2))/(longest*0.61))));
   const lineHeight=fontSize+5;
@@ -322,21 +332,21 @@ function writeUint32(bytes,offset,value){bytes[offset]=(value>>>24)&255;bytes[of
 function concatBytes(...parts){const total=parts.reduce((sum,part)=>sum+part.length,0),out=new Uint8Array(total);let offset=0;for(const part of parts){out.set(part,offset);offset+=part.length}return out}
 function bytesToBase64(bytes){let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary)}
 function drawThermalBrand(ctx,width,y){
-  ctx.save();ctx.fillStyle='#000';ctx.strokeStyle='#000';ctx.lineWidth=3;ctx.textBaseline='alphabetic';ctx.textAlign='left';
-  const brand='RESUS PRO';ctx.font='bold 38px Arial, sans-serif';const brandWidth=ctx.measureText(brand).width;const shieldWidth=38;const gap=18;const total=brandWidth+gap+shieldWidth;const x=(width-total)/2;
-  ctx.fillText(brand,x,y+40);
-  const sx=x+brandWidth+gap,sy=y+8;ctx.beginPath();ctx.moveTo(sx+19,sy);ctx.lineTo(sx+35,sy+7);ctx.lineTo(sx+32,sy+31);ctx.quadraticCurveTo(sx+19,sy+48,sx+6,sy+31);ctx.lineTo(sx+3,sy+7);ctx.closePath();ctx.stroke();
-  ctx.beginPath();ctx.moveTo(sx+8,sy+24);ctx.lineTo(sx+14,sy+24);ctx.lineTo(sx+17,sy+17);ctx.lineTo(sx+21,sy+31);ctx.lineTo(sx+24,sy+24);ctx.lineTo(sx+30,sy+24);ctx.stroke();
-  ctx.font='15px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+67);ctx.restore();
+  ctx.save();ctx.fillStyle='#000';ctx.strokeStyle='#000';ctx.lineWidth=3.6;ctx.textBaseline='alphabetic';ctx.textAlign='left';
+  const brand='RESUS PRO';ctx.font='bold 46px Arial, sans-serif';const brandWidth=ctx.measureText(brand).width;const shieldWidth=46;const gap=16;const total=brandWidth+gap+shieldWidth;const x=(width-total)/2;
+  ctx.fillText(brand,x,y+49);
+  const sx=x+brandWidth+gap,sy=y+7;ctx.beginPath();ctx.moveTo(sx+23,sy);ctx.lineTo(sx+42,sy+9);ctx.lineTo(sx+38,sy+38);ctx.quadraticCurveTo(sx+23,sy+58,sx+8,sy+38);ctx.lineTo(sx+4,sy+9);ctx.closePath();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(sx+10,sy+29);ctx.lineTo(sx+17,sy+29);ctx.lineTo(sx+21,sy+20);ctx.lineTo(sx+26,sy+38);ctx.lineTo(sx+30,sy+29);ctx.lineTo(sx+37,sy+29);ctx.stroke();
+  ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+87);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.8`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.9`})}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
 function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}
 function closeSettings(){$('settingsModal').classList.remove('open')}
 function backdropClose(event,id){if(event.target.id===id)event.target.classList.remove('open')}
 function saveHistory(mode,jobId=''){const item={time:new Date().toISOString(),mode,jobId,patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),sample:sampleType,text:receiptText()};const history=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');history.unshift(item);localStorage.setItem('resusproBloodGasHistory',JSON.stringify(history.slice(0,100)));renderHistory()}
-function renderHistory(){const element=$('historyList');const history=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');if(!history.length){element.innerHTML='<p class="muted">No outputs saved yet on this device.</p>';return}element.innerHTML=history.slice(0,20).map(item=>`<div class="history-item"><b>${escapeHtml(new Date(item.time).toLocaleString('en-GB'))} · ${escapeHtml(item.mode)}</b><span class="muted">${escapeHtml(item.patientId||'SIM')} · ${escapeHtml(item.resusBay||'Location not set')} · ${escapeHtml(item.sample||'')}</span></div>`).join('')}
+function renderHistory(){const element=$('historyList');const history=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');if(!history.length){element.innerHTML='<p class="muted">No outputs saved yet on this device.</p>';return}element.innerHTML=history.slice(0,20).map(item=>{const details=[item.patientId,item.resusBay,item.sample].filter(Boolean).join(' · ');return`<div class="history-item"><b>${escapeHtml(new Date(item.time).toLocaleString('en-GB'))} · ${escapeHtml(item.mode)}</b>${details?`<span class="muted">${escapeHtml(details)}</span>`:''}</div>`}).join('')}
 function clearHistory(){if(confirm('Clear saved output history on this device?')){localStorage.removeItem('resusproBloodGasHistory');renderHistory()}}
 function showToast(message,type=''){const toast=$('toast');toast.textContent=message;toast.className=`toast show ${type}`;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>{toast.className='toast'},4200)}
 function cleanField(value){return String(value||'').replace(/[\r\n\t]+/g,' ').trim().slice(0,80)}
@@ -349,7 +359,7 @@ if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
   window.addEventListener('load',async()=>{
     try{
-      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.8',{updateViaCache:'none'});
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.9',{updateViaCache:'none'});
       const checkForUpdate=async(force=false)=>{const now=Date.now();if(!force&&now-lastUpdateCheck<60000)return;lastUpdateCheck=now;try{await registration.update()}catch(_){}};
       await checkForUpdate(true);
       setInterval(()=>checkForUpdate(false),5*60*1000);
