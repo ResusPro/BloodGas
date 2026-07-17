@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.12 — i-STAT and EPOC device-result views -->
+  <!-- ResusPro BloodGas v1.0.13 — EPOC result tiles -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -57,10 +57,22 @@
     .result-view-area{margin:12px 0}.view-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.view-tabs button{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);padding:10px 8px;min-height:42px;font-size:.92rem}.view-tabs button.active{background:var(--blue);border-color:var(--blue);color:#fff}.view-hint{text-align:center;margin:-4px 0 8px;color:var(--muted);font-size:.82rem}.device-panel{overflow:hidden}.device-shell{margin:0 auto 12px;max-width:420px;border-radius:24px;padding:14px;background:#101828;color:#e5e7eb;box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 10px 24px rgba(16,24,40,.18)}.device-screen{border-radius:16px;background:#ecfdf3;color:#101828;border:2px solid #344054;overflow:hidden;font-family:"Courier New",Courier,monospace}.device-top{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;background:#111827;color:#f9fafb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:.82rem;font-weight:800}.device-meta{padding:8px 10px;border-bottom:1px solid rgba(16,24,40,.2);font-size:.82rem;line-height:1.25}.device-row{display:grid;grid-template-columns:minmax(72px,1fr) minmax(68px,.9fr) 30px minmax(52px,.7fr);gap:6px;align-items:center;padding:5px 10px;border-bottom:1px solid rgba(16,24,40,.12);font-size:.9rem}.device-row.abnormal{font-weight:900}.device-row .value{text-align:right}.device-row .flag{text-align:center;font-family:"Arial Black",Arial,sans-serif}.device-note{max-width:420px;margin:0 auto;color:var(--muted);font-size:.9rem;line-height:1.35}.epoc-shell{background:#263445}.epoc-screen{background:#f8fafc;color:#101828;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.epoc-top{background:#1565c0}.epoc-grid-head,.epoc-row{display:grid;grid-template-columns:minmax(70px,1fr) minmax(58px,.75fr) 28px minmax(48px,.55fr) minmax(70px,.9fr);gap:5px;align-items:center;padding:6px 8px;border-bottom:1px solid #d0d5dd;font-size:.82rem}.epoc-grid-head{background:#e8eef5;font-weight:850;color:#344054}.epoc-row{font-size:.85rem}.epoc-row.abnormal{background:#fff7ed;font-weight:850}.empty-device{padding:24px 12px;text-align:center;color:#526070;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.device-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:10px 0}.device-actions button{min-height:38px;padding:9px 12px;border-radius:12px;font-size:.9rem}.device-swipe-capture{touch-action:pan-y}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.54);display:none;align-items:flex-end;justify-content:center;padding:10px;z-index:50}.modal-backdrop.open{display:flex}.modal{width:100%;max-width:680px;max-height:94vh;overflow:auto;background:#fff;border-radius:20px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,.25)}.modal h2{margin:0 0 8px;font-size:1.2rem}.modal h3{font-size:1rem;margin:18px 0 8px}.modal p{color:var(--muted);margin:0 0 10px}
     .receipt{width:100%;max-width:390px;margin:0 auto;background:#fff;color:#111;border:1px dashed #98a2b3;padding:12px;font-family:"Courier New",Courier,monospace;font-size:13px;line-height:1.25;overflow-wrap:anywhere}.receipt-brand{text-align:center;margin:0 0 5px}.receipt-brand img{max-width:190px;max-height:60px;width:auto;height:auto}.receipt pre{font:inherit;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+
+    .epoc-shell{max-width:340px;background:#2b3642;padding:8px;border-radius:6px;box-shadow:0 12px 28px rgba(16,24,40,.24)}
+    .epoc-screen{border:0;border-radius:3px;background:#f2f4f7;color:#101828;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-height:none}
+    .epoc-top{display:flex;align-items:center;justify-content:space-between;background:#1e9be6;color:#fff;padding:6px 8px;font-size:.72rem;font-weight:760}
+    .epoc-actionbar{display:flex;align-items:center;gap:12px;padding:8px 10px;background:#f8fafc;border-bottom:1px solid #d0d5dd}
+    .epoc-close{background:#2b98dd;color:#fff;border-radius:0;min-height:0;padding:9px 12px;text-align:center;font-size:.62rem;font-weight:900;line-height:1.1;box-shadow:none}
+    .epoc-status{display:flex;align-items:center;gap:8px;margin:0 auto;font-size:1.2rem;font-weight:500;color:#1f2937}.epoc-status-mark{font-size:1.45rem;font-weight:800;line-height:1}.epoc-status-mark.review{color:#e11d1d}.epoc-status-mark.ok{color:#348911}
+    .epoc-meta-compact{font-size:.68rem;color:#526070;padding:6px 10px 3px;white-space:normal;line-height:1.2}
+    .epoc-section-label{font-size:.74rem;color:#98a2b3;font-weight:650;padding:8px 10px 4px}
+    .epoc-tile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#cdd5df;border-top:1px solid #cdd5df;border-bottom:1px solid #cdd5df}
+    .epoc-tile{position:relative;min-height:70px;background:#fff;color:#101828;padding:6px 5px 5px;overflow:hidden}.epoc-tile.normal{background:#438d19;color:#fff}.epoc-tile.high,.epoc-tile.low{background:#e11d1d;color:#fff}.epoc-tile.neutral{background:#fff;color:#101828}.epoc-tile-name{font-size:.72rem;font-weight:750;line-height:1.05}.epoc-tile-value{font-size:1.38rem;line-height:1.05;margin-top:5px;font-weight:450;letter-spacing:-.04em}.epoc-tile-unit{font-size:.56rem;line-height:1.05;margin-top:1px;opacity:.95}.epoc-tile-flag{position:absolute;right:4px;bottom:2px;font-size:1.15rem;font-weight:950;line-height:1}.epoc-footer-bar{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #d0d5dd;background:#fff;padding:7px 10px;font-weight:850;color:#344054}.epoc-footer-chevron{font-size:1.1rem;color:#526070}.empty-epoc{padding:24px 12px;text-align:center;color:#526070;background:#fff;font-size:.9rem}
+
     .preview-wrap{padding:12px;background:#f7f9fc;border:1px solid var(--line);border-radius:14px}.history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}.hidden{display:none!important}
     .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#101828;color:#fff;padding:11px 15px;border-radius:13px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:100;max-width:calc(100vw - 24px);text-align:center;font-weight:700;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.error{background:#b42318}.toast.success{background:#166534}
     @supports(top:env(safe-area-inset-top)){:root{--hero-fixed-top:calc(env(safe-area-inset-top) + 8px)}}
-    @media(max-width:560px){.view-tabs{gap:5px}.view-tabs button{font-size:.78rem;padding:8px 4px}.view-hint{font-size:.76rem}.device-shell{border-radius:20px;padding:10px}.device-row{grid-template-columns:minmax(58px,1fr) minmax(54px,.9fr) 24px minmax(42px,.7fr);font-size:.78rem;padding:5px 7px}.epoc-grid-head,.epoc-row{grid-template-columns:minmax(54px,1fr) minmax(48px,.75fr) 22px minmax(38px,.55fr) minmax(56px,.9fr);font-size:.72rem;padding:5px 6px}.device-meta{font-size:.74rem}.device-top{font-size:.76rem}body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
+    @media(max-width:560px){.epoc-shell{max-width:100%;padding:7px}.epoc-tile{min-height:66px;padding:5px 4px}.epoc-tile-value{font-size:1.18rem}.epoc-tile-name{font-size:.66rem}.epoc-tile-unit{font-size:.52rem}.epoc-actionbar{padding:7px 8px}.epoc-status{font-size:1.08rem}.view-tabs{gap:5px}.view-tabs button{font-size:.78rem;padding:8px 4px}.view-hint{font-size:.76rem}.device-shell{border-radius:20px;padding:10px}.device-row{grid-template-columns:minmax(58px,1fr) minmax(54px,.9fr) 24px minmax(42px,.7fr);font-size:.78rem;padding:5px 7px}.epoc-grid-head,.epoc-row{grid-template-columns:minmax(54px,1fr) minmax(48px,.75fr) 22px minmax(38px,.55fr) minmax(56px,.9fr);font-size:.72rem;padding:5px 6px}.device-meta{font-size:.74rem}.device-top{font-size:.76rem}body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
     @media print{body{background:#fff;padding:0}.app,.modal-backdrop,.toast{display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:49mm;max-height:16mm}}
   </style>
 </head>
@@ -74,7 +86,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.12 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.13 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -158,10 +170,11 @@
       <div class="section">
         <div class="device-shell epoc-shell">
           <div class="device-screen epoc-screen">
-            <div class="device-top epoc-top"><span>epoc SIM</span><span id="epocTime">--:--</span></div>
-            <div id="epocMeta" class="device-meta"></div>
-            <div class="epoc-grid-head"><span>Test</span><span>Result</span><span>Flag</span><span>Unit</span><span>Ref</span></div>
+            <div class="epoc-top"><span id="epocDate">--</span><span id="epocTime">--:--</span></div>
+            <div class="epoc-actionbar"><button class="epoc-close" type="button" onclick="setResultView('picker')">CLOSE &amp;<br>TRANSMIT</button><div class="epoc-status"><span id="epocStatusMark" class="epoc-status-mark ok">✓</span><span id="epocStatusText">Result</span></div></div>
+            <div id="epocMeta" class="epoc-meta-compact"></div>
             <div id="epocList"></div>
+            <div class="epoc-footer-bar"><span>Edit Test Details</span><span class="epoc-footer-chevron">⌃</span></div>
           </div>
         </div>
         <div class="device-actions"><button type="button" onclick="setResultView('picker')">Edit values</button><button type="button" onclick="openSettings()">Output menu</button></div>
@@ -311,7 +324,7 @@ function receiptLines(){
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.12" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.13" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
 function testReceiptLines(){
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
@@ -323,27 +336,43 @@ function renderDeviceViews(){
   const results=selectedResultParams();
   const time=deviceTime();
   const meta=currentResultMeta();
-  const istatTime=$('istatTime'),epocTime=$('epocTime'),istatMeta=$('istatMeta'),epocMeta=$('epocMeta'),istatList=$('istatList'),epocList=$('epocList');
-  if(istatTime)istatTime.textContent=time;if(epocTime)epocTime.textContent=time;if(istatMeta)istatMeta.textContent=meta;if(epocMeta)epocMeta.textContent=meta;
+  const istatTime=$('istatTime'),epocTime=$('epocTime'),epocDate=$('epocDate'),istatMeta=$('istatMeta'),epocMeta=$('epocMeta'),istatList=$('istatList'),epocList=$('epocList');
+  if(istatTime)istatTime.textContent=time;if(epocTime)epocTime.textContent=time;if(epocDate)epocDate.textContent=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});if(istatMeta)istatMeta.textContent=meta;if(epocMeta)epocMeta.textContent=meta;
   if(istatList){
     istatList.innerHTML=results.length?results.map(r=>`<div class="device-row ${r.flag?'abnormal':''}"><span>${escapeHtml(deviceShortName(r.id,r.name))}</span><span class="value">${escapeHtml(r.value)}</span><span class="flag">${escapeHtml(r.flag)}</span><span>${escapeHtml(r.unit)}</span></div>`).join(''):'<div class="empty-device">No selected values yet.<br>Swipe back to Picker and enter a result.</div>';
   }
-  if(epocList){
-    epocList.innerHTML=results.length?results.map(r=>`<div class="epoc-row ${r.flag?'abnormal':''}"><span>${escapeHtml(deviceShortName(r.id,r.name))}</span><span>${escapeHtml(r.value)}</span><span class="flag">${escapeHtml(r.flag)}</span><span>${escapeHtml(r.unit)}</span><span>${escapeHtml(r.ref)}</span></div>`).join(''):'<div class="empty-device">No selected values yet.<br>Swipe back to Picker and enter a result.</div>';
-  }
+  renderEpocTiles(results);
 }
+function renderEpocTiles(results){
+  const epocList=$('epocList'),statusMark=$('epocStatusMark'),statusText=$('epocStatusText');
+  if(!epocList)return;
+  const abnormalCount=results.filter(r=>r.flag).length;
+  if(statusMark){statusMark.textContent=abnormalCount?'×':'✓';statusMark.className=`epoc-status-mark ${abnormalCount?'review':'ok'}`}
+  if(statusText)statusText.textContent=abnormalCount?'Review':'Result';
+  if(!results.length){epocList.innerHTML='<div class="empty-epoc">No selected values yet.<br>Swipe back to Picker and enter a result.</div>';return;}
+  const sections=epocSections(results);
+  epocList.innerHTML=sections.map(section=>`<div class="epoc-section-label">${escapeHtml(section.label)}</div><div class="epoc-tile-grid">${section.items.map(epocTileHtml).join('')}</div>`).join('');
+}
+function epocSections(results){
+  const order={gases:['pH','pCO2','pO2','HCO3','BE','SaO2','Lactate'],chem:['Na','K','Cl','iCa','Glucose','Urea','Creatinine','eGFR'],haem:['Hb','Hct','COHb','MetHb'],other:['CRP','Ketones','Troponin','BNP','D-dimer','INR','GFAP']};
+  const used=new Set();
+  const pick=ids=>ids.map(id=>results.find(r=>r.id===id)).filter(Boolean).filter(r=>{used.add(r.id);return true});
+  const sections=[];
+  const gases=pick(order.gases);if(gases.length)sections.push({label:'Gases+',items:gases});
+  const chem=pick(order.chem);if(chem.length)sections.push({label:'Chem+',items:chem});
+  const haem=pick(order.haem);if(haem.length)sections.push({label:'Hem+',items:haem});
+  const other=results.filter(r=>!used.has(r.id));if(other.length)sections.push({label:'Other+',items:other});
+  return sections;
+}
+function epocTileHtml(r){
+  const flag=r.flag||'';
+  const state=flag==='↑'?'high':flag==='↓'?'low':'normal';
+  return `<div class="epoc-tile ${state}"><div class="epoc-tile-name">${escapeHtml(epocName(r.id,r.name))}</div><div class="epoc-tile-value">${escapeHtml(epocValue(r))}</div><div class="epoc-tile-unit">${escapeHtml(epocUnit(r.id,r.unit))}</div>${flag?`<div class="epoc-tile-flag">${escapeHtml(flag)}</div>`:''}</div>`;
+}
+function epocName(id,name){const map={pCO2:'pCO₂',pO2:'pO₂',HCO3:'cHCO₃⁻',BE:'BE(ecf)',SaO2:'cSO₂',Lactate:'Lac',Na:'Na⁺',K:'K⁺',Cl:'Cl⁻',iCa:'Ca⁺⁺',Glucose:'Glu',Creatinine:'Crea','D-dimer':'D-dim',Ketones:'Ket'};return map[id]||name}
+function epocValue(r){if((r.id==='pCO2'||r.id==='pO2')&&r.unit==='kPa'){const n=Number(String(r.value).replace(',','.'));if(!Number.isNaN(n))return (n*7.50062).toFixed(1)}return r.value}
+function epocUnit(id,unit){const map={pCO2:'mmHg',pO2:'mmHg'};return map[id]||unit}
 function deviceShortName(id,name){const map={pCO2:'PCO2',pO2:'PO2',HCO3:'HCO3',SaO2:'sO2',Lactate:'LAC',Glucose:'Glu',Creatinine:'Crea','D-dimer':'D-dim'};return map[id]||name}
-function renderReceipt(){const html=receiptHtml();$('settingsReceipt').innerHTML=html;$('printReceipt').innerHTML=html;renderDeviceViews()}
-async function cloudPrint(){
-  const button=$('cloudPrintButton');button.disabled=true;button.textContent='Queuing…';
-  try{
-    const png=await buildReceiptPng();
-    const response=await fetch(`${PRINT_API}/api/print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),receiptText:receiptText(),pngBase64:png.base64,pngHeight:png.height,pngBitDepth:png.bitDepth}),cache:'no-store'});
-    const result=await readJsonResponse(response);if(!response.ok||!result.ok)throw new Error(result.error||`Print service returned ${response.status}`);
-    saveHistory('CloudPRNT queued',result.jobId);showToast('Result queued for ResusPro BloodGas printer.','success');trackJob(result.jobId);await refreshPrinterStatus(false);
-  }catch(error){showToast(`Could not queue print: ${error.message}`,'error')}
-  finally{button.disabled=false;applyPrinterState(printerState)}
-}
 async function sendTestPrint(){
   try{
     const lines=testReceiptLines();
@@ -446,7 +475,7 @@ function drawThermalBrand(ctx,width,y){
   ctx.beginPath();ctx.moveTo(sx+10,sy+29);ctx.lineTo(sx+17,sy+29);ctx.lineTo(sx+21,sy+20);ctx.lineTo(sx+26,sy+38);ctx.lineTo(sx+30,sy+29);ctx.lineTo(sx+37,sy+29);ctx.stroke();
   ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+87);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.12`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.13`})}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
 function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}
