@@ -1,10 +1,11 @@
-const APP_VERSION = '1.0.9';
+const APP_VERSION = '1.0.12';
 const CACHE_NAME = `resuspro-bloodgas-v${APP_VERSION}`;
 const OFFLINE_INDEX = './index.html';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
   './logo.png',
+  './rotem-dev.html',
 ];
 
 self.addEventListener('install', event => {

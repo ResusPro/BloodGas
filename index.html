@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.11 — temperature and FiO2-adjusted blood-gas ranges -->
+  <!-- ResusPro BloodGas v1.0.12 — i-STAT and EPOC device-result views -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -53,12 +53,14 @@
     .flag-cell{text-align:center;color:#344054;min-height:1.2em}.unit-cell,.range-cell{font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.unit-cell.off,.range-cell.off,.flag-cell.off{visibility:hidden}
     .edit-panel{display:none;grid-column:1/6;grid-template-columns:1fr 1fr;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px;margin-top:4px}.edit-panel.open{display:grid}.edit-panel input{min-height:38px;padding:8px 10px;font-size:.92rem;border-radius:10px}
     .muted{color:var(--muted);font-size:.92rem}.status-strip{display:flex;align-items:center;gap:8px;margin-top:10px;padding:9px 11px;border-radius:12px;background:#f8fafc;border:1px solid #e4e7ec;font-size:.9rem}.status-dot{width:11px;height:11px;border-radius:50%;background:#98a2b3;flex:0 0 auto}.status-dot.idle{background:var(--green)}.status-dot.printing{background:var(--amber)}.status-dot.offline{background:var(--red)}
+
+    .result-view-area{margin:12px 0}.view-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.view-tabs button{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);padding:10px 8px;min-height:42px;font-size:.92rem}.view-tabs button.active{background:var(--blue);border-color:var(--blue);color:#fff}.view-hint{text-align:center;margin:-4px 0 8px;color:var(--muted);font-size:.82rem}.device-panel{overflow:hidden}.device-shell{margin:0 auto 12px;max-width:420px;border-radius:24px;padding:14px;background:#101828;color:#e5e7eb;box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 10px 24px rgba(16,24,40,.18)}.device-screen{border-radius:16px;background:#ecfdf3;color:#101828;border:2px solid #344054;overflow:hidden;font-family:"Courier New",Courier,monospace}.device-top{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;background:#111827;color:#f9fafb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:.82rem;font-weight:800}.device-meta{padding:8px 10px;border-bottom:1px solid rgba(16,24,40,.2);font-size:.82rem;line-height:1.25}.device-row{display:grid;grid-template-columns:minmax(72px,1fr) minmax(68px,.9fr) 30px minmax(52px,.7fr);gap:6px;align-items:center;padding:5px 10px;border-bottom:1px solid rgba(16,24,40,.12);font-size:.9rem}.device-row.abnormal{font-weight:900}.device-row .value{text-align:right}.device-row .flag{text-align:center;font-family:"Arial Black",Arial,sans-serif}.device-note{max-width:420px;margin:0 auto;color:var(--muted);font-size:.9rem;line-height:1.35}.epoc-shell{background:#263445}.epoc-screen{background:#f8fafc;color:#101828;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.epoc-top{background:#1565c0}.epoc-grid-head,.epoc-row{display:grid;grid-template-columns:minmax(70px,1fr) minmax(58px,.75fr) 28px minmax(48px,.55fr) minmax(70px,.9fr);gap:5px;align-items:center;padding:6px 8px;border-bottom:1px solid #d0d5dd;font-size:.82rem}.epoc-grid-head{background:#e8eef5;font-weight:850;color:#344054}.epoc-row{font-size:.85rem}.epoc-row.abnormal{background:#fff7ed;font-weight:850}.empty-device{padding:24px 12px;text-align:center;color:#526070;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.device-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:10px 0}.device-actions button{min-height:38px;padding:9px 12px;border-radius:12px;font-size:.9rem}.device-swipe-capture{touch-action:pan-y}
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.54);display:none;align-items:flex-end;justify-content:center;padding:10px;z-index:50}.modal-backdrop.open{display:flex}.modal{width:100%;max-width:680px;max-height:94vh;overflow:auto;background:#fff;border-radius:20px;padding:14px;box-shadow:0 20px 50px rgba(0,0,0,.25)}.modal h2{margin:0 0 8px;font-size:1.2rem}.modal h3{font-size:1rem;margin:18px 0 8px}.modal p{color:var(--muted);margin:0 0 10px}
     .receipt{width:100%;max-width:390px;margin:0 auto;background:#fff;color:#111;border:1px dashed #98a2b3;padding:12px;font-family:"Courier New",Courier,monospace;font-size:13px;line-height:1.25;overflow-wrap:anywhere}.receipt-brand{text-align:center;margin:0 0 5px}.receipt-brand img{max-width:190px;max-height:60px;width:auto;height:auto}.receipt pre{font:inherit;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
     .preview-wrap{padding:12px;background:#f7f9fc;border:1px solid var(--line);border-radius:14px}.history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}.hidden{display:none!important}
     .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#101828;color:#fff;padding:11px 15px;border-radius:13px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:100;max-width:calc(100vw - 24px);text-align:center;font-weight:700;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.error{background:#b42318}.toast.success{background:#166534}
     @supports(top:env(safe-area-inset-top)){:root{--hero-fixed-top:calc(env(safe-area-inset-top) + 8px)}}
-    @media(max-width:560px){body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
+    @media(max-width:560px){.view-tabs{gap:5px}.view-tabs button{font-size:.78rem;padding:8px 4px}.view-hint{font-size:.76rem}.device-shell{border-radius:20px;padding:10px}.device-row{grid-template-columns:minmax(58px,1fr) minmax(54px,.9fr) 24px minmax(42px,.7fr);font-size:.78rem;padding:5px 7px}.epoc-grid-head,.epoc-row{grid-template-columns:minmax(54px,1fr) minmax(48px,.75fr) 22px minmax(38px,.55fr) minmax(56px,.9fr);font-size:.72rem;padding:5px 6px}.device-meta{font-size:.74rem}.device-top{font-size:.76rem}body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
     @media print{body{background:#fff;padding:0}.app,.modal-backdrop,.toast{display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:49mm;max-height:16mm}}
   </style>
 </head>
@@ -72,7 +74,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.11 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.12 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -123,10 +125,50 @@
     </div>
   </section>
 
-  <section class="card parameters-card">
-    <h2>Parameters</h2>
-    <div class="section" id="paramList"></div>
-  </section>
+  <div id="resultViewArea" class="result-view-area device-swipe-capture">
+    <div class="view-tabs" role="tablist" aria-label="Blood gas display mode">
+      <button id="view-picker" type="button" class="active" onclick="setResultView('picker')" role="tab" aria-selected="true">Picker</button>
+      <button id="view-istat" type="button" onclick="setResultView('istat')" role="tab" aria-selected="false">i-STAT</button>
+      <button id="view-epoc" type="button" onclick="setResultView('epoc')" role="tab" aria-selected="false">EPOC</button>
+    </div>
+    <div class="view-hint">Swipe left/right to switch between picker, i-STAT and EPOC-style result views.</div>
+
+    <section id="pickerPanel" class="card parameters-card view-panel" role="tabpanel" aria-labelledby="view-picker">
+      <h2>Parameters</h2>
+      <div class="section" id="paramList"></div>
+    </section>
+
+    <section id="istatPanel" class="card device-panel hidden view-panel" role="tabpanel" aria-labelledby="view-istat">
+      <h2>i-STAT-style result</h2>
+      <div class="section">
+        <div class="device-shell">
+          <div class="device-screen">
+            <div class="device-top"><span>i-STAT SIM</span><span id="istatTime">--:--</span></div>
+            <div id="istatMeta" class="device-meta"></div>
+            <div id="istatList"></div>
+          </div>
+        </div>
+        <div class="device-actions"><button type="button" onclick="setResultView('picker')">Edit values</button><button type="button" onclick="openSettings()">Output menu</button></div>
+        <p class="device-note">This is an on-screen simulated POCT display for prehospital scenarios. Printing remains available from the banner or output menu.</p>
+      </div>
+    </section>
+
+    <section id="epocPanel" class="card device-panel hidden view-panel" role="tabpanel" aria-labelledby="view-epoc">
+      <h2>EPOC-style result</h2>
+      <div class="section">
+        <div class="device-shell epoc-shell">
+          <div class="device-screen epoc-screen">
+            <div class="device-top epoc-top"><span>epoc SIM</span><span id="epocTime">--:--</span></div>
+            <div id="epocMeta" class="device-meta"></div>
+            <div class="epoc-grid-head"><span>Test</span><span>Result</span><span>Flag</span><span>Unit</span><span>Ref</span></div>
+            <div id="epocList"></div>
+          </div>
+        </div>
+        <div class="device-actions"><button type="button" onclick="setResultView('picker')">Edit values</button><button type="button" onclick="openSettings()">Output menu</button></div>
+        <p class="device-note">EPOC-style display is intentionally separate from CloudPRNT. Use it when the scenario is prehospital/device based rather than hospital printer based.</p>
+      </div>
+    </section>
+  </div>
 </div>
 
 <div id="settingsModal" class="modal-backdrop" onclick="backdropClose(event,'settingsModal')">
@@ -182,12 +224,12 @@ const presets={
  'Type 2 respiratory failure':{stages:{'T0':{pH:'7.24',pCO2:'9.4',pO2:'7.8',SaO2:'88',HCO3:'30',BE:'4',Lactate:'1.6',Na:'140',K:'4.6',Glucose:'7.2'}}},
  'Metabolic acidosis':{stages:{'T0':{pH:'7.18',pCO2:'3.1',pO2:'12.0',HCO3:'10',BE:'-16',Lactate:'7.0',Na:'138',K:'5.1',Glucose:'8.0',Creatinine:'132'}}}
 };
-let sampleType='Arterial';let currentPreset='';let currentStage='T0';let includeCycleState='standard';let showFlags=true;let showUnits=true;let showRanges=false;let printerState='checking';let statusTimer=null;
+let sampleType='Arterial';let currentPreset='';let currentStage='T0';let includeCycleState='standard';let showFlags=true;let showUnits=true;let showRanges=false;let resultView='picker';let printerState='checking';let statusTimer=null;
 const $=id=>document.getElementById(id);
 function init(){
   restoreCaseDetails();normalisePhysiologyInputs(false);setSample('Arterial',false);
   const select=$('presetSelect');Object.keys(presets).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});
-  buildParams();setupFixedLayout();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
+  buildParams();setupFixedLayout();setupResultSwipe();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
   $('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);
 }
 function restoreCaseDetails(){
@@ -201,6 +243,22 @@ function restoreCaseDetails(){
 }
 function caseDetailChanged(){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value);if(patient)localStorage.setItem('bloodgasPatientId',patient);else localStorage.removeItem('bloodgasPatientId');if(bay)localStorage.setItem('bloodgasResusBay',bay);else localStorage.removeItem('bloodgasResusBay');renderReceipt()}
 function setupFixedLayout(){const hero=document.querySelector('.hero'),spacer=$('heroSpacer');if(!hero||!spacer)return;const update=()=>{const top=parseFloat(getComputedStyle(hero).top)||0;const height=Math.ceil(hero.getBoundingClientRect().height);document.documentElement.style.setProperty('--hero-space',`${height+Math.max(0,top)+4}px`);document.documentElement.style.setProperty('--param-sticky-top',`${Math.ceil(top+height+8)}px`)};update();window.addEventListener('resize',update,{passive:true});window.addEventListener('orientationchange',update,{passive:true});if('ResizeObserver'in window)new ResizeObserver(update).observe(hero)}
+function setResultView(view){
+  if(!['picker','istat','epoc'].includes(view))view='picker';
+  resultView=view;
+  ['picker','istat','epoc'].forEach(name=>{
+    const button=$(`view-${name}`),panel=$(`${name}Panel`);
+    if(button){button.classList.toggle('active',name===view);button.setAttribute('aria-selected',name===view?'true':'false')}
+    if(panel)panel.classList.toggle('hidden',name!==view);
+  });
+  renderDeviceViews();
+}
+function setupResultSwipe(){
+  const area=$('resultViewArea');if(!area)return;
+  let startX=0,startY=0;
+  area.addEventListener('touchstart',event=>{const touch=event.changedTouches[0];startX=touch.clientX;startY=touch.clientY},{passive:true});
+  area.addEventListener('touchend',event=>{const touch=event.changedTouches[0];const dx=touch.clientX-startX,dy=touch.clientY-startY;if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.35)return;const order=['picker','istat','epoc'];const index=order.indexOf(resultView);if(dx<0&&index<order.length-1)setResultView(order[index+1]);if(dx>0&&index>0)setResultView(order[index-1])},{passive:true});
+}
 function buildParams(){
   const list=$('paramList');list.innerHTML='';
   const head=document.createElement('div');head.className='param-head';head.innerHTML='<button class="head-cell param-mode active" type="button" onclick="cycleIncludeHeader()" id="includeHead" title="Parameter set: Standard. Tap to cycle Standard → All → None → Standard">Standard</button><span class="head-cell center">Value</span><button class="head-cell center active" type="button" id="flagHead" onclick="toggleColumn(\'flags\')" title="Show or hide out-of-range arrows" aria-label="Show or hide high and low arrows">↑&nbsp;↓</button><button class="head-cell active" type="button" id="unitHead" onclick="toggleColumn(\'units\')">Unit</button><button class="head-cell off" type="button" id="rangeHead" onclick="toggleColumn(\'ranges\')">Range</button>';list.appendChild(head);
@@ -253,12 +311,29 @@ function receiptLines(){
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.11" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.12" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
 function testReceiptLines(){
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
 }
-function renderReceipt(){const html=receiptHtml();$('settingsReceipt').innerHTML=html;$('printReceipt').innerHTML=html}
+function selectedResultParams(){return params.filter(p=>p.on&&String(p.value).trim()).map(p=>({id:p.id,name:p.name,value:String(p.value).trim(),unit:p.unit||'',ref:p.ref||'',flag:flagFor(p),group:p.group}))}
+function currentResultMeta(){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value);const bits=[sampleType,`${getTemperature().toFixed(1)}°C`,`FiO₂ ${Math.round(getFiO2Percent())}%`];if(patient)bits.push(patient);if(bay)bits.push(bay);return bits.join(' · ')}
+function deviceTime(){return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+function renderDeviceViews(){
+  const results=selectedResultParams();
+  const time=deviceTime();
+  const meta=currentResultMeta();
+  const istatTime=$('istatTime'),epocTime=$('epocTime'),istatMeta=$('istatMeta'),epocMeta=$('epocMeta'),istatList=$('istatList'),epocList=$('epocList');
+  if(istatTime)istatTime.textContent=time;if(epocTime)epocTime.textContent=time;if(istatMeta)istatMeta.textContent=meta;if(epocMeta)epocMeta.textContent=meta;
+  if(istatList){
+    istatList.innerHTML=results.length?results.map(r=>`<div class="device-row ${r.flag?'abnormal':''}"><span>${escapeHtml(deviceShortName(r.id,r.name))}</span><span class="value">${escapeHtml(r.value)}</span><span class="flag">${escapeHtml(r.flag)}</span><span>${escapeHtml(r.unit)}</span></div>`).join(''):'<div class="empty-device">No selected values yet.<br>Swipe back to Picker and enter a result.</div>';
+  }
+  if(epocList){
+    epocList.innerHTML=results.length?results.map(r=>`<div class="epoc-row ${r.flag?'abnormal':''}"><span>${escapeHtml(deviceShortName(r.id,r.name))}</span><span>${escapeHtml(r.value)}</span><span class="flag">${escapeHtml(r.flag)}</span><span>${escapeHtml(r.unit)}</span><span>${escapeHtml(r.ref)}</span></div>`).join(''):'<div class="empty-device">No selected values yet.<br>Swipe back to Picker and enter a result.</div>';
+  }
+}
+function deviceShortName(id,name){const map={pCO2:'PCO2',pO2:'PO2',HCO3:'HCO3',SaO2:'sO2',Lactate:'LAC',Glucose:'Glu',Creatinine:'Crea','D-dimer':'D-dim'};return map[id]||name}
+function renderReceipt(){const html=receiptHtml();$('settingsReceipt').innerHTML=html;$('printReceipt').innerHTML=html;renderDeviceViews()}
 async function cloudPrint(){
   const button=$('cloudPrintButton');button.disabled=true;button.textContent='Queuing…';
   try{
@@ -371,7 +446,7 @@ function drawThermalBrand(ctx,width,y){
   ctx.beginPath();ctx.moveTo(sx+10,sy+29);ctx.lineTo(sx+17,sy+29);ctx.lineTo(sx+21,sy+20);ctx.lineTo(sx+26,sy+38);ctx.lineTo(sx+30,sy+29);ctx.lineTo(sx+37,sy+29);ctx.stroke();
   ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+87);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.9`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.12`})}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
 function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}
@@ -391,7 +466,7 @@ if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
   window.addEventListener('load',async()=>{
     try{
-      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.11',{updateViaCache:'none'});
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.12',{updateViaCache:'none'});
       const checkForUpdate=async(force=false)=>{const now=Date.now();if(!force&&now-lastUpdateCheck<60000)return;lastUpdateCheck=now;try{await registration.update()}catch(_){}};
       await checkForUpdate(true);
       setInterval(()=>checkForUpdate(false),5*60*1000);
