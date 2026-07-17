@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.14 — fullscreen device result views -->
+  <!-- ResusPro BloodGas v1.0.15 — fullscreen device result back control -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -67,6 +67,10 @@
     body.device-fullscreen .device-note,
     body.device-fullscreen .toast{display:none!important}
     body.device-fullscreen #resultViewArea{position:fixed;inset:0;z-index:80;margin:0;background:#101828;overflow:hidden;touch-action:pan-y}
+
+    .device-back-to-picker{display:none}
+    body.device-fullscreen .device-back-to-picker{display:flex;position:fixed;z-index:120;top:calc(env(safe-area-inset-top,0px) + 10px);left:calc(env(safe-area-inset-left,0px) + 10px);align-items:center;gap:4px;min-height:38px;padding:8px 12px;border-radius:999px;background:rgba(17,24,39,.78);color:#fff;border:1px solid rgba(255,255,255,.32);box-shadow:0 4px 12px rgba(0,0,0,.24);backdrop-filter:blur(6px);font-weight:850;font-size:.9rem}
+    body.device-fullscreen .device-back-to-picker:focus-visible{outline:3px solid rgba(255,255,255,.55);outline-offset:2px}
     body.device-fullscreen .device-panel{border:0!important;border-radius:0!important;margin:0!important;box-shadow:none!important;background:transparent!important;width:100%;height:100%;overflow:hidden}
     body.device-fullscreen .device-panel .section{border:0!important;padding:0!important;height:100%;overflow:hidden}
     body.device-fullscreen .device-shell{width:100%;max-width:none;margin:0;padding:0;border-radius:0;box-shadow:none;min-height:100%;height:100%}
@@ -115,7 +119,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.14 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.15 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -211,6 +215,8 @@
       </div>
     </section>
   </div>
+
+  <button id="deviceBackButton" class="device-back-to-picker" type="button" onclick="setResultView('picker')" aria-label="Back to picker">‹ Picker</button>
 </div>
 
 <div id="settingsModal" class="modal-backdrop" onclick="backdropClose(event,'settingsModal')">
@@ -271,7 +277,7 @@ const $=id=>document.getElementById(id);
 function init(){
   restoreCaseDetails();normalisePhysiologyInputs(false);setSample('Arterial',false);
   const select=$('presetSelect');Object.keys(presets).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});
-  buildParams();setupFixedLayout();setupResultSwipe();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
+  buildParams();setupFixedLayout();setupResultSwipe();setupResultKeyboard();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
   $('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);
 }
 function restoreCaseDetails(){
@@ -289,6 +295,7 @@ function setResultView(view){
   if(!['picker','istat','epoc'].includes(view))view='picker';
   resultView=view;
   document.body.classList.toggle('device-fullscreen',view!=='picker');
+  const backButton=$('deviceBackButton');if(backButton)backButton.setAttribute('aria-hidden',view==='picker'?'true':'false');
   ['picker','istat','epoc'].forEach(name=>{
     const button=$(`view-${name}`),panel=$(`${name}Panel`);
     if(button){button.classList.toggle('active',name===view);button.setAttribute('aria-selected',name===view?'true':'false')}
@@ -301,6 +308,17 @@ function setupResultSwipe(){
   let startX=0,startY=0;
   area.addEventListener('touchstart',event=>{const touch=event.changedTouches[0];startX=touch.clientX;startY=touch.clientY},{passive:true});
   area.addEventListener('touchend',event=>{const touch=event.changedTouches[0];const dx=touch.clientX-startX,dy=touch.clientY-startY;if(Math.abs(dx)<55||Math.abs(dx)<Math.abs(dy)*1.35)return;const order=['picker','istat','epoc'];const index=order.indexOf(resultView);if(dx<0&&index<order.length-1)setResultView(order[index+1]);if(dx>0&&resultView!=='picker')setResultView('picker')},{passive:true});
+}
+function setupResultKeyboard(){
+  document.addEventListener('keydown',event=>{
+    const tag=(event.target&&event.target.tagName)||'';
+    if(['INPUT','SELECT','TEXTAREA'].includes(tag))return;
+    const order=['picker','istat','epoc'];
+    const index=order.indexOf(resultView);
+    if(resultView!=='picker'&&(event.key==='Escape'||event.key==='Backspace')){event.preventDefault();setResultView('picker');return}
+    if(event.key==='ArrowRight'&&index<order.length-1){event.preventDefault();setResultView(order[index+1]);return}
+    if(event.key==='ArrowLeft'&&index>0){event.preventDefault();setResultView(order[index-1]);return}
+  });
 }
 function buildParams(){
   const list=$('paramList');list.innerHTML='';
@@ -354,7 +372,7 @@ function receiptLines(){
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.14" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.15" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
 function testReceiptLines(){
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
@@ -505,7 +523,7 @@ function drawThermalBrand(ctx,width,y){
   ctx.beginPath();ctx.moveTo(sx+10,sy+29);ctx.lineTo(sx+17,sy+29);ctx.lineTo(sx+21,sy+20);ctx.lineTo(sx+26,sy+38);ctx.lineTo(sx+30,sy+29);ctx.lineTo(sx+37,sy+29);ctx.stroke();
   ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+87);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.14`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.15`})}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
 function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}
@@ -525,7 +543,7 @@ if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
   window.addEventListener('load',async()=>{
     try{
-      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.12',{updateViaCache:'none'});
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.15',{updateViaCache:'none'});
       const checkForUpdate=async(force=false)=>{const now=Date.now();if(!force&&now-lastUpdateCheck<60000)return;lastUpdateCheck=now;try{await registration.update()}catch(_){}};
       await checkForUpdate(true);
       setInterval(()=>checkForUpdate(false),5*60*1000);

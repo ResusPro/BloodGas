@@ -32,8 +32,8 @@
       const keys=await caches.keys();
       await Promise.all(keys.map(key=>caches.delete(key)));
     }
-    status.textContent='Old cache cleared. Loading BloodGas v1.0.14…';
-    location.replace(`./index.html?updated=1.0.14&t=${Date.now()}`);
+    status.textContent='Old cache cleared. Loading BloodGas v1.0.15…';
+    location.replace(`./index.html?updated=1.0.15&t=${Date.now()}`);
   }catch(error){
     status.textContent=`Update recovery failed: ${error.message}`;
     retry.hidden=false;
