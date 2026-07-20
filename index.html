@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.18 — visible thermal output controls + settings repair -->
+  <!-- ResusPro BloodGas v1.0.19 — visible thermal output controls + settings repair -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -137,7 +137,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.18 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.19 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -403,7 +403,14 @@ function receiptLines(){
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.18" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.19" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+
+function renderReceipt(){
+  const html=receiptHtml();
+  const settings=$('settingsReceipt');if(settings)settings.innerHTML=html;
+  const print=$('printReceipt');if(print)print.innerHTML=html;
+  renderDeviceViews();
+}
 function testReceiptLines(){
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
@@ -452,6 +459,18 @@ function epocName(id,name){const map={pCO2:'pCO₂',pO2:'pO₂',HCO3:'cHCO₃⁻
 function epocValue(r){if((r.id==='pCO2'||r.id==='pO2')&&r.unit==='kPa'){const n=Number(String(r.value).replace(',','.'));if(!Number.isNaN(n))return (n*7.50062).toFixed(1)}return r.value}
 function epocUnit(id,unit){const map={pCO2:'mmHg',pO2:'mmHg'};return map[id]||unit}
 function deviceShortName(id,name){const map={pCO2:'PCO2',pO2:'PO2',HCO3:'HCO3',SaO2:'sO2',Lactate:'LAC',Glucose:'Glu',Creatinine:'Crea','D-dimer':'D-dim'};return map[id]||name}
+
+async function cloudPrint(){
+  const button=$('cloudPrintButton');
+  if(button){button.disabled=true;button.textContent='Queuing…'}
+  try{
+    const png=await buildReceiptPng();
+    const response=await fetch(`${PRINT_API}/api/print`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),receiptText:receiptText(),pngBase64:png.base64,pngHeight:png.height,pngBitDepth:png.bitDepth}),cache:'no-store'});
+    const result=await readJsonResponse(response);if(!response.ok||!result.ok)throw new Error(result.error||`Print service returned ${response.status}`);
+    saveHistory('CloudPRNT queued',result.jobId);showToast('Result queued for ResusPro BloodGas printer.','success');trackJob(result.jobId);await refreshPrinterStatus(false);
+  }catch(error){showToast(`Could not queue print: ${error.message}`,'error')}
+  finally{if(button)button.disabled=false;applyPrinterState(printerState)}
+}
 async function sendTestPrint(){
   try{
     const lines=testReceiptLines();
@@ -554,7 +573,7 @@ function drawThermalBrand(ctx,width,y){
   ctx.beginPath();ctx.moveTo(sx+10,sy+29);ctx.lineTo(sx+17,sy+29);ctx.lineTo(sx+21,sy+20);ctx.lineTo(sx+26,sy+38);ctx.lineTo(sx+30,sy+29);ctx.lineTo(sx+37,sy+29);ctx.stroke();
   ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+87);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.18`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.19`})}
 
 function saveDevicePdf(){
   if(resultView==='picker'){localPrint('pdf');return}
@@ -615,7 +634,7 @@ if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
   window.addEventListener('load',async()=>{
     try{
-      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.18',{updateViaCache:'none'});
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.19',{updateViaCache:'none'});
       const checkForUpdate=async(force=false)=>{const now=Date.now();if(!force&&now-lastUpdateCheck<60000)return;lastUpdateCheck=now;try{await registration.update()}catch(_){}};
       await checkForUpdate(true);
       setInterval(()=>checkForUpdate(false),5*60*1000);
