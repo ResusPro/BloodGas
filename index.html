@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.17 — thermal receipt PDF/image export + settings fix -->
+  <!-- ResusPro BloodGas v1.0.18 — visible thermal output controls + settings repair -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -36,7 +36,7 @@
     button{border:0;border-radius:14px;padding:12px 14px;font-weight:760;background:var(--soft);color:var(--text);cursor:pointer;min-height:44px}
     button:disabled{opacity:.68;cursor:wait}
     button.primary{background:#fff;color:var(--blue2)}button.blue{background:var(--blue);color:#fff}button.small{padding:9px 11px;min-height:38px;border-radius:12px;font-size:.92rem}button.danger{background:#fee4e2;color:var(--danger)}
-    .settings-button{width:42px;min-width:42px;padding:0;background:rgba(255,255,255,.18);color:#fff;font-size:1.25rem}
+    .settings-button{width:42px;min-width:42px;padding:0;background:rgba(255,255,255,.18);color:#fff;font-size:1.25rem}.output-button{min-width:74px;padding:10px 12px;background:rgba(255,255,255,.95);color:var(--blue2);font-weight:850;border-radius:14px}.receipt-output-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#f8fafc;border:1px solid #e4e7ec;border-radius:14px;padding:10px;margin:0 0 12px}.receipt-output-strip button{min-height:38px;padding:9px 11px;border-radius:12px}.receipt-output-strip .blue{background:var(--blue);color:#fff}.receipt-output-strip span{font-size:.86rem;color:var(--muted);font-weight:650}
     .print-button{min-width:104px;color:#fff;transition:background .2s ease}.print-button.state-idle{background:var(--green)}.print-button.state-printing{background:var(--amber);color:#1f2937}.print-button.state-offline{background:var(--red)}.print-button.state-checking{background:#fff;color:var(--blue2)}
     .card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:12px 0;box-shadow:var(--shadow);overflow:hidden}.card.parameters-card{overflow:visible}
     .card h2{font-size:1.12rem;margin:0;padding:14px 16px 8px}.section{padding:12px 16px;border-top:1px solid var(--line)}
@@ -109,7 +109,7 @@
     .preview-wrap{padding:12px;background:#f7f9fc;border:1px solid var(--line);border-radius:14px}.history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}.hidden{display:none!important}
     .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#101828;color:#fff;padding:11px 15px;border-radius:13px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:100;max-width:calc(100vw - 24px);text-align:center;font-weight:700;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.error{background:#b42318}.toast.success{background:#166534}
     @supports(top:env(safe-area-inset-top)){:root{--hero-fixed-top:calc(env(safe-area-inset-top) + 8px)}}
-    @media(max-width:560px){.epoc-shell{max-width:100%;padding:7px}.epoc-tile{min-height:66px;padding:5px 4px}.epoc-tile-value{font-size:1.18rem}.epoc-tile-name{font-size:.66rem}.epoc-tile-unit{font-size:.52rem}.epoc-actionbar{padding:7px 8px}.epoc-status{font-size:1.08rem}.view-tabs{gap:5px}.view-tabs button{font-size:.78rem;padding:8px 4px}.view-hint{font-size:.76rem}.device-shell{border-radius:20px;padding:10px}.device-row{grid-template-columns:minmax(58px,1fr) minmax(54px,.9fr) 24px minmax(42px,.7fr);font-size:.78rem;padding:5px 7px}.epoc-grid-head,.epoc-row{grid-template-columns:minmax(54px,1fr) minmax(48px,.75fr) 22px minmax(38px,.55fr) minmax(56px,.9fr);font-size:.72rem;padding:5px 6px}.device-meta{font-size:.74rem}.device-top{font-size:.76rem}body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
+    @media(max-width:560px){.epoc-shell{max-width:100%;padding:7px}.epoc-tile{min-height:66px;padding:5px 4px}.epoc-tile-value{font-size:1.18rem}.epoc-tile-name{font-size:.66rem}.epoc-tile-unit{font-size:.52rem}.epoc-actionbar{padding:7px 8px}.epoc-status{font-size:1.08rem}.view-tabs{gap:5px}.view-tabs button{font-size:.78rem;padding:8px 4px}.view-hint{font-size:.76rem}.device-shell{border-radius:20px;padding:10px}.device-row{grid-template-columns:minmax(58px,1fr) minmax(54px,.9fr) 24px minmax(42px,.7fr);font-size:.78rem;padding:5px 7px}.epoc-grid-head,.epoc-row{grid-template-columns:minmax(54px,1fr) minmax(48px,.75fr) 22px minmax(38px,.55fr) minmax(56px,.9fr);font-size:.72rem;padding:5px 6px}.device-meta{font-size:.74rem}.device-top{font-size:.76rem}body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.output-button{min-width:64px;padding:9px 9px;font-size:.86rem}.print-button{min-width:82px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
     @media print{body{background:#fff;padding:0}.app,.modal-backdrop,.toast{display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:49mm;max-height:16mm}}
 
     @media screen{#devicePrintOnly{display:none!important}}
@@ -137,11 +137,12 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.17 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.18 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
-        <button id="settingsButton" class="settings-button" type="button" aria-label="Settings">⚙</button>
+        <button id="settingsButton" class="settings-button" type="button" aria-label="Output menu" onclick="openSettings();return false">⚙</button>
+        <button id="outputButton" class="output-button" type="button" onclick="openSettings();return false">Output</button>
         <button id="cloudPrintButton" class="print-button state-checking" type="button" onclick="cloudPrint()">Checking…</button>
       </div>
     </div>
@@ -198,7 +199,15 @@
 
     <section id="pickerPanel" class="card parameters-card view-panel" role="tabpanel" aria-labelledby="view-picker">
       <h2>Parameters</h2>
-      <div class="section" id="paramList"></div>
+      <div class="section">
+        <div class="receipt-output-strip" aria-label="Thermal receipt export">
+          <button class="blue" type="button" onclick="saveThermalPdf()">Thermal PDF</button>
+          <button type="button" onclick="downloadThermalPng()">Thermal PNG</button>
+          <button type="button" onclick="openSettings();return false">Output menu</button>
+          <span>Offline-safe thermal receipt export.</span>
+        </div>
+        <div id="paramList"></div>
+      </div>
     </section>
 
     <section id="istatPanel" class="card device-panel hidden view-panel" role="tabpanel" aria-labelledby="view-istat">
@@ -299,7 +308,7 @@ function init(){
   restoreCaseDetails();normalisePhysiologyInputs(false);setSample('Arterial',false);
   const select=$('presetSelect');Object.keys(presets).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});
   buildParams();setupFixedLayout();setupResultSwipe();setupResultKeyboard();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
-  const settingsButton=$('settingsButton');if(settingsButton)settingsButton.addEventListener('click',event=>{event.preventDefault();openSettings()});
+  document.querySelectorAll('#settingsButton,#outputButton').forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openSettings()}));
   $('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);
 }
 function restoreCaseDetails(){
@@ -394,7 +403,7 @@ function receiptLines(){
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.15" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.18" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
 function testReceiptLines(){
   const stamp=new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
@@ -545,7 +554,7 @@ function drawThermalBrand(ctx,width,y){
   ctx.beginPath();ctx.moveTo(sx+10,sy+29);ctx.lineTo(sx+17,sy+29);ctx.lineTo(sx+21,sy+20);ctx.lineTo(sx+26,sy+38);ctx.lineTo(sx+30,sy+29);ctx.lineTo(sx+37,sy+29);ctx.stroke();
   ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+87);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.17`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.18`})}
 
 function saveDevicePdf(){
   if(resultView==='picker'){localPrint('pdf');return}
@@ -606,7 +615,7 @@ if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
   window.addEventListener('load',async()=>{
     try{
-      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.15',{updateViaCache:'none'});
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.18',{updateViaCache:'none'});
       const checkForUpdate=async(force=false)=>{const now=Date.now();if(!force&&now-lastUpdateCheck<60000)return;lastUpdateCheck=now;try{await registration.update()}catch(_){}};
       await checkForUpdate(true);
       setInterval(()=>checkForUpdate(false),5*60*1000);
