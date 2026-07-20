@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.15 — fullscreen device result back control -->
+  <!-- ResusPro BloodGas v1.0.16 — offline PDF and device-screen export -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -71,6 +71,10 @@
     .device-back-to-picker{display:none}
     body.device-fullscreen .device-back-to-picker{display:flex;position:fixed;z-index:120;top:calc(env(safe-area-inset-top,0px) + 10px);left:calc(env(safe-area-inset-left,0px) + 10px);align-items:center;gap:4px;min-height:38px;padding:8px 12px;border-radius:999px;background:rgba(17,24,39,.78);color:#fff;border:1px solid rgba(255,255,255,.32);box-shadow:0 4px 12px rgba(0,0,0,.24);backdrop-filter:blur(6px);font-weight:850;font-size:.9rem}
     body.device-fullscreen .device-back-to-picker:focus-visible{outline:3px solid rgba(255,255,255,.55);outline-offset:2px}
+
+    .device-pdf-button{display:none}
+    body.device-fullscreen .device-pdf-button{display:flex;position:fixed;z-index:120;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 10px);align-items:center;justify-content:center;min-height:38px;padding:8px 12px;border-radius:999px;background:rgba(17,24,39,.78);color:#fff;border:1px solid rgba(255,255,255,.32);box-shadow:0 4px 12px rgba(0,0,0,.24);backdrop-filter:blur(6px);font-weight:850;font-size:.9rem}
+    body.device-fullscreen .device-pdf-button:focus-visible{outline:3px solid rgba(255,255,255,.55);outline-offset:2px}
     body.device-fullscreen .device-panel{border:0!important;border-radius:0!important;margin:0!important;box-shadow:none!important;background:transparent!important;width:100%;height:100%;overflow:hidden}
     body.device-fullscreen .device-panel .section{border:0!important;padding:0!important;height:100%;overflow:hidden}
     body.device-fullscreen .device-shell{width:100%;max-width:none;margin:0;padding:0;border-radius:0;box-shadow:none;min-height:100%;height:100%}
@@ -107,6 +111,20 @@
     @supports(top:env(safe-area-inset-top)){:root{--hero-fixed-top:calc(env(safe-area-inset-top) + 8px)}}
     @media(max-width:560px){.epoc-shell{max-width:100%;padding:7px}.epoc-tile{min-height:66px;padding:5px 4px}.epoc-tile-value{font-size:1.18rem}.epoc-tile-name{font-size:.66rem}.epoc-tile-unit{font-size:.52rem}.epoc-actionbar{padding:7px 8px}.epoc-status{font-size:1.08rem}.view-tabs{gap:5px}.view-tabs button{font-size:.78rem;padding:8px 4px}.view-hint{font-size:.76rem}.device-shell{border-radius:20px;padding:10px}.device-row{grid-template-columns:minmax(58px,1fr) minmax(54px,.9fr) 24px minmax(42px,.7fr);font-size:.78rem;padding:5px 7px}.epoc-grid-head,.epoc-row{grid-template-columns:minmax(54px,1fr) minmax(48px,.75fr) 22px minmax(38px,.55fr) minmax(56px,.9fr);font-size:.72rem;padding:5px 6px}.device-meta{font-size:.74rem}.device-top{font-size:.76rem}body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.print-button{min-width:88px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
     @media print{body{background:#fff;padding:0}.app,.modal-backdrop,.toast{display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:49mm;max-height:16mm}}
+
+    @media screen{#devicePrintOnly{display:none!important}}
+    @media print{
+      body.print-device{background:#fff!important;padding:0!important;overflow:visible!important}
+      body.print-device .app,body.print-device .modal-backdrop,body.print-device .toast,body.print-device #printOnly{display:none!important}
+      body.print-device #devicePrintOnly{display:block!important;width:100%!important;margin:0!important;padding:0!important;background:#fff!important}
+      body.print-device #devicePrintOnly .device-shell{display:block!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;color:#101828!important}
+      body.print-device #devicePrintOnly .device-screen{display:block!important;border:0!important;border-radius:0!important;min-height:auto!important;height:auto!important;overflow:visible!important;box-shadow:none!important}
+      body.print-device #devicePrintOnly .device-actions,body.print-device #devicePrintOnly .device-note,body.print-device #devicePrintOnly h2{display:none!important}
+      body.print-device #devicePrintOnly .epoc-shell{background:#fff!important}
+      body.print-device #devicePrintOnly .epoc-screen{background:#f8fafc!important}
+      body.print-device #devicePrintOnly .device-top,body.print-device #devicePrintOnly .epoc-top{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body.print-device #devicePrintOnly .epoc-tile.normal,body.print-device #devicePrintOnly .epoc-tile.high,body.print-device #devicePrintOnly .epoc-tile.low{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    }
   </style>
 </head>
 <body>
@@ -119,7 +137,7 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.15 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.16 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
@@ -193,7 +211,7 @@
             <div id="istatList"></div>
           </div>
         </div>
-        <div class="device-actions"><button type="button" onclick="setResultView('picker')">Edit values</button><button type="button" onclick="openSettings()">Output menu</button></div>
+        <div class="device-actions"><button type="button" onclick="setResultView('picker')">Edit values</button><button type="button" onclick="saveDevicePdf()">Save PDF</button><button type="button" onclick="openSettings()">Output menu</button></div>
         <p class="device-note">Swipe right from the result screen to return to the picker.</p>
       </div>
     </section>
@@ -210,13 +228,14 @@
             <div class="epoc-footer-bar"><span>Swipe right to edit</span><span class="epoc-footer-chevron">›</span></div>
           </div>
         </div>
-        <div class="device-actions"><button type="button" onclick="setResultView('picker')">Edit values</button><button type="button" onclick="openSettings()">Output menu</button></div>
+        <div class="device-actions"><button type="button" onclick="setResultView('picker')">Edit values</button><button type="button" onclick="saveDevicePdf()">Save PDF</button><button type="button" onclick="openSettings()">Output menu</button></div>
         <p class="device-note">Swipe right from the result screen to return to the picker.</p>
       </div>
     </section>
   </div>
 
   <button id="deviceBackButton" class="device-back-to-picker" type="button" onclick="setResultView('picker')" aria-label="Back to picker">‹ Picker</button>
+  <button id="devicePdfButton" class="device-pdf-button" type="button" onclick="saveDevicePdf()" aria-label="Save current device result as PDF">PDF</button>
 </div>
 
 <div id="settingsModal" class="modal-backdrop" onclick="backdropClose(event,'settingsModal')">
@@ -225,7 +244,7 @@
       <h2>Output & printer</h2>
       <button class="small" type="button" onclick="closeSettings()">Close</button>
     </div>
-    <p>Cloud printing is one tap from the green/amber/red button on the home page.</p>
+    <p>Cloud printing uses the status-coloured button. PDF/local output works even when the CloudPRNT printer is offline.</p>
     <div id="settingsPrinterStatus" class="status-strip"><span class="status-dot"></span><span>Checking…</span></div>
     <div class="btn-row" style="margin-top:10px">
       <button class="blue" type="button" onclick="refreshPrinterStatus(true)">Refresh status</button>
@@ -243,6 +262,7 @@
 </div>
 
 <div id="printOnly" class="hidden"><div id="printReceipt" class="receipt"></div></div>
+<div id="devicePrintOnly" class="hidden" aria-hidden="true"></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -523,7 +543,26 @@ function drawThermalBrand(ctx,width,y){
   ctx.beginPath();ctx.moveTo(sx+10,sy+29);ctx.lineTo(sx+17,sy+29);ctx.lineTo(sx+21,sy+20);ctx.lineTo(sx+26,sy+38);ctx.lineTo(sx+30,sy+29);ctx.lineTo(sx+37,sy+29);ctx.stroke();
   ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+87);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.15`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.16`})}
+
+function saveDevicePdf(){
+  if(resultView==='picker'){localPrint('pdf');return}
+  renderDeviceViews();
+  const panel=$(resultView==='epoc'?'epocPanel':'istatPanel');
+  const target=$('devicePrintOnly');
+  if(!panel||!target){localPrint('pdf');return}
+  const shell=panel.querySelector('.device-shell');
+  if(!shell){localPrint('pdf');return}
+  target.innerHTML='';
+  target.className='';
+  target.setAttribute('aria-hidden','false');
+  target.appendChild(shell.cloneNode(true));
+  const cleanup=()=>{document.body.classList.remove('print-device');target.innerHTML='';target.className='hidden';target.setAttribute('aria-hidden','true')};
+  window.addEventListener('afterprint',cleanup,{once:true});
+  document.body.classList.add('print-device');
+  saveHistory(resultView==='epoc'?'EPOC PDF':'i-STAT PDF');
+  setTimeout(()=>{window.print();setTimeout(()=>{if(document.body.classList.contains('print-device'))cleanup()},1500)},100);
+}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
 function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}
