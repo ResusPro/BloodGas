@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.16 — offline PDF and device-screen export -->
+  <!-- ResusPro BloodGas v1.0.17 — thermal receipt PDF/image export + settings fix -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -137,11 +137,11 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.16 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.17 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
-        <button class="settings-button" type="button" onclick="openSettings()" aria-label="Settings">⚙</button>
+        <button id="settingsButton" class="settings-button" type="button" aria-label="Settings">⚙</button>
         <button id="cloudPrintButton" class="print-button state-checking" type="button" onclick="cloudPrint()">Checking…</button>
       </div>
     </div>
@@ -244,14 +244,15 @@
       <h2>Output & printer</h2>
       <button class="small" type="button" onclick="closeSettings()">Close</button>
     </div>
-    <p>Cloud printing uses the status-coloured button. PDF/local output works even when the CloudPRNT printer is offline.</p>
+    <p>Cloud printing uses the status-coloured button. Thermal PDF and PNG output work even when the CloudPRNT printer is offline.</p>
     <div id="settingsPrinterStatus" class="status-strip"><span class="status-dot"></span><span>Checking…</span></div>
     <div class="btn-row" style="margin-top:10px">
-      <button class="blue" type="button" onclick="refreshPrinterStatus(true)">Refresh status</button>
-      <button type="button" onclick="sendTestPrint()">Test CloudPRNT</button>
+      <button class="blue" type="button" onclick="saveThermalPdf()">Thermal PDF</button>
+      <button type="button" onclick="downloadThermalPng()">Thermal PNG</button>
       <button type="button" onclick="localPrint('printer')">Local print</button>
-      <button type="button" onclick="localPrint('pdf')">Save as PDF</button>
-      <button type="button" onclick="copyReceipt()">Copy</button>
+      <button type="button" onclick="copyReceipt()">Copy text</button>
+      <button type="button" onclick="refreshPrinterStatus(true)">Refresh status</button>
+      <button type="button" onclick="sendTestPrint()">Test CloudPRNT</button>
     </div>
     <h3>Receipt preview</h3>
     <div class="preview-wrap"><div id="settingsReceipt" class="receipt"></div></div>
@@ -298,6 +299,7 @@ function init(){
   restoreCaseDetails();normalisePhysiologyInputs(false);setSample('Arterial',false);
   const select=$('presetSelect');Object.keys(presets).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});
   buildParams();setupFixedLayout();setupResultSwipe();setupResultKeyboard();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
+  const settingsButton=$('settingsButton');if(settingsButton)settingsButton.addEventListener('click',event=>{event.preventDefault();openSettings()});
   $('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);
 }
 function restoreCaseDetails(){
@@ -543,7 +545,7 @@ function drawThermalBrand(ctx,width,y){
   ctx.beginPath();ctx.moveTo(sx+10,sy+29);ctx.lineTo(sx+17,sy+29);ctx.lineTo(sx+21,sy+20);ctx.lineTo(sx+26,sy+38);ctx.lineTo(sx+30,sy+29);ctx.lineTo(sx+37,sy+29);ctx.stroke();
   ctx.font='16px Arial, sans-serif';ctx.textAlign='center';ctx.fillText('Professional Medical Training',width/2,y+87);ctx.restore();
 }
-function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.16`})}
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=`${src}?v=1.0.17`})}
 
 function saveDevicePdf(){
   if(resultView==='picker'){localPrint('pdf');return}
@@ -563,11 +565,33 @@ function saveDevicePdf(){
   saveHistory(resultView==='epoc'?'EPOC PDF':'i-STAT PDF');
   setTimeout(()=>{window.print();setTimeout(()=>{if(document.body.classList.contains('print-device'))cleanup()},1500)},100);
 }
+function receiptFileBaseName(){const bits=['BloodGas',cleanField($('patientId').value),cleanField($('resusBay').value)].filter(Boolean).join('-')||'BloodGas';return bits.replace(/[^a-z0-9_-]+/gi,'-').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,80)}
+function base64ToBytes(base64){const binary=atob(base64);const bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return bytes}
+function saveThermalPdf(){saveHistory('Thermal PDF');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
+async function downloadThermalPng(){
+  try{
+    renderReceipt();
+    const png=await buildReceiptPng();
+    const blob=new Blob([base64ToBytes(png.base64)],{type:'image/png'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;link.download=`${receiptFileBaseName()}-thermal-receipt.png`;
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    saveHistory('Thermal PNG');showToast('Thermal receipt PNG downloaded.','success');
+  }catch(error){showToast(`Could not create thermal PNG: ${error.message}`,'error')}
+}
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
-function openSettings(){renderReceipt();renderHistory();$('settingsModal').classList.add('open');refreshPrinterStatus(false)}
-function closeSettings(){$('settingsModal').classList.remove('open')}
-function backdropClose(event,id){if(event.target.id===id)event.target.classList.remove('open')}
+function openSettings(){
+  try{renderReceipt();renderHistory()}catch(error){console.warn('Settings pre-render failed',error)}
+  const modal=$('settingsModal');
+  if(!modal){showToast('Output menu is unavailable in this version.','error');return}
+  modal.classList.add('open');modal.style.display='flex';modal.removeAttribute('aria-hidden');
+  refreshPrinterStatus(false);
+}
+function closeSettings(){const modal=$('settingsModal');if(!modal)return;modal.classList.remove('open');modal.style.display='none';modal.setAttribute('aria-hidden','true')}
+function backdropClose(event,id){if(event.target.id===id)closeSettings()}
 function saveHistory(mode,jobId=''){const item={time:new Date().toISOString(),mode,jobId,patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),sample:sampleType,text:receiptText()};const history=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');history.unshift(item);localStorage.setItem('resusproBloodGasHistory',JSON.stringify(history.slice(0,100)));renderHistory()}
 function renderHistory(){const element=$('historyList');const history=JSON.parse(localStorage.getItem('resusproBloodGasHistory')||'[]');if(!history.length){element.innerHTML='<p class="muted">No outputs saved yet on this device.</p>';return}element.innerHTML=history.slice(0,20).map(item=>{const details=[item.patientId,item.resusBay,item.sample].filter(Boolean).join(' · ');return`<div class="history-item"><b>${escapeHtml(new Date(item.time).toLocaleString('en-GB'))} · ${escapeHtml(item.mode)}</b>${details?`<span class="muted">${escapeHtml(details)}</span>`:''}</div>`}).join('')}
 function clearHistory(){if(confirm('Clear saved output history on this device?')){localStorage.removeItem('resusproBloodGasHistory');renderHistory()}}
