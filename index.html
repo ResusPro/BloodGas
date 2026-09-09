@@ -12,7 +12,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="pwa-icon-192.png">
   <title>ResusPro BloodGas</title>
-  <!-- ResusPro BloodGas v1.0.19 — visible thermal output controls + settings repair -->
+  <!-- ResusPro BloodGas v1.0.22 — import parser, saved gases and Major burns case -->
   <style>
     :root{
       --blue:#1565c0;--blue2:#0d47a1;--bg:#eef2f6;--card:#fff;--line:#d9e1ea;
@@ -28,15 +28,15 @@
     .hero-top{display:flex;gap:10px;align-items:center;justify-content:space-between;min-width:0}
     .brand{display:flex;align-items:center;gap:9px;min-width:0}
     .logo-pill{background:rgba(255,255,255,.95);border-radius:13px;padding:5px 8px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(16,24,40,.18);flex:0 0 auto}
-    .app-logo{width:128px;max-width:39vw;height:auto;display:block}
-    .brand-text{min-width:0}.brand-text h1{font-size:1rem;line-height:1.05;margin:0;font-weight:850;letter-spacing:.2px;white-space:normal}
-    .subtitle{font-size:.76rem;margin-top:2px;opacity:.96;line-height:1.15}.subtitle a{color:#90caf9;text-decoration:underline;font:inherit;font-weight:700}
-    .hero-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+    .app-logo{width:116px;max-width:35vw;height:auto;display:block}
+    .brand-text{min-width:0}.brand-text h1{font-size:.98rem;line-height:1.05;margin:0;font-weight:850;letter-spacing:.2px;white-space:normal}
+    .subtitle{font-size:.72rem;margin-top:2px;opacity:.96;line-height:1.15}.subtitle a{color:#90caf9;text-decoration:underline;font:inherit;font-weight:700}
+    .hero-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
     button,select,input{font:inherit}
     button{border:0;border-radius:14px;padding:12px 14px;font-weight:760;background:var(--soft);color:var(--text);cursor:pointer;min-height:44px}
     button:disabled{opacity:.68;cursor:wait}
     button.primary{background:#fff;color:var(--blue2)}button.blue{background:var(--blue);color:#fff}button.small{padding:9px 11px;min-height:38px;border-radius:12px;font-size:.92rem}button.danger{background:#fee4e2;color:var(--danger)}
-    .settings-button{width:42px;min-width:42px;padding:0;background:rgba(255,255,255,.18);color:#fff;font-size:1.25rem}.output-button{min-width:74px;padding:10px 12px;background:rgba(255,255,255,.95);color:var(--blue2);font-weight:850;border-radius:14px}.receipt-output-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#f8fafc;border:1px solid #e4e7ec;border-radius:14px;padding:10px;margin:0 0 12px}.receipt-output-strip button{min-height:38px;padding:9px 11px;border-radius:12px}.receipt-output-strip .blue{background:var(--blue);color:#fff}.receipt-output-strip span{font-size:.86rem;color:var(--muted);font-weight:650}
+    .settings-button{width:42px;min-width:42px;padding:0;background:rgba(255,255,255,.18);color:#fff;font-size:1.25rem}.print-button{font-size:.95rem;font-weight:850;white-space:nowrap}
     .print-button{min-width:104px;color:#fff;transition:background .2s ease}.print-button.state-idle{background:var(--green)}.print-button.state-printing{background:var(--amber);color:#1f2937}.print-button.state-offline{background:var(--red)}.print-button.state-checking{background:#fff;color:var(--blue2)}
     .card{background:var(--card);border:1px solid var(--line);border-radius:18px;margin:12px 0;box-shadow:var(--shadow);overflow:hidden}.card.parameters-card{overflow:visible}
     .card h2{font-size:1.12rem;margin:0;padding:14px 16px 8px}.section{padding:12px 16px;border-top:1px solid var(--line)}
@@ -109,7 +109,13 @@
     .preview-wrap{padding:12px;background:#f7f9fc;border:1px solid var(--line);border-radius:14px}.history-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.history-item b{display:block}.hidden{display:none!important}
     .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#101828;color:#fff;padding:11px 15px;border-radius:13px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:100;max-width:calc(100vw - 24px);text-align:center;font-weight:700;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.error{background:#b42318}.toast.success{background:#166534}
     @supports(top:env(safe-area-inset-top)){:root{--hero-fixed-top:calc(env(safe-area-inset-top) + 8px)}}
-    @media(max-width:560px){.epoc-shell{max-width:100%;padding:7px}.epoc-tile{min-height:66px;padding:5px 4px}.epoc-tile-value{font-size:1.18rem}.epoc-tile-name{font-size:.66rem}.epoc-tile-unit{font-size:.52rem}.epoc-actionbar{padding:7px 8px}.epoc-status{font-size:1.08rem}.view-tabs{gap:5px}.view-tabs button{font-size:.78rem;padding:8px 4px}.view-hint{font-size:.76rem}.device-shell{border-radius:20px;padding:10px}.device-row{grid-template-columns:minmax(58px,1fr) minmax(54px,.9fr) 24px minmax(42px,.7fr);font-size:.78rem;padding:5px 7px}.epoc-grid-head,.epoc-row{grid-template-columns:minmax(54px,1fr) minmax(48px,.75fr) 22px minmax(38px,.55fr) minmax(56px,.9fr);font-size:.72rem;padding:5px 6px}.device-meta{font-size:.74rem}.device-top{font-size:.76rem}body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:110px;max-width:35vw}.brand{gap:7px}.brand-text h1{font-size:.92rem}.subtitle{font-size:.7rem}.hero-actions{gap:5px}.settings-button{width:39px;min-width:39px}.output-button{min-width:64px;padding:9px 9px;font-size:.86rem}.print-button{min-width:82px;padding:9px 10px}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
+
+    .import-textarea{width:100%;min-height:190px;border:1px solid #cfd8e3;border-radius:14px;background:#fff;padding:12px 13px;color:var(--text);font:13px/1.35 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;resize:vertical}
+    .import-summary{margin-top:10px;padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #e4e7ec;color:var(--muted);font-size:.9rem;line-height:1.35}
+    .saved-gas-item{border-top:1px solid var(--line);padding:10px 0;font-size:.92rem}.saved-gas-item b{display:block}.saved-gas-item .btn-row{margin-top:7px}
+    .file-note{font-size:.86rem;color:var(--muted);margin-top:6px;line-height:1.35}
+
+    @media(max-width:560px){.epoc-shell{max-width:100%;padding:7px}.epoc-tile{min-height:66px;padding:5px 4px}.epoc-tile-value{font-size:1.18rem}.epoc-tile-name{font-size:.66rem}.epoc-tile-unit{font-size:.52rem}.epoc-actionbar{padding:7px 8px}.epoc-status{font-size:1.08rem}.view-tabs{gap:5px}.view-tabs button{font-size:.78rem;padding:8px 4px}.view-hint{font-size:.76rem}.device-shell{border-radius:20px;padding:10px}.device-row{grid-template-columns:minmax(58px,1fr) minmax(54px,.9fr) 24px minmax(42px,.7fr);font-size:.78rem;padding:5px 7px}.epoc-grid-head,.epoc-row{grid-template-columns:minmax(54px,1fr) minmax(48px,.75fr) 22px minmax(38px,.55fr) minmax(56px,.9fr);font-size:.72rem;padding:5px 6px}.device-meta{font-size:.74rem}.device-top{font-size:.76rem}body{padding:8px}.hero{width:calc(100% - 16px);border-radius:14px;padding:8px 9px}.app-logo{width:96px;max-width:31vw}.brand{gap:7px}.brand-text h1{font-size:.86rem}.subtitle{font-size:.66rem}.hero-actions{gap:5px}.settings-button{width:38px;min-width:38px}.print-button{min-width:86px;padding:9px 10px;font-size:.84rem}.grid2{grid-template-columns:1fr}.card{border-radius:16px}.param-head,.param{grid-template-columns:minmax(72px,1.15fr) 58px 44px 45px 60px;gap:4px}.param-toggle{font-size:.79rem;padding:7px 6px;min-height:36px}.unit-cell,.range-cell{font-size:.72rem}.head-cell{font-size:.68rem;padding:0 2px;min-height:38px}#flagHead{font-size:1rem;letter-spacing:0}.flag-cell{font-size:1.2rem}.value-input{font-size:.92rem;padding:8px 4px!important}.edit-panel{grid-template-columns:1fr}.receipt{font-size:12px;max-width:100%}button{padding:10px 11px}}
     @media print{body{background:#fff;padding:0}.app,.modal-backdrop,.toast{display:none!important}#printOnly{display:block!important}.receipt{border:0;max-width:58mm;width:58mm;font-size:10.5px;padding:0;margin:0}.receipt-brand img{max-width:49mm;max-height:16mm}}
 
     @media screen{#devicePrintOnly{display:none!important}}
@@ -137,12 +143,11 @@
         </a>
         <div class="brand-text">
           <h1>BloodGas SimLab</h1>
-          <div class="subtitle">v1.0.19 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
+          <div class="subtitle">v1.0.22 | <a href="rotem-dev.html">ROTEM/TEG Dev →</a></div>
         </div>
       </div>
       <div class="hero-actions">
-        <button id="settingsButton" class="settings-button" type="button" aria-label="Output menu" onclick="openSettings();return false">⚙</button>
-        <button id="outputButton" class="output-button" type="button" onclick="openSettings();return false">Output</button>
+        <button id="settingsButton" class="settings-button" type="button" aria-label="Output and printer menu" title="Output and printer" onclick="openSettings();return false">⚙</button>
         <button id="cloudPrintButton" class="print-button state-checking" type="button" onclick="cloudPrint()">Checking…</button>
       </div>
     </div>
@@ -178,6 +183,8 @@
           <input id="fio2" type="number" min="21" max="100" step="1" value="21" inputmode="decimal" oninput="physiologyChanged()" onchange="normalisePhysiologyInputs()">
         </div>
       </div>
+      <label for="oxygenTherapy">Oxygen therapy <span class="muted">(optional)</span></label>
+      <input id="oxygenTherapy" type="text" value="" placeholder="e.g. Air, 15L O₂, NRB, CPAP" autocomplete="off">
       <p id="physiologyNote" class="muted physiology-note"></p>
       <label for="presetSelect">Example scenario</label>
       <select id="presetSelect" onchange="loadSelectedPreset()"><option value="">Select an example…</option></select>
@@ -185,6 +192,8 @@
       <div class="btn-row" style="margin-top:12px">
         <button type="button" onclick="fillBlankNormals()">Add normal values</button>
         <button type="button" onclick="clearValues()">Clear values</button>
+        <button type="button" onclick="openImportModal()">Import gas</button>
+        <button type="button" onclick="saveCurrentGas()">Save gas</button>
       </div>
     </div>
   </section>
@@ -200,12 +209,6 @@
     <section id="pickerPanel" class="card parameters-card view-panel" role="tabpanel" aria-labelledby="view-picker">
       <h2>Parameters</h2>
       <div class="section">
-        <div class="receipt-output-strip" aria-label="Thermal receipt export">
-          <button class="blue" type="button" onclick="saveThermalPdf()">Thermal PDF</button>
-          <button type="button" onclick="downloadThermalPng()">Thermal PNG</button>
-          <button type="button" onclick="openSettings();return false">Output menu</button>
-          <span>Offline-safe thermal receipt export.</span>
-        </div>
         <div id="paramList"></div>
       </div>
     </section>
@@ -253,7 +256,7 @@
       <h2>Output & printer</h2>
       <button class="small" type="button" onclick="closeSettings()">Close</button>
     </div>
-    <p>Cloud printing uses the status-coloured button. Thermal PDF and PNG output work even when the CloudPRNT printer is offline.</p>
+    <p>Cloud printing uses the status-coloured banner button. Thermal PDF and PNG create the receipt-style output for presentations or records, even when the CloudPRNT printer is offline.</p>
     <div id="settingsPrinterStatus" class="status-strip"><span class="status-dot"></span><span>Checking…</span></div>
     <div class="btn-row" style="margin-top:10px">
       <button class="blue" type="button" onclick="saveThermalPdf()">Thermal PDF</button>
@@ -262,12 +265,40 @@
       <button type="button" onclick="copyReceipt()">Copy text</button>
       <button type="button" onclick="refreshPrinterStatus(true)">Refresh status</button>
       <button type="button" onclick="sendTestPrint()">Test CloudPRNT</button>
+      <button type="button" onclick="openImportModal()">Import gas</button>
+      <button type="button" onclick="saveCurrentGas()">Save gas</button>
     </div>
+    <h3>Saved gases</h3>
+    <div id="settingsSavedGases"></div>
     <h3>Receipt preview</h3>
     <div class="preview-wrap"><div id="settingsReceipt" class="receipt"></div></div>
     <h3>Output history</h3>
     <div class="btn-row"><button class="small" type="button" onclick="renderHistory()">Refresh</button><button class="small danger" type="button" onclick="clearHistory()">Clear history</button></div>
     <div id="historyList"></div>
+  </div>
+</div>
+
+
+<div id="importModal" class="modal-backdrop" onclick="backdropClose(event,'importModal')" aria-hidden="true">
+  <div class="modal">
+    <div class="btn-row" style="justify-content:space-between">
+      <h2>Import or save gas</h2>
+      <button class="small" type="button" onclick="closeImportModal()">Close</button>
+    </div>
+    <p>Paste copied blood-gas text, or upload a plain-text result. Some text-based PDFs can be read; image/PDF screenshots need OCR first, then paste the recognised text here.</p>
+    <label for="importText">Copied result text</label>
+    <textarea id="importText" class="import-textarea" spellcheck="false" placeholder="Paste blood gas result text here…"></textarea>
+    <label for="importFile">Upload text/PDF/image</label>
+    <input id="importFile" type="file" accept=".txt,.text,.csv,.pdf,text/plain,application/pdf,image/*" onchange="handleImportFile(event)">
+    <div class="file-note">Images are accepted so the workflow is in place, but this lightweight PWA cannot reliably OCR them yet. Use Google Photos/Lens/phone text selection, then paste the text above.</div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="blue" type="button" onclick="importGasFromText(false)">Import to picker</button>
+      <button type="button" onclick="importGasFromText(true)">Import & save</button>
+      <button type="button" onclick="loadPriorityGas()">Load priority VBG</button>
+    </div>
+    <div id="importSummary" class="import-summary">No import attempted yet.</div>
+    <h3>Saved gases</h3>
+    <div id="savedGasesList"></div>
   </div>
 </div>
 
@@ -290,13 +321,14 @@ const sampleRanges={
   Capillary:{pH:[7.35,7.45,'7.40'],pCO2:[4.7,6.5,'5.5'],pO2:[8.0,12.0,'10.0'],HCO3:[22,28,'24'],BE:[-2,2,'0'],SaO2:[92,100,'97'],Lactate:[0.5,2.2,'1.0']}
 };
 const groups=[
- {name:'Blood gas',items:[['pH','pH','',7.35,7.45,'7.40'],['pCO2','pCO2','kPa',4.7,6.0,'5.3'],['pO2','pO2','kPa',10.0,13.3,'12.0'],['HCO3','HCO3-','mmol/L',22,28,'24'],['BE','BE','mmol/L',-2,2,'0'],['SaO2','SaO2','%',94,100,'98'],['Lactate','Lactate','mmol/L',0.5,2.2,'1.0']]},
+ {name:'Blood gas',items:[['pH','pH','',7.35,7.45,'7.40'],['pCO2','pCO2','kPa',4.7,6.0,'5.3'],['pO2','pO2','kPa',10.0,13.3,'12.0'],['HCO3','HCO3-','mmol/L',22,28,'24'],['BE','BE','mmol/L',-2,2,'0'],['SaO2','SaO2','%',94,100,'98'],['Lactate','Lactate','mmol/L',0.5,2.2,'1.0'],['AnionGap','Anion gap','mmol/L',8,16,'12']]},
  {name:'Electrolytes / renal',items:[['Na','Na+','mmol/L',135,145,'140'],['K','K+','mmol/L',3.5,5.3,'4.2'],['Cl','Cl-','mmol/L',98,107,'103'],['iCa','Ca2+','mmol/L',1.12,1.32,'1.20'],['Glucose','Glucose','mmol/L',4.0,7.8,'5.6'],['Urea','Urea','mmol/L',2.5,7.8,'5.0'],['Creatinine','Creatinine','umol/L',60,110,'80'],['eGFR','eGFR','mL/min',60,999,'90']]},
- {name:'Haematology / oxygenation',items:[['Hb','Hb','g/L',130,170,'145'],['Hct','Hct','L/L',0.40,0.52,'0.44'],['COHb','COHb','%',0,2,'1.0'],['MetHb','MetHb','%',0,1.5,'0.5']]},
+ {name:'Haematology / oxygenation',items:[['Hb','Hb','g/L',130,170,'145'],['Hct','Hct','L/L',0.40,0.52,'0.44'],['COHb','COHb','%',0,2,'1.0'],['MetHb','MetHb','%',0,1.5,'0.5'],['FO2Hb','FO2Hb','%',0,100,'75'],['FHHb','FHHb','%',0,100,'25']]},
  {name:'POCT chemistry',items:[['CRP','CRP','mg/L',0,5,'2'],['Ketones','Ketones','mmol/L',0,0.6,'0.2'],['Troponin','Troponin','ng/L',0,14,'6'],['BNP','BNP','ng/L',0,100,'30'],['D-dimer','D-dimer','ng/mL',0,500,'250'],['INR','INR','',0.8,1.2,'1.0']]}
 ];
 const params=groups.flatMap(group=>group.items.map(item=>({id:item[0],name:item[1],unit:item[2],baseLow:item[3],baseHigh:item[4],baseNormal:item[5],low:item[3],high:item[4],normal:item[5],group:group.name,on:STANDARD_IDS.includes(item[0]),value:'',ref:`${item[3]}-${item[4]}`,customRef:false,customUnit:false})));
 const presets={
+ 'Major burns':{sample:'Venous',temperature:37,fio2:100,oxygenTherapy:'15L O2',stages:{'T0':{pH:'7.260',pCO2:'6.4',pO2:'12.2',HCO3:'21.0',BE:'-5.7',AnionGap:'15.0',Hb:'147',Hct:'0.45',SaO2:'91.3',FO2Hb:'51.5',COHb:'28.0',MetHb:'0.8',FHHb:'19.7',Na:'139',K:'4.1',Cl:'105',iCa:'1.13',Glucose:'7.4',Lactate:'5.8'}}},
  'DKA':{stages:{'T0':{pH:'7.08',pCO2:'2.9',HCO3:'7',BE:'-20',Lactate:'2.8',Glucose:'31',Ketones:'6.8',Na:'132',K:'5.9',Creatinine:'142'},'T60':{pH:'7.18',pCO2:'3.2',HCO3:'11',BE:'-15',Lactate:'2.0',Glucose:'23',Ketones:'4.9',Na:'136',K:'4.8',Creatinine:'118'},'T180':{pH:'7.29',pCO2:'3.8',HCO3:'17',BE:'-8',Lactate:'1.4',Glucose:'14',Ketones:'2.1',Na:'139',K:'4.0',Creatinine:'94'}}},
  'Type 1 respiratory failure':{stages:{'T0':{pH:'7.43',pCO2:'4.8',pO2:'7.1',SaO2:'86',HCO3:'24',BE:'0',Lactate:'1.4',Na:'139',K:'4.0',Glucose:'6.0'}}},
  'Type 2 respiratory failure':{stages:{'T0':{pH:'7.24',pCO2:'9.4',pO2:'7.8',SaO2:'88',HCO3:'30',BE:'4',Lactate:'1.6',Na:'140',K:'4.6',Glucose:'7.2'}}},
@@ -307,9 +339,9 @@ const $=id=>document.getElementById(id);
 function init(){
   restoreCaseDetails();normalisePhysiologyInputs(false);setSample('Arterial',false);
   const select=$('presetSelect');Object.keys(presets).forEach(name=>{const option=document.createElement('option');option.value=name;option.textContent=name;select.appendChild(option)});
-  buildParams();setupFixedLayout();setupResultSwipe();setupResultKeyboard();renderReceipt();renderHistory();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
+  buildParams();setupFixedLayout();setupResultSwipe();setupResultKeyboard();renderReceipt();renderHistory();renderSavedGases();refreshPrinterStatus();statusTimer=setInterval(()=>refreshPrinterStatus(false),10000);
   document.querySelectorAll('#settingsButton,#outputButton').forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();openSettings()}));
-  $('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);
+  $('patientId').addEventListener('input',caseDetailChanged);$('resusBay').addEventListener('input',caseDetailChanged);$('oxygenTherapy').addEventListener('input',caseDetailChanged);
 }
 function restoreCaseDetails(){
   if(!localStorage.getItem('bloodgasOptionalDetailsMigrated')){
@@ -319,8 +351,9 @@ function restoreCaseDetails(){
   }
   $('patientId').value=localStorage.getItem('bloodgasPatientId')||'';
   $('resusBay').value=localStorage.getItem('bloodgasResusBay')||'';
+  $('oxygenTherapy').value=localStorage.getItem('bloodgasOxygenTherapy')||'';
 }
-function caseDetailChanged(){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value);if(patient)localStorage.setItem('bloodgasPatientId',patient);else localStorage.removeItem('bloodgasPatientId');if(bay)localStorage.setItem('bloodgasResusBay',bay);else localStorage.removeItem('bloodgasResusBay');renderReceipt()}
+function caseDetailChanged(){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value),oxygen=cleanField($('oxygenTherapy').value);if(patient)localStorage.setItem('bloodgasPatientId',patient);else localStorage.removeItem('bloodgasPatientId');if(bay)localStorage.setItem('bloodgasResusBay',bay);else localStorage.removeItem('bloodgasResusBay');if(oxygen)localStorage.setItem('bloodgasOxygenTherapy',oxygen);else localStorage.removeItem('bloodgasOxygenTherapy');renderReceipt()}
 function setupFixedLayout(){const hero=document.querySelector('.hero'),spacer=$('heroSpacer');if(!hero||!spacer)return;const update=()=>{const top=parseFloat(getComputedStyle(hero).top)||0;const height=Math.ceil(hero.getBoundingClientRect().height);document.documentElement.style.setProperty('--hero-space',`${height+Math.max(0,top)+4}px`);document.documentElement.style.setProperty('--param-sticky-top',`${Math.ceil(top+height+8)}px`)};update();window.addEventListener('resize',update,{passive:true});window.addEventListener('orientationchange',update,{passive:true});if('ResizeObserver'in window)new ResizeObserver(update).observe(hero)}
 function setResultView(view){
   if(!['picker','istat','epoc'].includes(view))view='picker';
@@ -382,7 +415,8 @@ function updatePhysiologyNote(){const note=$('physiologyNote');if(!note)return;n
 function physiologyChanged(){applySampleRanges();updateParamDisplay();renderReceipt()}
 function normalisePhysiologyInputs(doRender=true){const temp=getTemperature(),fio2=getFiO2Percent();if($('temperature'))$('temperature').value=temp.toFixed(1);if($('fio2'))$('fio2').value=String(Math.round(fio2));applySampleRanges();updateParamDisplay();if(doRender)renderReceipt()}
 function setSample(type,doRender=true){sampleType=type;applySampleRanges();['Arterial','Venous','Capillary'].forEach(name=>{const button=$(`sample-${name}`);if(button)button.classList.toggle('active',name===type)});updateParamDisplay();if(doRender)renderReceipt()}
-function loadSelectedPreset(){const name=$('presetSelect').value;if(!name){currentPreset='';$('stageRow').innerHTML='';return}currentPreset=name;const stages=Object.keys(presets[name].stages);currentStage=stages[0];drawStages();loadStage(currentStage)}
+function loadSelectedPreset(){const name=$('presetSelect').value;if(!name){currentPreset='';$('stageRow').innerHTML='';return}currentPreset=name;applyPresetMetadata(presets[name]);const stages=Object.keys(presets[name].stages);currentStage=stages[0];drawStages();loadStage(currentStage)}
+function applyPresetMetadata(preset){if(!preset)return;if(preset.sample)setSample(preset.sample,false);if(Number.isFinite(Number(preset.temperature)))$('temperature').value=Number(preset.temperature).toFixed(1);if(Number.isFinite(Number(preset.fio2)))$('fio2').value=String(Math.round(Number(preset.fio2)));if(typeof preset.oxygenTherapy==='string')$('oxygenTherapy').value=preset.oxygenTherapy;normalisePhysiologyInputs(false);caseDetailChanged()}
 function drawStages(){const row=$('stageRow');row.innerHTML='';if(!currentPreset)return;Object.keys(presets[currentPreset].stages).forEach(stage=>{const button=document.createElement('button');button.type='button';button.textContent=stage;button.className='small'+(stage===currentStage?' active':'');button.onclick=()=>{currentStage=stage;loadStage(stage);drawStages()};row.appendChild(button)})}
 function loadStage(stage){clearValues(false);const data=presets[currentPreset].stages[stage];Object.entries(data).forEach(([id,value])=>{const p=params.find(item=>item.id===id);if(p){p.value=value;p.on=true}});syncIncludeCycleState();updateIncludeHeader();updateParamDisplay();renderReceipt()}
 function fillBlankNormals(){params.forEach(p=>{if(p.on&&!String(p.value).trim())p.value=p.normal});updateParamDisplay();renderReceipt()}
@@ -397,13 +431,13 @@ function receiptLines(){
   if(patient)lines.push('PATIENT / SCENARIO',patient);
   if(bay)lines.push('RESUS BAY / LOCATION',bay);
   if(patient||bay)lines.push('--------------------------------');
-  lines.push(`Sample: ${sampleType}`,`Temp: ${getTemperature().toFixed(1)} C   FiO2: ${Math.round(getFiO2Percent())}%`,`Time:   ${stamp}`,'--------------------------------');
+  lines.push(`Sample: ${sampleType}`,`Temp: ${getTemperature().toFixed(1)} C   FiO2: ${Math.round(getFiO2Percent())}%`);const oxygen=cleanField($('oxygenTherapy').value);if(oxygen)lines.push(`O2 therapy: ${oxygen}`);lines.push(`Time:   ${stamp}`,'--------------------------------');
   let current='';params.filter(p=>p.on&&String(p.value).trim()).forEach(p=>{if(p.group!==current){current=p.group;lines.push('',p.group.toUpperCase())}const flag=showFlags?flagFor(p):'';const unit=showUnits&&p.unit?' '+p.unit:'';const range=showRanges?` [${p.ref}]`:'';lines.push(`${pad(p.name,12)} ${pad(p.value,8)} ${pad(flag,1)}${unit}${range}`)});
   lines.push('','--------------------------------','Generated by ResusPro','resuspro.com','FOR SIMULATION USE ONLY','--------------------------------');return lines
 }
 function receiptText(){return receiptLines().join('\n')}
 function withoutDuplicateTextBrand(lines){return lines.filter((line,index)=>!(index===1&&line==='RESUSPRO'))}
-function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.19" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
+function receiptHtml(){return `<div class="receipt-brand"><img src="logo.png?v=1.0.21" alt="ResusPro" onerror="this.style.display='none'"></div><pre>${escapeHtml(withoutDuplicateTextBrand(receiptLines()).join('\n'))}</pre>`}
 
 function renderReceipt(){
   const html=receiptHtml();
@@ -416,7 +450,7 @@ function testReceiptLines(){
   return ['--------------------------------','RESUSPRO','BLOOD GAS - CLOUDPRNT TEST','--------------------------------','PATIENT / SCENARIO','TEST-PATIENT','RESUS BAY / LOCATION','TEST BAY','--------------------------------',`Time:   ${stamp}`,'','Printer connection successful.','For simulation use only.','--------------------------------'];
 }
 function selectedResultParams(){return params.filter(p=>p.on&&String(p.value).trim()).map(p=>({id:p.id,name:p.name,value:String(p.value).trim(),unit:p.unit||'',ref:p.ref||'',flag:flagFor(p),group:p.group}))}
-function currentResultMeta(){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value);const bits=[sampleType,`${getTemperature().toFixed(1)}°C`,`FiO₂ ${Math.round(getFiO2Percent())}%`];if(patient)bits.push(patient);if(bay)bits.push(bay);return bits.join(' · ')}
+function currentResultMeta(){const patient=cleanField($('patientId').value),bay=cleanField($('resusBay').value),oxygen=cleanField($('oxygenTherapy').value);const bits=[sampleType,`${getTemperature().toFixed(1)}°C`,`FiO₂ ${Math.round(getFiO2Percent())}%`];if(oxygen)bits.push(oxygen);if(patient)bits.push(patient);if(bay)bits.push(bay);return bits.join(' · ')}
 function deviceTime(){return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
 function renderDeviceViews(){
   const results=selectedResultParams();
@@ -440,7 +474,7 @@ function renderEpocTiles(results){
   epocList.innerHTML=sections.map(section=>`<div class="epoc-section-label">${escapeHtml(section.label)}</div><div class="epoc-tile-grid">${section.items.map(epocTileHtml).join('')}</div>`).join('');
 }
 function epocSections(results){
-  const order={gases:['pH','pCO2','pO2','HCO3','BE','SaO2','Lactate'],chem:['Na','K','Cl','iCa','Glucose','Urea','Creatinine','eGFR'],haem:['Hb','Hct','COHb','MetHb'],other:['CRP','Ketones','Troponin','BNP','D-dimer','INR','GFAP']};
+  const order={gases:['pH','pCO2','pO2','HCO3','BE','AnionGap','SaO2','Lactate'],chem:['Na','K','Cl','iCa','Glucose','Urea','Creatinine','eGFR'],haem:['Hb','Hct','FO2Hb','COHb','MetHb','FHHb'],other:['CRP','Ketones','Troponin','BNP','D-dimer','INR','GFAP']};
   const used=new Set();
   const pick=ids=>ids.map(id=>results.find(r=>r.id===id)).filter(Boolean).filter(r=>{used.add(r.id);return true});
   const sections=[];
@@ -455,10 +489,10 @@ function epocTileHtml(r){
   const state=flag==='↑'?'high':flag==='↓'?'low':'normal';
   return `<div class="epoc-tile ${state}"><div class="epoc-tile-name">${escapeHtml(epocName(r.id,r.name))}</div><div class="epoc-tile-value">${escapeHtml(epocValue(r))}</div><div class="epoc-tile-unit">${escapeHtml(epocUnit(r.id,r.unit))}</div>${flag?`<div class="epoc-tile-flag">${escapeHtml(flag)}</div>`:''}</div>`;
 }
-function epocName(id,name){const map={pCO2:'pCO₂',pO2:'pO₂',HCO3:'cHCO₃⁻',BE:'BE(ecf)',SaO2:'cSO₂',Lactate:'Lac',Na:'Na⁺',K:'K⁺',Cl:'Cl⁻',iCa:'Ca⁺⁺',Glucose:'Glu',Creatinine:'Crea','D-dimer':'D-dim',Ketones:'Ket'};return map[id]||name}
+function epocName(id,name){const map={pCO2:'pCO₂',pO2:'pO₂',HCO3:'cHCO₃⁻',BE:'BE(ecf)',AnionGap:'AGap',SaO2:'cSO₂',Lactate:'Lac',Na:'Na⁺',K:'K⁺',Cl:'Cl⁻',iCa:'Ca⁺⁺',Glucose:'Glu',Creatinine:'Crea','D-dimer':'D-dim',Ketones:'Ket',AnionGap:'AGap',FO2Hb:'FO₂Hb',FHHb:'FHHb'};return map[id]||name}
 function epocValue(r){if((r.id==='pCO2'||r.id==='pO2')&&r.unit==='kPa'){const n=Number(String(r.value).replace(',','.'));if(!Number.isNaN(n))return (n*7.50062).toFixed(1)}return r.value}
 function epocUnit(id,unit){const map={pCO2:'mmHg',pO2:'mmHg'};return map[id]||unit}
-function deviceShortName(id,name){const map={pCO2:'PCO2',pO2:'PO2',HCO3:'HCO3',SaO2:'sO2',Lactate:'LAC',Glucose:'Glu',Creatinine:'Crea','D-dimer':'D-dim'};return map[id]||name}
+function deviceShortName(id,name){const map={pCO2:'PCO2',pO2:'PO2',HCO3:'HCO3',SaO2:'sO2',Lactate:'LAC',Glucose:'Glu',Creatinine:'Crea','D-dimer':'D-dim',AnionGap:'AGap',FO2Hb:'FO2Hb',FHHb:'FHHb'};return map[id]||name}
 
 async function cloudPrint(){
   const button=$('cloudPrintButton');
@@ -611,8 +645,34 @@ async function downloadThermalPng(){
 }
 function localPrint(mode){saveHistory(mode==='pdf'?'PDF/local print':'Local print');renderReceipt();closeSettings();setTimeout(()=>window.print(),100)}
 async function copyReceipt(){try{await navigator.clipboard.writeText(receiptText());saveHistory('Copied');showToast('Receipt copied.','success')}catch(error){showToast(`Could not copy: ${error.message}`,'error')}}
+
+function openImportModal(){renderSavedGases();const modal=$('importModal');if(!modal){showToast('Import tool unavailable.','error');return}modal.classList.add('open');modal.style.display='flex';modal.removeAttribute('aria-hidden')}
+function closeImportModal(){const modal=$('importModal');if(!modal)return;modal.classList.remove('open');modal.style.display='none';modal.setAttribute('aria-hidden','true')}
+async function handleImportFile(event){const file=event.target.files&&event.target.files[0];if(!file)return;const summary=$('importSummary');const name=(file.name||'').toLowerCase();try{if(file.type.startsWith('text/')||/\.(txt|text|csv)$/i.test(name)){const text=await file.text();$('importText').value=text;showImportSummary(`Loaded text from ${file.name}. Tap Import to parse it.`);return}if(file.type==='application/pdf'||/\.pdf$/i.test(name)){const raw=await file.text();const cleaned=raw.replace(/[^\x09\x0A\x0D\x20-\x7E°µ±²³⁺⁻₂₃₄₅₆₇₈₉\.\-−–—%\/()]+/g,' ').replace(/\s+/g,' ');if(/\bpH\b|pCO|pO|HCO/i.test(cleaned)){$('importText').value=cleaned;showImportSummary('Pulled possible text from the PDF. Please check it before importing.')}else showImportSummary('Could not extract useful text from that PDF. Use OCR/text selection, then paste the result here.',true);return}if(file.type.startsWith('image/')){showImportSummary('Image import is ready for the workflow, but browser OCR is not built into this lightweight PWA yet. Use Google Photos/Lens or phone text selection, then paste the OCR text here.',true);return}showImportSummary('Unsupported file type. Paste copied result text instead.',true)}catch(error){showImportSummary(`Could not read file: ${error.message}`,true)}}
+function importGasFromText(saveAfter=false){const source=$('importText')?.value||'';const parsed=parseBloodGasText(source);if(!parsed.values||!Object.keys(parsed.values).length){showImportSummary('No recognised blood-gas values found. Paste the copied result text, including parameter names and values.',true);return}applyGasSnapshot(parsed);if(saveAfter)saveGasSnapshot(parsed,parsed.name||defaultGasName('Imported'));showImportSummary(`Imported ${Object.keys(parsed.values).length} values as ${parsed.sampleType||sampleType}. ${parsed.oxygenTherapy?`Oxygen therapy: ${parsed.oxygenTherapy}. `:''}${parsed.fio2?`FiO₂ set to ${Math.round(parsed.fio2)}%. `:''}`);showToast('Gas imported to picker.','success')}
+function loadPriorityGas(){const preset=presets['Major burns'];applyPresetMetadata(preset);clearValues(false);Object.entries(preset.stages.T0).forEach(([id,value])=>{const p=params.find(item=>item.id===id);if(p){p.value=String(value);p.on=true}});syncIncludeCycleState();updateParamDisplay();updateColumnHeaders();renderReceipt();showImportSummary('Loaded Major burns.');showToast('Major burns gas loaded.','success')}
+function showImportSummary(message,isError=false){const element=$('importSummary');if(element){element.textContent=message;element.style.borderColor=isError?'#fda29b':'#e4e7ec';element.style.color=isError?'#b42318':'#526070'}}
+function parseBloodGasText(source){let text=String(source||'').replace(/−|–|—/g,'-').replace(/₂/g,'2').replace(/₃/g,'3').replace(/₄/g,'4').replace(/⁺/g,'+').replace(/⁻/g,'-').replace(/µ/g,'u');const lines=text.split(/\r?\n|\s{2,}/).map(x=>x.trim()).filter(Boolean);const full=lines.join('\n');const parsed={name:'Imported blood gas',sampleType:'',temperature:null,fio2:null,oxygenTherapy:'',values:{}};if(/\bVBG\b|Sample\s*type\s*:\s*VENOUS/i.test(full))parsed.sampleType='Venous';else if(/\bABG\b|Sample\s*type\s*:\s*ARTERIAL/i.test(full))parsed.sampleType='Arterial';else if(/CAPILLARY/i.test(full))parsed.sampleType='Capillary';const title=full.match(/SIMULATED\s+BLOOD\s+GAS\s+RESULT\s*\d+\s*\([^)]*\)/i);if(title)parsed.name=title[0].replace(/\s+/g,' ').trim();const temp=full.match(/(?:PATIENT\s+TEMPERATURE|Temperature|Temp)\s*:?[\s]*(-?\d+(?:\.\d+)?)/i);if(temp)parsed.temperature=Number(temp[1]);const oxygen=full.match(/Oxygen\s+therapy\s*:\s*([^\n]+)/i);if(oxygen)parsed.oxygenTherapy=oxygen[1].trim();const fio=full.match(/(?:FiO2|FiO₂|FIO2)\s*:?[\s]*(\d+(?:\.\d+)?)\s*%?/i);if(fio)parsed.fio2=Number(fio[1])<=1?Number(fio[1])*100:Number(fio[1]);else if(parsed.oxygenTherapy){if(/\bair\b/i.test(parsed.oxygenTherapy))parsed.fio2=21;else if(/(?:15\s*L|NRB|non.?rebreath|BVM|bag)/i.test(parsed.oxygenTherapy))parsed.fio2=100}
+  const aliases=[
+    ['pH',/^pH\b/i],['pCO2',/^pCO2\b/i],['pO2',/^pO2\b/i],['HCO3',/^(?:c?HCO3-?|HCO3)\b/i],['BE',/^(?:c?Base\s*\(?Ecf\)?|BE\s*\(?ecf\)?|Base\s*\(?Ecf\)?)\b/i],['AnionGap',/^Anion\s*gap\b/i],
+    ['Hb',/^(?:ctHb|Hb)\b/i],['Hct',/^Hct\b/i],['SaO2',/^(?:sO2|SaO2|cSO2)\b/i],['FO2Hb',/^FO2Hb\b/i],['COHb',/^(?:FCOHb|COHb)\b/i],['MetHb',/^(?:FMetHb|MetHb)\b/i],['FHHb',/^FHHb\b/i],
+    ['Na',/^Na\+?\b/i],['K',/^K\+?\b/i],['Cl',/^Cl-?\b/i],['iCa',/^(?:Ca\+\+|Ca2\+?|iCa|Ca\+?)\b/i],['Glucose',/^Glucose\b/i],['Lactate',/^Lactate\b/i],['Ketones',/^Ketones\b/i],['CRP',/^CRP\b/i],['INR',/^INR\b/i]
+  ];
+  for(const line of lines){const clean=line.replace(/,/g,'.');for(const [id,re] of aliases){const labelMatch=clean.match(re);if(!labelMatch)continue;const rest=clean.slice(labelMatch[0].length);const valueMatch=rest.match(/(-?\d+(?:\.\d+)?)/);if(valueMatch){parsed.values[id]=valueMatch[1]}break}}
+  return parsed}
+function currentGasSnapshot(name=''){const values={};params.forEach(p=>{if(p.on&&String(p.value).trim())values[p.id]=String(p.value).trim()});return{name:name||defaultGasName('Saved'),savedAt:new Date().toISOString(),sampleType,temperature:getTemperature(),fio2:getFiO2Percent(),oxygenTherapy:cleanField($('oxygenTherapy').value),patientId:cleanField($('patientId').value),resusBay:cleanField($('resusBay').value),values}}
+function defaultGasName(prefix){const patient=cleanField($('patientId').value);return patient||`${prefix} ${new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}`}
+function saveCurrentGas(){const snapshot=currentGasSnapshot();if(!Object.keys(snapshot.values).length){showToast('Enter some values before saving a gas.','error');return}const name=prompt('Name this saved gas:',snapshot.name)||snapshot.name;snapshot.name=name.trim()||snapshot.name;saveGasSnapshot(snapshot,snapshot.name)}
+function saveGasSnapshot(snapshot,name){const saved=getSavedGases();const item={...snapshot,name:name||snapshot.name||defaultGasName('Saved'),savedAt:new Date().toISOString()};saved.unshift(item);localStorage.setItem('resusproBloodGasSavedGases',JSON.stringify(saved.slice(0,100)));renderSavedGases();showToast('Gas saved in this app.','success')}
+function getSavedGases(){try{return JSON.parse(localStorage.getItem('resusproBloodGasSavedGases')||'[]')}catch(_){return[]}}
+function renderSavedGases(){const saved=getSavedGases();['savedGasesList','settingsSavedGases'].forEach(id=>{const element=$(id);if(!element)return;if(!saved.length){element.innerHTML='<p class="muted">No saved gases yet. Use Save gas after entering or importing values.</p>';return}element.innerHTML=saved.slice(0,20).map((item,index)=>{const details=[item.sampleType, item.temperature?`${Number(item.temperature).toFixed(1)}°C`:'', item.fio2?`FiO₂ ${Math.round(Number(item.fio2))}%`:'', item.oxygenTherapy||'', Object.keys(item.values||{}).length+' values'].filter(Boolean).join(' · ');return `<div class="saved-gas-item"><b>${escapeHtml(item.name||'Saved gas')}</b><span class="muted">${escapeHtml(details)}</span><div class="btn-row"><button class="small blue" type="button" onclick="loadSavedGas(${index})">Load</button><button class="small" type="button" onclick="duplicateSavedGas(${index})">Duplicate</button><button class="small danger" type="button" onclick="deleteSavedGas(${index})">Delete</button></div></div>`}).join('')})}
+function loadSavedGas(index){const item=getSavedGases()[index];if(!item)return;applyGasSnapshot(item);closeImportModal();showToast('Saved gas loaded.','success')}
+function duplicateSavedGas(index){const item=getSavedGases()[index];if(!item)return;saveGasSnapshot({...item,name:(item.name||'Saved gas')+' copy'},(item.name||'Saved gas')+' copy')}
+function deleteSavedGas(index){const saved=getSavedGases();if(!saved[index])return;if(!confirm(`Delete saved gas "${saved[index].name||'Saved gas'}"?`))return;saved.splice(index,1);localStorage.setItem('resusproBloodGasSavedGases',JSON.stringify(saved));renderSavedGases()}
+function applyGasSnapshot(snapshot){if(snapshot.sampleType)setSample(snapshot.sampleType,false);if(Number.isFinite(Number(snapshot.temperature)))$('temperature').value=Number(snapshot.temperature).toFixed(1);if(Number.isFinite(Number(snapshot.fio2)))$('fio2').value=String(Math.round(Number(snapshot.fio2)));$('oxygenTherapy').value=snapshot.oxygenTherapy||'';if('patientId'in snapshot)$('patientId').value=snapshot.patientId||'';if('resusBay'in snapshot)$('resusBay').value=snapshot.resusBay||'';normalisePhysiologyInputs(false);params.forEach(p=>{p.value='';p.on=false});Object.entries(snapshot.values||{}).forEach(([id,value])=>{const p=params.find(item=>item.id===id);if(p){p.value=String(value);p.on=true}});syncIncludeCycleState();updateColumnHeaders();updateParamDisplay();caseDetailChanged();renderReceipt();setResultView('picker')}
+
 function openSettings(){
-  try{renderReceipt();renderHistory()}catch(error){console.warn('Settings pre-render failed',error)}
+  try{renderReceipt();renderHistory();renderSavedGases()}catch(error){console.warn('Settings pre-render failed',error)}
   const modal=$('settingsModal');
   if(!modal){showToast('Output menu is unavailable in this version.','error');return}
   modal.classList.add('open');modal.style.display='flex';modal.removeAttribute('aria-hidden');
@@ -634,7 +694,7 @@ if('serviceWorker'in navigator){
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloadingForNewWorker){reloadingForNewWorker=true;window.location.reload()}});
   window.addEventListener('load',async()=>{
     try{
-      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.19',{updateViaCache:'none'});
+      const registration=await navigator.serviceWorker.register('./service-worker.js?v=1.0.21',{updateViaCache:'none'});
       const checkForUpdate=async(force=false)=>{const now=Date.now();if(!force&&now-lastUpdateCheck<60000)return;lastUpdateCheck=now;try{await registration.update()}catch(_){}};
       await checkForUpdate(true);
       setInterval(()=>checkForUpdate(false),5*60*1000);
