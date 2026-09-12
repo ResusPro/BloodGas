@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>JARVIStube Screen Test</title>
+<style>
+  :root{color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;background:#0b0c0f;color:#f4f4f5;font:18px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  main{max-width:900px;margin:0 auto;padding:24px}
+  h1{font-size:clamp(28px,5vw,48px);margin:0 0 8px}
+  .muted{color:#a1a1aa}
+  .card{background:#17181d;border:1px solid #2d3038;border-radius:18px;padding:18px;margin:18px 0}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#23262d;margin:4px 6px 4px 0;font-size:.9rem}
+  .ok{color:#86efac}.bad{color:#fca5a5}.warn{color:#fde68a}
+  button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 18px;background:#ef4444;color:#fff;cursor:pointer}
+  button.secondary{background:#30343d}
+  video{width:100%;max-height:55vh;background:#000;border-radius:14px;margin-top:12px}
+  #keylog{white-space:pre-wrap;background:#0e1014;padding:12px;border-radius:12px;min-height:90px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9rem}
+  #pair{letter-spacing:.18em;font-size:clamp(28px,6vw,54px);font-weight:800}
+  .small{font-size:.9rem}
+</style>
+</head>
+<body tabindex="0">
+<main>
+  <h1>JARVIStube</h1>
+  <div class="muted">Universal screen compatibility test</div>
+
+  <section class="card">
+    <h2>1. Browser checks</h2>
+    <div id="checks">Running…</div>
+  </section>
+
+  <section class="card">
+    <h2>2. Video + audio test</h2>
+    <p class="muted">You should see obvious moving video and hear audio. This sample uses VP9 + Vorbis in WebM, matching the current JARVIStube projector path.</p>
+    <div class="row">
+      <button id="play">Play test</button>
+      <button id="fs" class="secondary">Fullscreen</button>
+    </div>
+    <video id="video" controls playsinline preload="metadata" crossorigin="anonymous">
+      <source src="https://remotion.media/video-vp9-vorbis.webm" type='video/webm; codecs="vp9, vorbis"'>
+    </video>
+    <div id="mediaResult" class="small muted">Waiting for playback…</div>
+  </section>
+
+  <section class="card">
+    <h2>3. Remote-control test</h2>
+    <p class="muted">Press Play/Pause, Rewind, Fast-forward and the arrow keys. If the browser passes them to the page, their raw key data appears below.</p>
+    <div id="keylog">No key events yet.</div>
+    <button id="clear" class="secondary">Clear key log</button>
+  </section>
+
+  <section class="card">
+    <h2>4. JARVIStube pairing</h2>
+    <div id="pair">NOT PAIRED</div>
+    <p class="muted">This page is ready to become the universal JARVIStube receiver. Secure cross-network pairing/stream routing is the next step; no Home Assistant credentials will be stored on this screen.</p>
+  </section>
+</main>
+<script>
+(()=>{
+  const v=document.getElementById('video');
+  const checks=document.getElementById('checks');
+  const mediaResult=document.getElementById('mediaResult');
+  const keylog=document.getElementById('keylog');
+  const events=[];
+  const can=(type)=>{try{return v.canPlayType(type)||'no'}catch(_){return'error'}};
+  const mse=typeof MediaSource!=='undefined';
+  const fs=!!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen||v.webkitEnterFullscreen);
+  const items=[
+    ['VP9 + Vorbis WebM',can('video/webm; codecs="vp9, vorbis"')],
+    ['VP9 + Opus WebM',can('video/webm; codecs="vp9, opus"')],
+    ['H.264 + AAC MP4',can('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')],
+    ['MediaSource',mse?'yes':'no'],
+    ['Fullscreen API',fs?'yes':'no'],
+    ['Screen',`${screen.width}×${screen.height}`],
+    ['Viewport',`${innerWidth}×${innerHeight}`],
+    ['User agent',navigator.userAgent]
+  ];
+  checks.innerHTML=items.map(([k,val])=>`<div><strong>${k}:</strong> <span class="pill ${String(val).toLowerCase()==='no'?'bad':'ok'}">${val}</span></div>`).join('');
+
+  document.getElementById('play').onclick=async()=>{
+    try{v.muted=false;v.volume=1;await v.play();mediaResult.textContent='Playback started. Confirm that you can see motion AND hear sound.'}
+    catch(err){mediaResult.textContent='Playback failed: '+(err&&err.message||err)}
+  };
+  document.getElementById('fs').onclick=async()=>{
+    try{
+      if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();
+      else if(document.documentElement.webkitRequestFullscreen)document.documentElement.webkitRequestFullscreen();
+      else if(v.webkitEnterFullscreen)v.webkitEnterFullscreen();
+    }catch(err){mediaResult.textContent='Fullscreen failed: '+(err&&err.message||err)}
+  };
+  v.addEventListener('playing',()=>{mediaResult.textContent=`Playing • decoded ${v.videoWidth||'?'}×${v.videoHeight||'?'} • duration ${Number.isFinite(v.duration)?v.duration.toFixed(1)+'s':'?'}`});
+  v.addEventListener('error',()=>{mediaResult.textContent='Video error code '+(v.error&&v.error.code||'?')});
+
+  function logKey(ev){
+    const line=`${ev.type}  key=${String(ev.key)}  code=${String(ev.code)}  keyCode=${ev.keyCode||0}  which=${ev.which||0}`;
+    events.unshift(line);events.splice(8);
+    keylog.textContent=events.join('\n');
+  }
+  ['keydown','keypress','keyup'].forEach(name=>window.addEventListener(name,logKey,true));
+  document.getElementById('clear').onclick=()=>{events.length=0;keylog.textContent='No key events yet.'};
+  try{document.body.focus()}catch(_){ }
+})();
+</script>
+</body>
+</html>
