@@ -15,7 +15,7 @@
 <body>
 <main>
   <h1>Updating BloodGas</h1>
-  <p><strong>Target version:</strong> v1.0.22</p>
+  <p><strong>Target version:</strong> v1.0.25</p>
   <p id="status" class="status">Clearing the old PWA cache…</p>
   <p>This does not remove your locally saved patient/scenario details or output history.</p>
   <button id="retry" type="button" hidden>Try again</button>
@@ -33,8 +33,8 @@
       const keys=await caches.keys();
       await Promise.all(keys.map(key=>caches.delete(key)));
     }
-    status.textContent='Old cache cleared. Loading BloodGas v1.0.22…';
-    location.replace(`./index.html?updated=1.0.22&t=${Date.now()}`);
+    status.textContent='Old cache cleared. Loading BloodGas v1.0.25…';
+    location.replace(`./index.html?updated=1.0.25&t=${Date.now()}`);
   }catch(error){
     status.textContent=`Update recovery failed: ${error.message}`;
     retry.hidden=false;
